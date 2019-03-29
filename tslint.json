@@ -1,0 +1,143 @@
+{
+    "extends": [
+        "tslint-eslint-rules"
+    ],
+    "rules": {
+        "no-string-throw": true,
+        "no-unused-expression": true,
+        "no-duplicate-variable": true,
+        "curly": true,
+        "class-name": true,
+        "semicolon": {
+            "severity": "error"
+        },
+        "no-trailing-whitespace": {
+            "severity": "error"
+        },
+        "triple-equals": {
+            "severity": "error"
+        },
+        "one-variable-per-declaration": [
+            true,
+            "ignore-for-loop"
+        ],
+        "ter-arrow-parens": [
+            true,
+            "as-needed",
+            {
+                "requireForBlockBody": true
+            }
+        ],
+        "ter-arrow-spacing": [
+            true,
+            {
+                "before": true,
+                "after": true
+            }
+        ],
+        "array-bracket-spacing": {
+            "options": [
+                "never"
+            ],
+            "severity": "error"
+        },
+        "new-parens": {
+            "severity": "error"
+        },
+        "no-cond-assign": [
+            "warn",
+            "always"
+        ],
+        "no-control-regex": {
+            "severity": "error"
+        },
+        "no-duplicate-case": {
+            "severity": "error"
+        },
+        "no-empty-character-class": {
+            "severity": "error"
+        },
+        "no-eval": {
+            "severity": "error"
+        },
+        "no-ex-assign": {
+            "severity": "error"
+        },
+        "no-extra-semi": {
+            "severity": "error"
+        },
+        "no-invalid-regexp": {
+            "severity": "error"
+        },
+        // "no-invalid-this": {
+        //     "severity": "error"
+        // },
+        "import-spacing": {
+            "severity": "error"
+        },
+        "no-labels": [
+            "warn",
+            {
+                "allowLoop": false,
+                "allowSwitch": false
+            }
+        ],
+        "no-mixed-operators": [
+            "warn",
+            {
+                "groups": [
+                    [
+                        "&",
+                        "|",
+                        "^",
+                        "~",
+                        "<<",
+                        ">>",
+                        ">>>"
+                    ],
+                    [
+                        "==",
+                        "!=",
+                        "===",
+                        "!==",
+                        ">",
+                        ">=",
+                        "<",
+                        "<="
+                    ],
+                    [
+                        "&&",
+                        "||"
+                    ],
+                    [
+                        "in",
+                        "instanceof"
+                    ]
+                ],
+                "allowSamePrecedence": false
+            }
+        ],
+        "no-regex-spaces": {
+            "severity": "error"
+        },
+        "no-sparse-arrays": {
+            "severity": "error"
+        },
+        "no-unexpected-multiline": {
+            "severity": "error"
+        },
+        "radix": {
+            "severity": "error"
+        },
+        "use-isnan": {
+            "severity": "error"
+        },
+        "valid-typeof": {
+            "severity": "error"
+        }
+    },
+    "defaultSeverity": "warning",
+    "exclude": [
+        "*./tmp/"
+    ]
+}
