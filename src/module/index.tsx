@@ -3,6 +3,7 @@ import * as ReactDOM from 'react-dom';
 import proj4 from 'proj4';
 
 import ScriptCache from './ScriptCache';
+import external_helpers from './external_helpers';
 let ScissorIcon = require('./img/marker_scissors.svg');
 let ScissorHoverIcon = require('./img/marker_scissors_hover.svg');
 
@@ -31,6 +32,10 @@ export interface PolygonOptions extends google.maps.PolygonOptions {}
 export interface Marker extends google.maps.Marker {}
 export interface MarkerOptions extends google.maps.MarkerOptions {}
 
+export type MarkerEvents = "click" | "mouseover" | "mouseout" | "mousedown" | "mouseup" | "dragstart" | "drag" | "dragend" | "dblclick" | "rightclick";
+export type PolylineEvents = "click" | "dblclick" | "dragstart" | "drag" | "dragend" | "mouseover" | "mouseout" | "mousedown" | "mouseup" | "mousemove" | "rightclick" | "set_at" | "remove_at" | "insert_at";
+export type PolygonEvents = "click" | "dblclick" | "dragstart" | "drag" | "dragend" | "mouseover" | "mouseout" | "mousedown" | "mouseup" | "mousemove" | "rightclick" | "set_at" | "remove_at" | "insert_at";
+export type AllMapObjEvents = MarkerEvents | PolylineEvents | PolygonEvents;
 export interface MapBaseProps {
     initializedCB?: () => void;
     googleapi_maps_uri: string;
@@ -62,6 +67,7 @@ export interface MapBaseProps {
 
 interface WrappedGmapObj {
     gmaps_obj?: any;
+    type: MapObjectType;
     hover: () => void;
     hovered: boolean;
     hover_options: any;
@@ -72,39 +78,48 @@ interface WrappedGmapObj {
     _cbs: {
         [key: string]: (e?: any) => void;
     };
-    registerEventCB: (cb: (e?: any) => void) => void;
-    unRegisterEventCB: (cb: (e?: any) => void) => void;
+    registerEventCB: (event_type: MarkerEvents & PolygonEvents & PolylineEvents, cb: (e?: any) => void) => void;
+    unregisterEventCB: (event_type: MarkerEvents & PolygonEvents & PolylineEvents) => void;
     options: any;
     update: (options: any) => Promise<WrappedGmapObj>;
     update_hover: (options: any) => Promise<WrappedGmapObj>;
 }
 
 export interface WrappedPolygon extends WrappedGmapObj {
-    readonly gmaps_obj: Polygon;
-    readonly options: PolygonOptions;
-    readonly hover_options: PolygonOptions;
-    readonly update: (options: PolygonOptions) => Promise<WrappedPolygon>;
-    readonly update_hover: (options: PolygonOptions) => Promise<WrappedPolygon>;
+    gmaps_obj: Polygon;
+    type: "polygon";
+    options: PolygonOptions;
+    hover_options: PolygonOptions;
+    update: (options: PolygonOptions) => Promise<WrappedPolygon>;
+    update_hover: (options: PolygonOptions) => Promise<WrappedPolygon>;
+    registerEventCB: (event_type: PolygonEvents, cb: (e?: any) => void) => void;
+    unregisterEventCB: (event_type: PolygonEvents) => void;
 }
 export interface WrappedPolyline extends WrappedGmapObj {
-    readonly gmaps_obj: Polyline;
-    readonly options: PolylineOptions;
-    readonly hover_options: PolylineOptions;
-    readonly update: (options: PolylineOptions) => Promise<WrappedPolyline>;
-    readonly update_hover: (options: PolylineOptions) => Promise<WrappedPolyline>;
+    gmaps_obj: Polyline;
+    type: "polyline";
+    options: PolylineOptions;
+    hover_options: PolylineOptions;
+    update: (options: PolylineOptions) => Promise<WrappedPolyline>;
+    update_hover: (options: PolylineOptions) => Promise<WrappedPolyline>;
+    registerEventCB: (event_type: PolylineEvents, cb: (e?: any) => void) => void;
+    unregisterEventCB: (event_type: PolylineEvents) => void;
 }
 export interface WrappedMarker extends WrappedGmapObj {
-    readonly gmaps_obj: Marker;
-    readonly options: MarkerOptions;
-    readonly hover_options: MarkerOptions;
-    readonly update: (options: MarkerOptions) => Promise<WrappedMarker>;
-    readonly update_hover: (options: MarkerOptions) => Promise<WrappedMarker>;
+    gmaps_obj: Marker;
+    type: "marker";
+    options: MarkerOptions;
+    hover_options: MarkerOptions;
+    update: (options: MarkerOptions) => Promise<WrappedMarker>;
+    update_hover: (options: MarkerOptions) => Promise<WrappedMarker>;
+    registerEventCB: (event_type: MarkerEvents, cb: (e?: any) => void) => void;
+    unregisterEventCB: (event_type: MarkerEvents) => void;
 }
 
+type AnyObjectOptions = MarkerOptions | PolylineOptions | PolygonOptions;
 
-type Projection = "GMAPS" | "RT90" | "SWEREF99" | "WGS84";
 
-type MapObjectType = "polyline" | "polygon" | "marker";
+export type MapObjectType = "polyline" | "polygon" | "marker";
 
 
 
@@ -118,11 +133,9 @@ const DEFAULT_MARKER_OPTIONS = {
     visible: true
 };
 const CUTTING_SNAP_DISTANCE = 200;
-const Z_INDEX_HIGHLIGHTS = 8999; //The highlight-objects z-index.
-const Z_INDEX_HIGHLIGHTED = 9000; //The original objects z-index during highlighten.
 const Z_INDEX_SCISSORS = 9001;
 const Z_INDEX_SCISSORS_HOVER = 9002;
-const EARTH_RADIUS = 6378137;
+
 const PROJECTIONS = {
     gmaps: '+proj=merc +a=6378137 +b=6378137 +lat_ts=0.0 +lon_0=0.0 +x_0=0.0 +y_0=0.0 +k=1.0 +units=m +nadgrids=@null +wktext +no_defs +over',
     rt90: '+proj=tmerc +lat_0=0 +lon_0=15.80827777777778 +k=1 +x_0=1500000 +y_0=0 +ellps=bessel +towgs84=414.1,41.3,603.1,-0.855,2.141,-7.023,0 +units=m +no_defs',
@@ -142,13 +155,13 @@ export default class WrappedMapBase extends React.Component<MapBaseProps, any> {
     initialized: boolean = false;
     map_objects: {
         marker: {
-            [key: string]: WrappedMarker,
+            [key: string]: WrappedMarker;
         }
         polygon: {
-            [key: string]: WrappedPolygon,
+            [key: string]: WrappedPolygon;
         }
         polyline: {
-            [key: string]: WrappedPolyline
+            [key: string]: WrappedPolyline;
         }
     } = {
         marker: {},
@@ -389,8 +402,8 @@ export default class WrappedMapBase extends React.Component<MapBaseProps, any> {
         });
     }
 
-    setPolyline(id: string, options: PolylineOptions, hover_options = null, highlight_options = null): Promise<WrappedPolyline> {
-        
+    setPolyline(id: string, options: PolylineOptions, hover_options = null): Promise<WrappedPolyline> {
+        return setPolyline(this, id, options, hover_options)
         return setMapObject(this, "polyline", id, options, hover_options, highlight_options);
     }
     unsetPolyline(id: string): Promise<boolean> {
@@ -414,20 +427,6 @@ export default class WrappedMapBase extends React.Component<MapBaseProps, any> {
         let promise_arr = [];
         Object.keys(this.map_objects.polygon).forEach((id) => {
             promise_arr.push(unsetMapObject(this, "polygon", id));
-        });
-        return Promise.all(promise_arr);
-    }
-
-    setDirections(id: string, options, hover_options = null): Promise<WrappedGmapObj> {
-        return setMapObject(this, "directions", id, options, hover_options);
-    }
-    unsetDirections(id: string): Promise<boolean> {
-        return unsetMapObject(this, "directions", id);
-    }
-    clearDirections(): Promise<boolean[]> {
-        let promise_arr: Promise<boolean>[] = [];
-        Object.keys(this.map_objects.directions).forEach((id) => {
-            promise_arr.push(unsetMapObject(this, "directions", id));
         });
         return Promise.all(promise_arr);
     }
@@ -965,15 +964,30 @@ function fitToBoundsOfObjectArray(map_ref: WrappedMapBase, arr_of_latlngliteral:
     });
 }
 
-function setPolyline(map_ref: WrappedMapBase, id: string, options: PolylineOptions, hover_options: google.maps.PolygonOptions): Promise<WrappedPolygon> {
-    return setMapObject(this, "polyline", id, options, hover_options, highlight_options);
+function setPolyline(map_ref: WrappedMapBase, id: string, options: PolylineOptions, hover_options: PolylineOptions | null = null): Promise<WrappedPolyline> {
+    return setMapObject(this, "polyline", id, options, hover_options) as Promise<WrappedPolyline>;
+}
+function setPolygon(map_ref: WrappedMapBase, id: string, options: PolylineOptions, hover_options: PolylineOptions | null = null): Promise<WrappedPolygon> {
+    return setMapObject(this, "polygon", id, options, hover_options) as Promise<WrappedPolygon>;
+}
+function setMarker(map_ref: WrappedMapBase, id: string, options: MarkerOptions, hover_options: MarkerOptions | null = null): Promise<WrappedMarker> {
+    return setMapObject(this, "marker", id, options, hover_options) as Promise<WrappedMarker>;
 }
 
-function setMapObject(map_ref, type, id, options, hover_options = null, highlight_options = null): Promise<WrappedGmapObj> {
-    return new Promise<WrappedGmapObj>((resolve, reject) => {
+type setMapObject = (
+    map_ref: WrappedMapBase,
+    type: MapObjectType,
+    id: string,
+    options: AnyObjectOptions,
+    hover_options: AnyObjectOptions | null
+) => Promise<WrappedPolyline|WrappedPolygon|WrappedMarker>;
+
+const setMapObject: setMapObject = (map_ref, type, id, options, hover_options) => {
+
+    return new Promise((resolve, reject) => {
         if (!map_ref.initialized) {
             map_ref.do_after_init.push(() => {
-                setMapObject(map_ref, type, id, options, hover_options, highlight_options).then((res) => {
+                setMapObject(map_ref, type, id, options, hover_options).then((res) => {
                     resolve(res);
                 }).catch((err) => {
                     reject(err);
@@ -985,170 +999,160 @@ function setMapObject(map_ref, type, id, options, hover_options = null, highligh
         if (map_ref.map_objects[type].hasOwnProperty(id)) {
             //This ID has already been drawn.
             let map_obj = map_ref.map_objects[type][id];
-            map_obj.highlight_options = highlight_options;
             let opts;
             if (map_obj.hovered && hover_options) {
                 opts = Object.assign({}, map_obj.options, options, hover_options);
             } else {
                 opts = Object.assign({}, map_obj.options, options);
             }
-            map_obj.gmaps_obj.setOptions(opts);
-            map_obj.options = options;
-            map_obj.hover_options = hover_options;
-            if (map_obj.highlighted && highlight_options) {
-                //The highlight has been called on this object AND we do have highlight options.
-                map_obj.highlight();
+            switch (map_obj.type) {
+                case "polyline": {
+                    map_obj.gmaps_obj.setOptions(opts as PolylineOptions);
+                    map_obj.options = options as PolylineOptions;
+                    if (hover_options) { map_obj.hover_options = hover_options as PolylineOptions; }
+                    break;
+                }
+                case "polygon": {
+                    map_obj.gmaps_obj.setOptions(opts as PolygonOptions);
+                    map_obj.options = options as PolygonOptions;
+                    if (hover_options) { map_obj.hover_options = hover_options as PolygonOptions; }
+                    break;
+                }
+                case "marker": {
+                    map_obj.gmaps_obj.setOptions(opts as MarkerOptions);
+                    map_obj.options = options as MarkerOptions;
+                    if (hover_options) { map_obj.hover_options = hover_options as MarkerOptions; }
+                    break;
+                }
+                default: {
+                    reject(new Error("Invalid map object type."));
+                }
             }
             resolve(map_obj);
             return;
         }
 
-        let map_obj;
-        let events = [];
-        let path_events = [];
+        //This extra interface exists so that _cbs can be created at different points in the following code.
+        //Otherwise ungainly "hasOwnProperty"-like checks are required.
+        interface MapObjShell extends Partial<WrappedGmapObj> {
+            _cbs: {
+                [key: string]: (e?: any) => void;
+            };
+        }
+
+        let map_obj_shell: MapObjShell = {
+            _cbs: {},
+            hovered: false,
+            type: type
+        };
+        let events: AllMapObjEvents[] = [];
+        let path_events: AllMapObjEvents[] = [];
         switch (type) {
             case "marker": {
                 let opts = Object.assign({}, DEFAULT_MARKER_OPTIONS, options);
-                map_obj = {
-                    gmaps_obj: new window.google.maps.Marker(opts),
-                    options: opts
-                };
+                map_obj_shell.gmaps_obj = new window.google.maps.Marker(opts);
+                map_obj_shell.options = opts;
                 events = ["click", "mouseover", "mouseout", "mousedown", "mouseup", "dragstart", "drag", "dragend", "dblclick", "rightclick"];
                 break;
             }
             case "polygon": {
                 let opts = Object.assign({}, DEFAULT_POLYGON_OPTIONS, options);
-                map_obj = {
-                    gmaps_obj: new window.google.maps.Polygon(opts),
-                    options: opts
-                };
+                map_obj_shell.gmaps_obj = new window.google.maps.Polygon(opts);
+                map_obj_shell.options = opts;
                 events = ["click", "dblclick", "dragstart", "drag", "dragend", "mouseover", "mouseout", "mousedown", "mouseup", "mousemove", "rightclick"];
                 path_events = ["set_at", "remove_at", "insert_at"];
                 break;
             }
             case "polyline": {
                 let opts = Object.assign({}, DEFAULT_POLYLINE_OPTIONS, options);
-                map_obj = {
-                    gmaps_obj: new window.google.maps.Polyline(opts),
-                    options: opts
-                };
+                map_obj_shell.gmaps_obj = new window.google.maps.Polyline(opts);
+                map_obj_shell.options = opts;
                 events = ["click", "dblclick", "dragstart", "drag", "dragend", "mouseover", "mouseout", "mousedown", "mouseup", "mousemove", "rightclick"];
                 path_events = ["set_at", "remove_at", "insert_at"];
                 break;
             }
             default: {
                 reject(new Error("Invalid map object type."));
-            }
-        }
-        map_obj.hover_options = hover_options;
-        map_obj.hovered = false;
-        map_obj.highlight_options = highlight_options;
-        map_obj.highlighted = false;
-        map_obj._cbs = {};
-
-        events.forEach((event_type) => {
-            map_obj.gmaps_obj.addListener(event_type, (e) => { return mapObjectEventCB(map_ref, map_obj, event_type, e); });
-        });
-        path_events.forEach((event_type) => {
-            map_obj.gmaps_obj.getPath().addListener(event_type, (e) => { return mapObjectEventCB(map_ref, map_obj, event_type, e); });
-        });
-
-        map_obj.registerEventCB = (event_type, cb) => {
-            if (type === "directions") { console.error("Directions renderer does not support events."); }
-            map_obj._cbs[event_type] = cb;
-        };
-        map_obj.unregisterEventCB = (event_type) => {
-            if (map_obj._cbs.hasOwnProperty(event_type)) {
-                delete map_obj._cbs[event_type];
-            }
-        };
-
-        map_obj.hover = () => {
-            if (!map_obj.hover_options) { return; }
-            let opts = Object.assign({}, map_obj.options, map_obj.hover_options);
-            let whitelisted_opts = {
-                strokeColor: opts.strokeColor,
-                strokeWidth: opts.strokeWidth,
-                fillColor: opts.fillColor,
-                fillOpacity: opts.fillOpacity
-            };
-            map_obj.gmaps_obj.setOptions(whitelisted_opts);
-            map_obj.hovered = true;
-        };
-        map_obj.unhover = () => {
-            let opts = Object.assign({}, map_obj.options);
-            let whitelisted_opts = {
-                strokeColor: opts.strokeColor,
-                strokeWidth: opts.strokeWidth,
-                fillColor: opts.fillColor,
-                fillOpacity: opts.fillOpacity
-            };
-            map_obj.gmaps_obj.setOptions(whitelisted_opts);
-            map_obj.hovered = false;
-        };
-        map_obj.remove = () => { return unsetMapObject(map_ref, type, id); };
-        map_obj.update = (new_options) => { return setMapObject(map_ref, type, id, new_options, hover_options); };
-        map_obj.update_hover = (new_hover_options) => { return setMapObject(map_ref, type, id, options, new_hover_options); };
-        map_obj.hide = () => {
-            map_obj.gmaps_obj.setOptions(Object.assign({}, map_obj.options, { visible: false }));
-            if (map_ref.highlight_objects[type].hasOwnProperty(id)) {
-                map_ref.highlight_objects[type][id].gmaps_obj.setOptions({ visible: false });
-            }
-        };
-        map_obj.show = () => {
-            map_obj.gmaps_obj.setOptions(Object.assign({}, map_obj.options, { visible: true }));
-            if (map_obj.highlighted) {
-                map_obj.highlight();
-            }
-        };
-
-        map_obj.highlight = () => {
-            if (!map_obj.highlight_options) {
-                if (type === "directions") {
-                    console.log("MAP: Map directions do not support highlighting. Use custom functionality.");
-                    return;
-                }
-                console.log("MAP: Cannot highlight, no highlight_options specified.");
                 return;
             }
-            let high_opts = Object.assign({}, map_obj.options, options, map_obj.highlight_options, { visible: true, clickable: false });
-            if (map_ref.highlight_objects[type].hasOwnProperty(id)) {
-                let high_obj = map_ref.highlight_objects[type][id];
-                high_obj.gmaps_obj.setOptions(high_opts);
-            } else {
-                createHighlightObject(map_ref, type, id, high_opts);
-            }
-            let opts;
-            if (map_obj.hovered && map_obj.hover_options) {
-                opts = Object.assign({}, map_obj.options, options, map_obj.hover_options);
-            } else {
-                opts = Object.assign({}, map_obj.options, options);
-            }
-            map_obj.gmaps_obj.setOptions(Object.assign({}, opts, { zIndex: Z_INDEX_HIGHLIGHTED }));
+        }
+        map_obj_shell.hover_options = hover_options;
+
+        map_obj_shell.registerEventCB = (event_type: string, cb) => {
+            map_obj_shell._cbs[event_type] = cb;
         };
-        map_obj.unhighlight = () => {
-            if (map_ref.highlight_objects[type].hasOwnProperty(id)) {
-                let high_obj = map_ref.highlight_objects[type][id];
-                let high_opts = Object.assign({}, map_obj.options, options, map_obj.highlight_options, { visible: false });
-                high_obj.gmaps_obj.setOptions(high_opts);
+        map_obj_shell.unregisterEventCB = (event_type) => {
+            if (map_obj_shell._cbs.hasOwnProperty(event_type)) {
+                delete map_obj_shell._cbs[event_type];
             }
-            let opts;
-            if (map_obj.hovered && map_obj.hover_options) {
-                opts = Object.assign({}, map_obj.options, options, map_obj.hover_options);
-            } else {
-                opts = Object.assign({}, map_obj.options, options);
-            }
-            map_obj.gmaps_obj.setOptions(Object.assign({}, opts));
         };
 
+        map_obj_shell.hover = () => {
+            if (!map_obj_shell.hover_options) { return; }
+            let opts = Object.assign({}, map_obj_shell.options, map_obj_shell.hover_options);
+            let whitelisted_opts = {
+                strokeColor: opts.strokeColor,
+                strokeWidth: opts.strokeWidth,
+                fillColor: opts.fillColor,
+                fillOpacity: opts.fillOpacity
+            };
+            map_obj_shell.gmaps_obj.setOptions(whitelisted_opts);
+            map_obj_shell.hovered = true;
+        };
+        map_obj_shell.unhover = () => {
+            let opts = Object.assign({}, map_obj_shell.options);
+            let whitelisted_opts = {
+                strokeColor: opts.strokeColor,
+                strokeWidth: opts.strokeWidth,
+                fillColor: opts.fillColor,
+                fillOpacity: opts.fillOpacity
+            };
+            map_obj_shell.gmaps_obj.setOptions(whitelisted_opts);
+            map_obj_shell.hovered = false;
+        };
+        map_obj_shell.remove = () => { return unsetMapObject(map_ref, type, id); };
+        map_obj_shell.update = (new_options) => { return setMapObject(map_ref, type, id, new_options, hover_options); };
+        map_obj_shell.update_hover = (new_hover_options) => { return setMapObject(map_ref, type, id, options, new_hover_options); };
+        map_obj_shell.hide = () => {
+            map_obj_shell.gmaps_obj.setOptions(Object.assign({}, map_obj_shell.options, { visible: false }));
+        };
+        map_obj_shell.show = () => {
+            map_obj_shell.gmaps_obj.setOptions(Object.assign({}, map_obj_shell.options, { visible: true }));
+        };
+        let map_obj = map_obj_shell as WrappedGmapObj;
+        events.forEach((event_type) => {
+            map_obj.gmaps_obj.addListener(event_type, (e: any) => { return mapObjectEventCB(map_ref, map_obj, event_type, e); });
+        });
+        path_events.forEach((event_type) => {
+            map_obj.gmaps_obj.getPath().addListener(event_type, (e: any) => { return mapObjectEventCB(map_ref, map_obj, event_type, e); });
+        });
 
         map_obj.gmaps_obj.setMap(map_ref.map);
 
-        map_ref.map_objects[type][id] = map_obj;
-        resolve(map_ref.map_objects[type][id]);
+        switch (map_obj.type) {
+            case "polyline": {
+                map_ref.map_objects[type][id] = map_obj as WrappedPolyline;
+                resolve(map_obj as WrappedPolyline);
+                break;
+            }
+            case "polygon": {
+                map_ref.map_objects[type][id] = map_obj as WrappedPolygon;
+                resolve(map_obj as WrappedPolygon);
+                break;
+            }
+            case "marker": {
+                map_ref.map_objects[type][id] = map_obj as WrappedMarker;
+                resolve(map_obj as WrappedMarker);
+                break;
+            }
+            default: {
+                reject(new Error("Invalid map object type."));
+            }
+        }
         return;
     });
-}
+};
+
 function unsetMapObject(map_ref: WrappedMapBase, type: MapObjectType, id: string) {
     return new Promise<boolean>((resolve, reject) => {
         if (!map_ref.initialized) {
@@ -1173,11 +1177,6 @@ function unsetMapObject(map_ref: WrappedMapBase, type: MapObjectType, id: string
 
             map_ref.map_objects[type][id].gmaps_obj.setMap(null);
             delete map_ref.map_objects[type][id];
-            if (map_ref.highlight_objects[type].hasOwnProperty(id)) {
-                //This object also has a highlight object attached to it.
-                map_ref.highlight_objects[type][id].gmaps_obj.setMap(null);
-                delete map_ref.highlight_objects[type][id];
-            }
             resolve(true);
             return;
         }
@@ -1185,7 +1184,7 @@ function unsetMapObject(map_ref: WrappedMapBase, type: MapObjectType, id: string
     });
 }
 
-function mapObjectEventCB(map_ref: WrappedMapBase, map_obj, event_type, e) {
+function mapObjectEventCB(map_ref: WrappedMapBase, map_obj: WrappedGmapObj, event_type: AllMapObjEvents, e: any) {
     if (map_ref.cutting.enabled) {
         //When the map is in cutting mode no object event callbacks are allowed.
         return true;
@@ -1199,136 +1198,6 @@ function mapObjectEventCB(map_ref: WrappedMapBase, map_obj, event_type, e) {
     return true;
 }
 
-function createHighlightObject(map_ref: WrappedMapBase, type, id, opts) {
-    opts.zIndex = Z_INDEX_HIGHLIGHTS;
-    opts.clickable = false;
-    let high_obj;
-    switch (type) {
-        case "marker": {
-            high_obj = {
-                gmaps_obj: new window.google.maps.Marker(opts),
-                options: opts
-            };
-            break;
-        }
-        case "polygon": {
-            high_obj = {
-                gmaps_obj: new window.google.maps.Polygon(opts),
-                options: opts
-            };
-            break;
-        }
-        case "polyline": {
-            high_obj = {
-                gmaps_obj: new window.google.maps.Polyline(opts),
-                options: opts
-            };
-            break;
-        }
-        default: {
-            throw new Error("Invalid map object type for highlighting.");
-        }
-    }
-    high_obj.gmaps_obj.setMap(map_ref.map);
-    map_ref.highlight_objects[type][id] = high_obj;
-}
 
 
-////////////EXPORTED HELPER FUNCTIONS
-//Check Map.helpers for usage.
-
-function convertFromArrayOfArray(fromProj: Projection, toProj: Projection, points: number[][]) : number[][] {
-    return proj4(fromProj, toProj, points);
-}
-
-function arrayToLatLngObject(arr: number[][], invert: boolean = false): LatLngLiteral[] {
-    if (invert) {
-        return arr.map((point) => {
-            return { lat: point[1], lng: point[0] };
-        });
-    }
-    return arr.map((point) => {
-        return { lat: point[0], lng: point[1] };
-    });
-}
-function latLngArrayToArrayOfArrays(arr: LatLngLiteral[], invert: boolean): number[][] {
-    if (invert) {
-        return arr.map((point) => {
-            return [point.lng, point.lat];
-        });
-    }
-    return arr.map((point) => {
-        return [point.lat, point.lng];
-    });
-}
-
-
-function makePointsAroundCircleRT90(p: number[], r: number, numberOfPoints = 12): number[][] {
-    //Returns numberOfPoints around circle at p with r radius.
-
-    let points = [];
-    let i;
-
-    for (i = 0; i < numberOfPoints; i += 1) {
-        points.push([
-            p[0] + r * Math.cos(2 * Math.PI * i / numberOfPoints),
-            p[1] + r * Math.sin(2 * Math.PI * i / numberOfPoints)
-        ]);
-    }
-
-    return points;
-}
-
-function makeRectRT90(p1: number[], p2: number[]): number[][] {
-    //TODO: Chamfer.
-    //p1 and p2 should be opposite corners of the rectangle.
-    let points = [];
-
-    points.push(
-        [p1[0], p1[1]],
-        [p2[0], p1[1]],
-        [p2[0], p2[1]],
-        [p1[0], p2[1]]
-    );
-
-    return points;
-}
-
-function movePointsByCoord(points_arr: number[][], coord: number[]) {
-    //Adds value of Coord to all points in array.
-    return points_arr.map((point) => {
-        return [point[0] + coord[0], point[1] + coord[1]];
-    });
-}
-
-function squared(x: number): number { return x * x; }
-function toRad(x: number): number { return x * Math.PI / 180; }
-function haversineDistance(a: LatLngLiteral, b: LatLngLiteral) : number {
-    const aLat = a.lat;
-    const bLat = b.lat;
-    const aLng = a.lng;
-    const bLng = b.lng;
-    const dLat = toRad(bLat - aLat);
-    const dLon = toRad(bLng - aLng);
-
-    const f = squared(Math.sin(dLat / 2.0)) + Math.cos(toRad(aLat)) * Math.cos(toRad(bLat)) * squared(Math.sin(dLon / 2.0));
-    const c = 2 * Math.atan2(Math.sqrt(f), Math.sqrt(1 - f));
-
-    return EARTH_RADIUS * c;
-}
-
-function MVCArrayToObjArray(MVCArr: google.maps.MVCArray<google.maps.LatLng>): LatLngLiteral[] {
-    return MVCArr.getArray().map((gmapsLatLng) => {
-        return {
-            lat: gmapsLatLng.lat(),
-            lng: gmapsLatLng.lng()
-        };
-    });
-}
-
-function MVCArrayToArrayOfArrays(MVCArr: google.maps.MVCArray<google.maps.LatLng>): number[][] {
-    return MVCArr.getArray().map((gmapsLatLng) => {
-        return [gmapsLatLng.lat(), gmapsLatLng.lng()];
-    });
-}
 
