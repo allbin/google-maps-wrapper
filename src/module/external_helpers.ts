@@ -9,11 +9,13 @@ const EARTH_RADIUS = 6378137;
 ////////////EXPORTED HELPER FUNCTIONS
 //Check Map.helpers for usage.
 
-function convertFromArrayOfArray(fromProj: Projection, toProj: Projection, points: [number, number][]) : number[][] {
+export type convertFromArrayOfArray = (fromProj: Projection, toProj: Projection, points: [number, number][]) => [number, number][];
+const convertFromArrayOfArray: convertFromArrayOfArray = (fromProj, toProj, points) => {
     return proj4(fromProj, toProj, points);
-}
+};
 
-function arrayToLatLngObject(arr: [number, number][], invert: boolean = false): LatLngLiteral[] {
+export type arrayToLatLngObject = (coords: [number, number][], invert: boolean) => LatLngLiteral[];
+const arrayToLatLngObject: arrayToLatLngObject = (arr, invert = false) => {
     if (invert) {
         return arr.map((point) => {
             return { lat: point[1], lng: point[0] };
@@ -22,8 +24,10 @@ function arrayToLatLngObject(arr: [number, number][], invert: boolean = false): 
     return arr.map((point) => {
         return { lat: point[0], lng: point[1] };
     });
-}
-function latLngArrayToArrayOfArrays(arr: LatLngLiteral[], invert: boolean): [number, number][] {
+};
+
+export type latLngArrayToCoordArray = (latLngArray: LatLngLiteral[], invert: boolean) => [number, number][];
+const latLngArrayToCoordArray: latLngArrayToCoordArray = (arr, invert) => {
     if (invert) {
         return arr.map((point) => {
             return [point.lng, point.lat] as [number, number];
@@ -32,10 +36,10 @@ function latLngArrayToArrayOfArrays(arr: LatLngLiteral[], invert: boolean): [num
     return arr.map((point) => {
         return [point.lat, point.lng] as [number, number];
     });
-}
+};
 
-
-function makePointsAroundCircleRT90(p: number[], r: number, numberOfPoints = 12): number[][] {
+export type makePointsAroundCircleRT90 = (p: number[], r: number, numberOfPoints: number) => [number, number][];
+const makePointsAroundCircleRT90: makePointsAroundCircleRT90 = (point, r, numberOfPoints = 12) => {
     //Returns numberOfPoints around circle at p with r radius.
 
     let points = [];
@@ -43,16 +47,16 @@ function makePointsAroundCircleRT90(p: number[], r: number, numberOfPoints = 12)
 
     for (i = 0; i < numberOfPoints; i += 1) {
         points.push([
-            p[0] + r * Math.cos(2 * Math.PI * i / numberOfPoints),
-            p[1] + r * Math.sin(2 * Math.PI * i / numberOfPoints)
-        ]);
+            point[0] + r * Math.cos(2 * Math.PI * i / numberOfPoints),
+            point[1] + r * Math.sin(2 * Math.PI * i / numberOfPoints)
+        ] as [number, number]);
     }
 
     return points;
-}
+};
 
-function makeRectRT90(p1: number[], p2: number[]): number[][] {
-    //TODO: Chamfer.
+export type makeRectRT90 = (p1: number[], p2: number[]) => [number, number][];
+const makeRectRT90: makeRectRT90 = (p1, p2) => {
     //p1 and p2 should be opposite corners of the rectangle.
     let points = [];
 
@@ -63,19 +67,22 @@ function makeRectRT90(p1: number[], p2: number[]): number[][] {
         [p1[0], p2[1]]
     );
 
-    return points;
-}
+    return points as [number, number][];
+};
 
-function movePointsByCoord(points_arr: [number, number][], coord: number[]) {
+export type movePointsByCoord = (points_arr: [number, number][], coord: number[]) => [number, number][];
+const movePointsByCoord: movePointsByCoord = (points_arr: [number, number][], coord: number[]) => {
     //Adds value of Coord to all points in array.
     return points_arr.map((point) => {
-        return [point[0] + coord[0], point[1] + coord[1]];
+        return [point[0] + coord[0], point[1] + coord[1]] as [number, number];
     });
-}
+};
+
 
 function squared(x: number): number { return x * x; }
 function toRad(x: number): number { return x * Math.PI / 180; }
-function haversineDistance(a: LatLngLiteral, b: LatLngLiteral) : number {
+export type haversineDistance = (a: LatLngLiteral, b: LatLngLiteral) => number;
+const haversineDistance: haversineDistance = (a, b) => {
     const aLat = a.lat;
     const bLat = b.lat;
     const aLng = a.lng;
@@ -87,29 +94,31 @@ function haversineDistance(a: LatLngLiteral, b: LatLngLiteral) : number {
     const c = 2 * Math.atan2(Math.sqrt(f), Math.sqrt(1 - f));
 
     return EARTH_RADIUS * c;
-}
+};
 
-function MVCArrayToObjArray(MVCArr: google.maps.MVCArray<google.maps.LatLng>): LatLngLiteral[] {
+export type MVCArrayToObjArray = (MVCArr: google.maps.MVCArray<google.maps.LatLng>) => LatLngLiteral[];
+const MVCArrayToObjArray: MVCArrayToObjArray = (MVCArr) => {
     return MVCArr.getArray().map((gmapsLatLng) => {
         return {
             lat: gmapsLatLng.lat(),
             lng: gmapsLatLng.lng()
         };
     });
-}
+};
 
-function MVCArrayToCoordArray(MVCArr: google.maps.MVCArray<google.maps.LatLng>): number[][] {
+export type MVCArrayToCoordArray = (MVCArr: google.maps.MVCArray<google.maps.LatLng>) => number[][];
+const MVCArrayToCoordArray: MVCArrayToCoordArray = (MVCArr) => {
     return MVCArr.getArray().map((gmapsLatLng) => {
         return [gmapsLatLng.lat(), gmapsLatLng.lng()];
     });
-}
+};
 
 export default {
     MVCArrayToObjArray,
     MVCArrayToCoordArray,
     haversineDistance,
     convertFromArrayOfArray,
-    latLngArrayToArrayOfArrays,
+    latLngArrayToCoordArray,
     arrayToLatLngObject,
     makeRectRT90,
     movePointsByCoord,

@@ -3,7 +3,8 @@ import * as ReactDOM from 'react-dom';
 import proj4 from 'proj4';
 
 import ScriptCache from './ScriptCache';
-import external_helpers from './external_helpers';
+import external_helpers, { MVCArrayToCoordArray, MVCArrayToObjArray, movePointsByCoord, makePointsAroundCircleRT90, makeRectRT90, convertFromArrayOfArray, arrayToLatLngObject, latLngArrayToCoordArray, haversineDistance} from './external_helpers';
+import * as internal_helpers from './internal_helpers';
 let ScissorIcon = require('./img/marker_scissors.svg');
 let ScissorHoverIcon = require('./img/marker_scissors_hover.svg');
 
@@ -13,10 +14,6 @@ declare global {
         google: any;
         wrapped_gmaps: any;
     }
-}
-
-interface LooseObject {
-    [key: string]: any;
 }
 
 export interface LatLngLiteral {
@@ -65,7 +62,7 @@ export interface MapBaseProps {
     styles?: object;
 }
 
-interface WrappedGmapObj {
+export interface WrappedGmapObj {
     gmaps_obj?: any;
     type: MapObjectType;
     hover: () => void;
@@ -116,22 +113,14 @@ export interface WrappedMarker extends WrappedGmapObj {
     unregisterEventCB: (event_type: MarkerEvents) => void;
 }
 
-type AnyObjectOptions = MarkerOptions | PolylineOptions | PolygonOptions;
+export type AnyObjectOptions = MarkerOptions | PolylineOptions | PolygonOptions;
 
 
 export type MapObjectType = "polyline" | "polygon" | "marker";
 
 
 
-const DEFAULT_POLYLINE_OPTIONS = {
-    visible: true
-};
-const DEFAULT_POLYGON_OPTIONS = {
-    visible: true
-};
-const DEFAULT_MARKER_OPTIONS = {
-    visible: true
-};
+
 const CUTTING_SNAP_DISTANCE = 200;
 const Z_INDEX_SCISSORS = 9001;
 const Z_INDEX_SCISSORS_HOVER = 9002;
@@ -150,7 +139,7 @@ export default class WrappedMapBase extends React.Component<MapBaseProps, any> {
     do_after_init: (() => void)[] = [];
     do_on_drag_end: (() => void)[] = [];
     do_on_drag_start: (() => void)[] = [];
-    drawing_completed_listener: (() => void) | null = null;
+    drawing_completed_listener: google.maps.MapsEventListener | null = null;
     map: google.maps.Map | null = null;
     initialized: boolean = false;
     map_objects: {
@@ -184,10 +173,26 @@ export default class WrappedMapBase extends React.Component<MapBaseProps, any> {
         indexes: null
     };
     cutting_completed_listener: ((segments: [number, number][][] | null) => void) | null = null;
-    helpers: any;
+    cancel_drawing: boolean = false;
+    helpers: {
+        rt90: {
+            pointsAroundCircle: makePointsAroundCircleRT90;
+            makeRect: makeRectRT90;
+            arrayRT90ToWGS84: (rt90_array: [number, number][]) => [number, number][];
+            arrayRT90ToWGS84LatLngObj: (rt90_array: [number, number][]) => LatLngLiteral[];
+            movePointsByCoord: movePointsByCoord;
+        };
+        arrToLatLngObj: arrayToLatLngObject;
+        latlngArrayToCoordArray: latLngArrayToCoordArray;
+        convertFromArrayOfArray: convertFromArrayOfArray;
+        haversineDistance: haversineDistance;
+        MVCArrayToCoordArray: MVCArrayToCoordArray;
+        MVCArrayToObjArray: MVCArrayToObjArray;
+    };
     script_cache: any;
     html_element: any;
     services: any;
+
 
 
 
@@ -205,18 +210,18 @@ export default class WrappedMapBase extends React.Component<MapBaseProps, any> {
 
         this.helpers = {
             rt90: {
-                pointsAroundCircle: makePointsAroundCircleRT90,
-                makeRect: makeRectRT90,
-                arrayRT90ToWGS84: (rt90arr: number[][]) => { return convertFromArrayOfArray("RT90", "WGS84", rt90arr); },
-                arrayRT90ToWGS84LatLngObj: (rt90arr: number[][]) => { return arrayToLatLngObject(convertFromArrayOfArray("RT90", "WGS84", rt90arr), true); },
-                movePointsByCoord: movePointsByCoord
+                pointsAroundCircle: external_helpers.makePointsAroundCircleRT90,
+                makeRect: external_helpers.makeRectRT90,
+                arrayRT90ToWGS84: (rt90arr) => { return external_helpers.convertFromArrayOfArray("RT90", "WGS84", rt90arr); },
+                arrayRT90ToWGS84LatLngObj: (rt90arr) => { return external_helpers.arrayToLatLngObject(external_helpers.convertFromArrayOfArray("RT90", "WGS84", rt90arr), true); },
+                movePointsByCoord: external_helpers.movePointsByCoord
             },
-            arrToLatLngObj: arrayToLatLngObject,
-            latLngArrayToArrayOfArrays: latLngArrayToArrayOfArrays,
-            convertFromArrayOfArray: convertFromArrayOfArray,
-            haversineDistance: haversineDistance,
-            MVCArrayToArrayOfArrays: MVCArrayToArrayOfArrays,
-            MVCArrayToObjArray: MVCArrayToObjArray
+            arrToLatLngObj: external_helpers.arrayToLatLngObject,
+            latlngArrayToCoordArray: external_helpers.latLngArrayToCoordArray,
+            convertFromArrayOfArray: external_helpers.convertFromArrayOfArray,
+            haversineDistance: external_helpers.haversineDistance,
+            MVCArrayToCoordArray: external_helpers.MVCArrayToCoordArray,
+            MVCArrayToObjArray: external_helpers.MVCArrayToObjArray
         };
     }
 
@@ -295,34 +300,14 @@ export default class WrappedMapBase extends React.Component<MapBaseProps, any> {
             if (this.overlay) {
                 this.overlay.setMap(this.map);
             }
-
+            if (!this.map) {
+                throw new Error("Tried to setup events before map instance was defined.");
+            }
             this.setupMapEvents(this.map);
 
             window.google.maps.event.addListenerOnce(this.map, 'idle', () => { this.doAfterInit(); });
         });
     }
-
-    // componentDidUpdate(prev_props) {
-    //     let new_map_opts = {};
-    //     if (this.props.styles !== prev_props.styles) {
-    //         //Styles have updated.
-    //         Object.assign(new_map_opts, { styles: this.props.styles });
-    //     }
-    //     if (this.props.center !== prev_props.center) {
-    //         this.map.setCenter(this.props.center);
-    //     }
-    //     if (this.props.zoom !== prev_props.zoom) {
-    //         this.map.setCenter(this.props.zoom);
-    //     }
-
-    //     if (Object.keys(new_map_opts).length > 0) {
-    //         this.map.setOptions(Object.assign(
-    //             {},
-    //             prev_props.styles,
-    //             new_map_opts
-    //         ));
-    //     }
-    // }
 
     doAfterInit(): void {
         this.initialized = true;
@@ -357,14 +342,14 @@ export default class WrappedMapBase extends React.Component<MapBaseProps, any> {
     }
 
     fitToBoundsArray(arr_of_coords: [number, number][]) {
-        return fitToBoundsOfArray(this, arr_of_coords);
+        return internal_helpers.fitToBoundsOfArray(this, arr_of_coords);
     }
     fitToBoundsObjectArray(arr_of_objects: LatLngLiteral[]) {
-        return fitToBoundsOfObjectArray(this, arr_of_objects);
+        return internal_helpers.fitToBoundsOfObjectArray(this, arr_of_objects);
     }
 
     fromLatLngToPixel(map_ref: WrappedMapBase, latLng: LatLng) {
-        return fromLatLngToPixel(this, latLng);
+        return internal_helpers.fromLatLngToPixel(this, latLng);
     }
 
     toPixel(lat_lng_input: LatLng|LatLngLiteral): [number, number] {
@@ -402,70 +387,69 @@ export default class WrappedMapBase extends React.Component<MapBaseProps, any> {
         });
     }
 
-    setPolyline(id: string, options: PolylineOptions, hover_options = null): Promise<WrappedPolyline> {
-        return setPolyline(this, id, options, hover_options)
-        return setMapObject(this, "polyline", id, options, hover_options, highlight_options);
+    setPolyline(id: string, options: PolylineOptions, hover_options: PolylineOptions | null = null): Promise<WrappedPolyline> {
+        return internal_helpers.setPolyline(this, id, options, hover_options);
     }
     unsetPolyline(id: string): Promise<boolean> {
-        return unsetMapObject(this, "polyline", id);
+        return internal_helpers.unsetMapObject(this, "polyline", id);
     }
     clearPolylines(): Promise<boolean[]> {
         let promise_arr: Promise<boolean>[] = [];
         Object.keys(this.map_objects.polyline).forEach((id) => {
-            promise_arr.push(unsetMapObject(this, "polyline", id));
+            promise_arr.push(internal_helpers.unsetMapObject(this, "polyline", id));
         });
         return Promise.all(promise_arr);
     }
 
-    setPolygon(id, options, hover_options = null, highlight_options = null): Promise<WrappedGmapObj> {
-        return setMapObject(this, "polygon", id, options, hover_options, highlight_options);
+    setPolygon(id: string, options: PolygonOptions, hover_options: PolygonOptions | null = null): Promise<WrappedPolygon> {
+        return internal_helpers.setPolygon(this, id, options, hover_options);
     }
-    unsetPolygon(id): Promise<boolean> {
-        return unsetMapObject(this, "polygon", id);
+    unsetPolygon(id: string): Promise<boolean> {
+        return internal_helpers.unsetMapObject(this, "polygon", id);
     }
     clearPolygons(): Promise<boolean[]> {
-        let promise_arr = [];
+        let promise_arr: Promise<boolean>[] = [];
         Object.keys(this.map_objects.polygon).forEach((id) => {
-            promise_arr.push(unsetMapObject(this, "polygon", id));
+            promise_arr.push(internal_helpers.unsetMapObject(this, "polygon", id));
         });
         return Promise.all(promise_arr);
     }
 
-    setMarker(id, options, hover_options = null, highlight_options = null): Promise<WrappedGmapObj> {
-        return setMapObject(this, "marker", id, options, hover_options, highlight_options);
+    setMarker(id: string, options: MarkerOptions, hover_options: MarkerOptions | null = null): Promise<WrappedGmapObj> {
+        return internal_helpers.setMarker(this, id, options, hover_options);
     }
-    unsetMarker(id): Promise<boolean> {
-        return unsetMapObject(this, "marker", id);
+    unsetMarker(id: string): Promise<boolean> {
+        return internal_helpers.unsetMapObject(this, "marker", id);
     }
     clearMarkers(): Promise<boolean[]> {
-        let promise_arr = [];
+        let promise_arr: Promise<boolean>[] = [];
         Object.keys(this.map_objects.marker).forEach((id) => {
-            promise_arr.push(unsetMapObject(this, "marker", id));
+            promise_arr.push(internal_helpers.unsetMapObject(this, "marker", id));
         });
         return Promise.all(promise_arr);
     }
 
 
-    registerDragEndCB(cb): void {
+    registerDragEndCB(cb: () => void): void {
         //Is actually triggered by Idle, not DragEnd!
         this.do_on_drag_end.push(cb);
     }
-    unregisterDragEndCB(cb): void {
+    unregisterDragEndCB(cb: () => void): void {
         let index = this.do_on_drag_end.indexOf(cb);
         if (index > -1) {
             this.do_on_drag_end.splice(index, 1);
         }
     }
-    registerDragStartCB(cb): void {
+    registerDragStartCB(cb: () => void): void {
         this.do_on_drag_end.push(cb);
     }
-    unregisterDragStartCB(cb): void {
+    unregisterDragStartCB(cb: () => void): void {
         let index = this.do_on_drag_start.indexOf(cb);
         if (index > -1) {
             this.do_on_drag_start.splice(index, 1);
         }
     }
-    setupMapEvents(map) {
+    setupMapEvents(map: google.maps.Map) {
         map.addListener('center_changed', () => {
             if (this.props.onCenterChanged) {
                 this.props.onCenterChanged();
@@ -582,7 +566,7 @@ export default class WrappedMapBase extends React.Component<MapBaseProps, any> {
 
 
 
-    setDrawingMode(type, opts, cb = null) {
+    setDrawingMode(type: "polyline" | "polygon", opts: PolylineOptions | PolygonOptions, cb: (path: [number, number][] | [number, number] | null, overlay: Polygon|Polyline|Marker) => void) {
         let mode = null;
         if (!this.services.drawing) {
             console.error("MAP: Drawing library not available! Add it to google maps api request url.");
@@ -591,7 +575,7 @@ export default class WrappedMapBase extends React.Component<MapBaseProps, any> {
         if (this.services.drawing.OverlayType.hasOwnProperty(type.toUpperCase())) {
             mode = this.services.drawing.OverlayType[type.toUpperCase()];
         } else {
-            throw new Error("MAP: Invalid drawing mode type:", type);
+            throw new Error("MAP: Invalid drawing mode type:" + type);
         }
         let drawing_opts = Object.assign({}, opts, { drawingMode: mode });
         this.services.drawingManager.setOptions(drawing_opts);
@@ -601,10 +585,10 @@ export default class WrappedMapBase extends React.Component<MapBaseProps, any> {
         if (this.drawing_completed_listener) {
             this.drawing_completed_listener.remove();
         }
-        this.drawing_completed_listener = window.google.maps.event.addListenerOnce(
+        this.drawing_completed_listener = google.maps.event.addListenerOnce(
             this.services.drawingManager,
             'overlaycomplete',
-            (e) => {
+            (e: google.maps.drawing.OverlayCompleteEvent) => {
                 // console.log("overlay complete", cb, this.cancel_drawing);
                 e.overlay.setMap(null);
                 drawing_opts.drawingMode = null;
@@ -613,13 +597,15 @@ export default class WrappedMapBase extends React.Component<MapBaseProps, any> {
                     return;
                 }
                 if (type === "polyline" || type === "polygon") {
-                    let path = MVCArrayToArrayOfArrays(e.overlay.getPath());
-                    cb(path, e.overlay);
+                    const overlay = e.overlay as Polygon | Polyline;
+                    let path = external_helpers.MVCArrayToCoordArray(overlay.getPath());
+                    if (cb) { cb(path as [number, number][], overlay); }
                 } else if (type === "marker") {
-                    let pos = e.overlay.getPosition();
-                    cb([pos.lat(), pos.lng()], e.overlay);
+                    const overlay = e.overlay as Marker;
+                    let pos = overlay.getPosition();
+                    cb([pos.lat(), pos.lng()], overlay);
                 } else {
-                    cb(null, e.overlay);
+                    cb(null, e.overlay as any);
                 }
                 this.cancel_drawing = false;
                 this.drawing_completed_listener = null;
@@ -635,8 +621,10 @@ export default class WrappedMapBase extends React.Component<MapBaseProps, any> {
             this.drawing_completed_listener = null;
         }
     }
-    cancelDrawingMode(src) {
-        // console.log("cancel drawing mode:", src);
+    cancelDrawingMode(debug_src?: string) {
+        if (debug_src) {
+            console.log("cancel drawing mode:", debug_src);
+        }
         if (this.services.drawing && this.drawing_completed_listener) {
             this.cancel_drawing = true;
             this.services.drawingManager.setOptions({ drawingMode: null });
@@ -669,7 +657,7 @@ export default class WrappedMapBase extends React.Component<MapBaseProps, any> {
             enabled: true,
             id: polyline_id,
             indexes: [],
-            arr: polyline.options.path
+            arr: path as any
         };
         if (!this.cutting_objects.hasOwnProperty("hover_scissors")) {
             let opts = {
@@ -709,16 +697,17 @@ export default class WrappedMapBase extends React.Component<MapBaseProps, any> {
         let closest_index = 0;
         let closest_dist = 9999999;
         //Find nearest index and move scissors_hover marker.
-        polyline.options.path.forEach((point, i) => {
-            let dist = haversineDistance(mouse_coord, point);
+        polyline.options.path!.forEach((point: any, i: number) => {
+            let dist = external_helpers.haversineDistance(mouse_coord, point);
             if (dist < closest_dist) {
                 closest_index = i;
                 closest_dist = dist;
             }
         });
-        if (closest_dist < CUTTING_SNAP_DISTANCE && closest_index > 0 && closest_index < polyline.options.path.length - 1) {
+        let path = polyline.options.path as any;
+        if (closest_dist < CUTTING_SNAP_DISTANCE && closest_index > 0 && closest_index < path.length - 1) {
             this.cutting_objects.hover_scissors.gmaps_obj.setOptions({
-                position: polyline.options.path[closest_index],
+                position: path[closest_index],
                 visible: true
             });
         } else {
@@ -727,13 +716,22 @@ export default class WrappedMapBase extends React.Component<MapBaseProps, any> {
             });
         }
     }
-    cuttingClick(mouse_event) {
+    cuttingClick(mouse_event: google.maps.MouseEvent) {
+        if (!this.cutting.id) {
+            console.error("No cutting.id set when clicking for cut.");
+            return;
+        }
+        if (!this.cutting.indexes) {
+            console.error("cutting.indexes not defined when clicking for cut.");
+            return;
+        }
         let polyline = this.map_objects.polyline[this.cutting.id];
+        let path = polyline.options.path as any;
         let mouse_coord = { lat: mouse_event.latLng.lat(), lng: mouse_event.latLng.lng() };
         let closest_index = 0;
         let closest_dist = 9999999;
-        polyline.options.path.forEach((point, i) => {
-            let dist = haversineDistance(mouse_coord, point);
+        path.forEach((point: any, i: number) => {
+            let dist = external_helpers.haversineDistance(mouse_coord, point);
             if (dist < closest_dist) {
                 closest_index = i;
                 closest_dist = dist;
@@ -743,7 +741,7 @@ export default class WrappedMapBase extends React.Component<MapBaseProps, any> {
             //Pointer is too far away from any point, ignore.
             return;
         }
-        if (closest_index === 0 || closest_index === polyline.options.path.length - 1) {
+        if (closest_index === 0 || closest_index === path.length - 1) {
             //We are never interested in first or last point.
             return;
         }
@@ -759,7 +757,7 @@ export default class WrappedMapBase extends React.Component<MapBaseProps, any> {
         } else {
             this.cutting.indexes.push(closest_index);
             let opts = {
-                position: polyline.options.path[closest_index],
+                position: path[closest_index],
                 icon: {
                     url: ScissorIcon
                 },
@@ -825,12 +823,21 @@ export default class WrappedMapBase extends React.Component<MapBaseProps, any> {
         }
     }
     cancelCuttingMode() {
-        let polyline = this.map_objects.polyline[this.cutting.id];
         this.cutting = {
             enabled: false,
             id: null,
             indexes: null
         };
+        Object.keys(this.cutting_objects).forEach((marker_id) => {
+            //Remove all cutting related markers.
+            this.cutting_objects[marker_id].gmaps_obj.setMap(null);
+            delete this.cutting_objects[marker_id];
+        });
+        if (!this.cutting.id) {
+            console.error("No cutting.id set when cancelling cutting mode.");
+            return;
+        }
+        let polyline = this.map_objects.polyline[this.cutting.id];
         if (polyline) {
             let opts = {
                 clickable: true,
@@ -838,11 +845,6 @@ export default class WrappedMapBase extends React.Component<MapBaseProps, any> {
             };
             polyline.gmaps_obj.setOptions(opts);
         }
-        Object.keys(this.cutting_objects).forEach((marker_id) => {
-            //Remove all cutting related markers.
-            this.cutting_objects[marker_id].gmaps_obj.setMap(null);
-            delete this.cutting_objects[marker_id];
-        });
     }
 
 
@@ -854,350 +856,6 @@ export default class WrappedMapBase extends React.Component<MapBaseProps, any> {
         );
     }
 }
-
-
-
-
-
-
-
-
-
-
-
-
-/////////////////////////////////
-//INTERNAL MAP HELPER FUNCTIONS
-//
-//
-
-function fromLatLngToPixel(map_ref: WrappedMapBase, latLng: LatLng) {
-    if (!map_ref.map) {
-        throw new Error("Cannot call fromLatLngToPixel before init is finished.");
-    }
-    let map = map_ref.map;
-    let bounds = map.getBounds();
-    if (!bounds) {
-        throw new Error("Map not mounted when calling fromLatLngToPixel");
-    }
-    var topRight = map.getProjection().fromLatLngToPoint(bounds.getNorthEast());
-    var bottomLeft = map.getProjection().fromLatLngToPoint(bounds.getSouthWest());
-    var scale = Math.pow(2, map.getZoom());
-    var worldPoint = map.getProjection().fromLatLngToPoint(latLng);
-    return new window.google.maps.Point((worldPoint.x - bottomLeft.x) * scale, (worldPoint.y - topRight.y) * scale);
-}
-
-function fitToBoundsOfArray(map_ref: WrappedMapBase, arr_of_coords: [number, number][]) {
-    //Takes [[x, y], ...] array.
-    return new Promise((resolve, reject) => {
-        if (Array.isArray(arr_of_coords) === false) {
-            reject("Input not valid array.");
-        } else if (arr_of_coords.length < 1) {
-            reject("Array needs to countain at least one element.");
-        }
-        if (!map_ref.initialized) {
-            map_ref.do_after_init.push(() => {
-                fitToBoundsOfArray(map_ref, arr_of_coords).then((res) => {
-                    resolve(res);
-                }).catch((err) => {
-                    reject(err);
-                });
-            });
-            return;
-        }
-        let lat_lng_literal = {
-            east: -99999999,
-            west: 99999999,
-            north: 99999999,
-            south: -99999999
-        };
-
-        arr_of_coords.forEach((point) => {
-            lat_lng_literal.west = (point[0] < lat_lng_literal.west) ? point[0] : lat_lng_literal.west;
-            lat_lng_literal.east = (point[0] > lat_lng_literal.east) ? point[0] : lat_lng_literal.east;
-            lat_lng_literal.north = (point[1] < lat_lng_literal.north) ? point[1] : lat_lng_literal.north;
-            lat_lng_literal.south = (point[1] > lat_lng_literal.south) ? point[1] : lat_lng_literal.south;
-        });
-
-        if (map_ref.map) {
-            map_ref.map.fitBounds(lat_lng_literal);
-        }
-        resolve();
-    });
-}
-function fitToBoundsOfObjectArray(map_ref: WrappedMapBase, arr_of_latlngliteral: LatLngLiteral[]) {
-    //Takes [{ lat: ?, lng: ? }, ...] array.
-    return new Promise((resolve, reject) => {
-        if (Array.isArray(arr_of_latlngliteral) === false) {
-            reject("Input not valid array.");
-        } else if (arr_of_latlngliteral.length < 1) {
-            reject("Array needs to countain at least one element.");
-        }
-        if (!map_ref.initialized) {
-            map_ref.do_after_init.push(() => {
-                fitToBoundsOfObjectArray(map_ref, arr_of_latlngliteral).then((res) => {
-                    resolve(res);
-                }).catch((err) => {
-                    reject(err);
-                });
-            });
-            return;
-        }
-        let lat_lng_literal = {
-            east: -99999999,
-            west: 99999999,
-            north: 99999999,
-            south: -99999999
-        };
-
-        arr_of_latlngliteral.forEach((point) => {
-            lat_lng_literal.west = (point.lng < lat_lng_literal.west) ? point.lng : lat_lng_literal.west;
-            lat_lng_literal.east = (point.lng > lat_lng_literal.east) ? point.lng : lat_lng_literal.east;
-            lat_lng_literal.north = (point.lat < lat_lng_literal.north) ? point.lat : lat_lng_literal.north;
-            lat_lng_literal.south = (point.lat > lat_lng_literal.south) ? point.lat : lat_lng_literal.south;
-        });
-
-        if (map_ref.map) {
-            map_ref.map.fitBounds(lat_lng_literal);
-        }
-        resolve();
-    });
-}
-
-function setPolyline(map_ref: WrappedMapBase, id: string, options: PolylineOptions, hover_options: PolylineOptions | null = null): Promise<WrappedPolyline> {
-    return setMapObject(this, "polyline", id, options, hover_options) as Promise<WrappedPolyline>;
-}
-function setPolygon(map_ref: WrappedMapBase, id: string, options: PolylineOptions, hover_options: PolylineOptions | null = null): Promise<WrappedPolygon> {
-    return setMapObject(this, "polygon", id, options, hover_options) as Promise<WrappedPolygon>;
-}
-function setMarker(map_ref: WrappedMapBase, id: string, options: MarkerOptions, hover_options: MarkerOptions | null = null): Promise<WrappedMarker> {
-    return setMapObject(this, "marker", id, options, hover_options) as Promise<WrappedMarker>;
-}
-
-type setMapObject = (
-    map_ref: WrappedMapBase,
-    type: MapObjectType,
-    id: string,
-    options: AnyObjectOptions,
-    hover_options: AnyObjectOptions | null
-) => Promise<WrappedPolyline|WrappedPolygon|WrappedMarker>;
-
-const setMapObject: setMapObject = (map_ref, type, id, options, hover_options) => {
-
-    return new Promise((resolve, reject) => {
-        if (!map_ref.initialized) {
-            map_ref.do_after_init.push(() => {
-                setMapObject(map_ref, type, id, options, hover_options).then((res) => {
-                    resolve(res);
-                }).catch((err) => {
-                    reject(err);
-                });
-            });
-            return;
-        }
-
-        if (map_ref.map_objects[type].hasOwnProperty(id)) {
-            //This ID has already been drawn.
-            let map_obj = map_ref.map_objects[type][id];
-            let opts;
-            if (map_obj.hovered && hover_options) {
-                opts = Object.assign({}, map_obj.options, options, hover_options);
-            } else {
-                opts = Object.assign({}, map_obj.options, options);
-            }
-            switch (map_obj.type) {
-                case "polyline": {
-                    map_obj.gmaps_obj.setOptions(opts as PolylineOptions);
-                    map_obj.options = options as PolylineOptions;
-                    if (hover_options) { map_obj.hover_options = hover_options as PolylineOptions; }
-                    break;
-                }
-                case "polygon": {
-                    map_obj.gmaps_obj.setOptions(opts as PolygonOptions);
-                    map_obj.options = options as PolygonOptions;
-                    if (hover_options) { map_obj.hover_options = hover_options as PolygonOptions; }
-                    break;
-                }
-                case "marker": {
-                    map_obj.gmaps_obj.setOptions(opts as MarkerOptions);
-                    map_obj.options = options as MarkerOptions;
-                    if (hover_options) { map_obj.hover_options = hover_options as MarkerOptions; }
-                    break;
-                }
-                default: {
-                    reject(new Error("Invalid map object type."));
-                }
-            }
-            resolve(map_obj);
-            return;
-        }
-
-        //This extra interface exists so that _cbs can be created at different points in the following code.
-        //Otherwise ungainly "hasOwnProperty"-like checks are required.
-        interface MapObjShell extends Partial<WrappedGmapObj> {
-            _cbs: {
-                [key: string]: (e?: any) => void;
-            };
-        }
-
-        let map_obj_shell: MapObjShell = {
-            _cbs: {},
-            hovered: false,
-            type: type
-        };
-        let events: AllMapObjEvents[] = [];
-        let path_events: AllMapObjEvents[] = [];
-        switch (type) {
-            case "marker": {
-                let opts = Object.assign({}, DEFAULT_MARKER_OPTIONS, options);
-                map_obj_shell.gmaps_obj = new window.google.maps.Marker(opts);
-                map_obj_shell.options = opts;
-                events = ["click", "mouseover", "mouseout", "mousedown", "mouseup", "dragstart", "drag", "dragend", "dblclick", "rightclick"];
-                break;
-            }
-            case "polygon": {
-                let opts = Object.assign({}, DEFAULT_POLYGON_OPTIONS, options);
-                map_obj_shell.gmaps_obj = new window.google.maps.Polygon(opts);
-                map_obj_shell.options = opts;
-                events = ["click", "dblclick", "dragstart", "drag", "dragend", "mouseover", "mouseout", "mousedown", "mouseup", "mousemove", "rightclick"];
-                path_events = ["set_at", "remove_at", "insert_at"];
-                break;
-            }
-            case "polyline": {
-                let opts = Object.assign({}, DEFAULT_POLYLINE_OPTIONS, options);
-                map_obj_shell.gmaps_obj = new window.google.maps.Polyline(opts);
-                map_obj_shell.options = opts;
-                events = ["click", "dblclick", "dragstart", "drag", "dragend", "mouseover", "mouseout", "mousedown", "mouseup", "mousemove", "rightclick"];
-                path_events = ["set_at", "remove_at", "insert_at"];
-                break;
-            }
-            default: {
-                reject(new Error("Invalid map object type."));
-                return;
-            }
-        }
-        map_obj_shell.hover_options = hover_options;
-
-        map_obj_shell.registerEventCB = (event_type: string, cb) => {
-            map_obj_shell._cbs[event_type] = cb;
-        };
-        map_obj_shell.unregisterEventCB = (event_type) => {
-            if (map_obj_shell._cbs.hasOwnProperty(event_type)) {
-                delete map_obj_shell._cbs[event_type];
-            }
-        };
-
-        map_obj_shell.hover = () => {
-            if (!map_obj_shell.hover_options) { return; }
-            let opts = Object.assign({}, map_obj_shell.options, map_obj_shell.hover_options);
-            let whitelisted_opts = {
-                strokeColor: opts.strokeColor,
-                strokeWidth: opts.strokeWidth,
-                fillColor: opts.fillColor,
-                fillOpacity: opts.fillOpacity
-            };
-            map_obj_shell.gmaps_obj.setOptions(whitelisted_opts);
-            map_obj_shell.hovered = true;
-        };
-        map_obj_shell.unhover = () => {
-            let opts = Object.assign({}, map_obj_shell.options);
-            let whitelisted_opts = {
-                strokeColor: opts.strokeColor,
-                strokeWidth: opts.strokeWidth,
-                fillColor: opts.fillColor,
-                fillOpacity: opts.fillOpacity
-            };
-            map_obj_shell.gmaps_obj.setOptions(whitelisted_opts);
-            map_obj_shell.hovered = false;
-        };
-        map_obj_shell.remove = () => { return unsetMapObject(map_ref, type, id); };
-        map_obj_shell.update = (new_options) => { return setMapObject(map_ref, type, id, new_options, hover_options); };
-        map_obj_shell.update_hover = (new_hover_options) => { return setMapObject(map_ref, type, id, options, new_hover_options); };
-        map_obj_shell.hide = () => {
-            map_obj_shell.gmaps_obj.setOptions(Object.assign({}, map_obj_shell.options, { visible: false }));
-        };
-        map_obj_shell.show = () => {
-            map_obj_shell.gmaps_obj.setOptions(Object.assign({}, map_obj_shell.options, { visible: true }));
-        };
-        let map_obj = map_obj_shell as WrappedGmapObj;
-        events.forEach((event_type) => {
-            map_obj.gmaps_obj.addListener(event_type, (e: any) => { return mapObjectEventCB(map_ref, map_obj, event_type, e); });
-        });
-        path_events.forEach((event_type) => {
-            map_obj.gmaps_obj.getPath().addListener(event_type, (e: any) => { return mapObjectEventCB(map_ref, map_obj, event_type, e); });
-        });
-
-        map_obj.gmaps_obj.setMap(map_ref.map);
-
-        switch (map_obj.type) {
-            case "polyline": {
-                map_ref.map_objects[type][id] = map_obj as WrappedPolyline;
-                resolve(map_obj as WrappedPolyline);
-                break;
-            }
-            case "polygon": {
-                map_ref.map_objects[type][id] = map_obj as WrappedPolygon;
-                resolve(map_obj as WrappedPolygon);
-                break;
-            }
-            case "marker": {
-                map_ref.map_objects[type][id] = map_obj as WrappedMarker;
-                resolve(map_obj as WrappedMarker);
-                break;
-            }
-            default: {
-                reject(new Error("Invalid map object type."));
-            }
-        }
-        return;
-    });
-};
-
-function unsetMapObject(map_ref: WrappedMapBase, type: MapObjectType, id: string) {
-    return new Promise<boolean>((resolve, reject) => {
-        if (!map_ref.initialized) {
-            map_ref.do_after_init.push(() => {
-                unsetMapObject(map_ref, type, id).then((res) => {
-                    resolve(res);
-                }).catch((err) => {
-                    reject(err);
-                });
-            });
-            return;
-        }
-
-        if (map_ref.map_objects[type].hasOwnProperty(id)) {
-            //This ID has been drawn.
-
-            if (map_ref.cutting.id !== id) {
-                //This object is currently being cut, it cannot be deleted.
-                reject(new Error("MAP: Object is currently in cuttingMode; it cannot be removed!"));
-                return;
-            }
-
-            map_ref.map_objects[type][id].gmaps_obj.setMap(null);
-            delete map_ref.map_objects[type][id];
-            resolve(true);
-            return;
-        }
-        reject(new Error("MAP: MapObject does not exist."));
-    });
-}
-
-function mapObjectEventCB(map_ref: WrappedMapBase, map_obj: WrappedGmapObj, event_type: AllMapObjEvents, e: any) {
-    if (map_ref.cutting.enabled) {
-        //When the map is in cutting mode no object event callbacks are allowed.
-        return true;
-    }
-    if (event_type === "mouseover") { map_obj.hover(); }
-    if (event_type === "mouseout") { map_obj.unhover(); }
-
-    if (map_obj._cbs.hasOwnProperty(event_type) && map_obj._cbs[event_type]) {
-        map_obj._cbs[event_type](e);
-    }
-    return true;
-}
-
 
 
 
