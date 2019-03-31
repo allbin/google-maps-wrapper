@@ -123,4 +123,4 @@ export default {
     makeRectRT90,
     movePointsByCoord,
     makePointsAroundCircleRT90,
-}
+};

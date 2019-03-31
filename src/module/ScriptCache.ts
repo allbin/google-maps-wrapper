@@ -2,10 +2,10 @@ let counter = 0;
 let scriptMap = new Map();
 
 export const ScriptCache = (function(global) {
-    return function ScriptCache (scripts) {
+    return function ScriptCache (scripts: any) {
         const Cache = {
-            _onLoad: function (key) {
-                return (cb) => {
+            _onLoad: function (key: string) {
+                return (cb: any) => {
                     let stored = scriptMap.get(key);
                     if (stored) {
                         stored.promise.then(() => {
@@ -17,7 +17,7 @@ export const ScriptCache = (function(global) {
                 };
             },
 
-            _scriptTag: (key, src) => {
+            _scriptTag: (key: string, src: any) => {
                 if (!scriptMap.has(key)) {
                     let tag: any = document.createElement('script');
                     let promise = new Promise((resolve, reject) => {
@@ -27,15 +27,15 @@ export const ScriptCache = (function(global) {
                         tag.async = false; // Load in order
 
                         const cbName = `loaderCB${counter++}${Date.now()}`;
-
                         const cleanup = () => {
-                            if (global[cbName] && typeof global[cbName] === 'function') {
-                                global[cbName] = null;
+                            const gl = global as any;
+                            if (gl[cbName] && typeof gl[cbName] === 'function') {
+                                gl[cbName] = null;
                             }
                         };
 
-                        let handleResult = (state) => {
-                            return (evt) => {
+                        let handleResult = (state: any) => {
+                            return (evt: any) => {
                                 let stored = scriptMap.get(key);
                                 if (state === 'loaded') {
                                     stored.resolved = true;
@@ -63,7 +63,8 @@ export const ScriptCache = (function(global) {
                         // Pick off callback, if there is one
                         if (src.match(/callback=CALLBACK_NAME/)) {
                             src = src.replace(/(callback=)[^&]+/, `$1${cbName}`);
-                            window[cbName] = tag.onload;
+                            let w = window as any;
+                            w[cbName] = tag.onload;
                         } else {
                             tag.addEventListener('load', tag.onload);
                         }
@@ -87,9 +88,10 @@ export const ScriptCache = (function(global) {
 
         Object.keys(scripts).forEach(function(key) {
             const script = scripts[key];
-            Cache[key] = {
-                tag:    Cache._scriptTag(key, script),
-                onLoad: Cache._onLoad(key)
+            const C = Cache as any;
+            C[key] = {
+                tag:    C._scriptTag(key, script),
+                onLoad: C._onLoad(key)
             };
         });
 

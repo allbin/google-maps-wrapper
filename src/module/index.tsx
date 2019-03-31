@@ -37,9 +37,9 @@ export interface MapBaseProps {
     initializedCB?: () => void;
     googleapi_maps_uri: string;
     id?: string;
-    defaultCenter?: google.maps.LatLngLiteral;
-    defaultZoom?: number;
-    defaultOptions?: object;
+    default_center: LatLngLiteral;
+    default_zoom: number;
+    default_options?: object;
     onCenterChanged?: () => void;
     onBoundsChanged?: () => void;
     onClick?: (e: any) => void;
@@ -256,18 +256,18 @@ export default class WrappedMapBase extends React.Component<MapBaseProps, any> {
             const mapRef = refs.map;
             this.html_element = ReactDOM.findDOMNode(mapRef);
 
-            let center = this.props.defaultCenter;
+            let center = this.props.default_center;
             if (!center) {
-                throw new Error("Could not create map: Requires either 'center' or 'defaultCenter' prop.");
+                throw new Error("Could not create map: Requires 'default_center' prop.");
             }
-            let zoom = (typeof this.props.defaultZoom !== "undefined") ? this.props.defaultZoom : null;
+            let zoom = (typeof this.props.default_zoom !== "undefined") ? this.props.default_zoom : null;
             if (!zoom) {
-                throw new Error("Could not create map: Requires either 'zoom' or 'defaultZoom' prop.");
+                throw new Error("Could not create map: Requires 'default_zoom' prop.");
             }
             if (!this.props.googleapi_maps_uri) {
                 throw new Error("Could not create map: Requires 'googleapi_maps_uri' prop. Ex: https://maps.googleapis.com/maps/api/js?v=3.exp&libraries=geometry,places,drawing&key=XXXXXXXXXX");
             }
-            let defaults = this.props.defaultOptions || {};
+            let defaults = this.props.default_options || {};
             let mapConfig = Object.assign(
                 {},
                 defaults,
@@ -661,7 +661,7 @@ export default class WrappedMapBase extends React.Component<MapBaseProps, any> {
         };
         if (!this.cutting_objects.hasOwnProperty("hover_scissors")) {
             let opts = {
-                position: this.props.defaultCenter,
+                position: this.props.default_center,
                 icon: {
                     url: ScissorHoverIcon
                 },

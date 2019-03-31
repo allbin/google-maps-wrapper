@@ -9,6 +9,8 @@ const Main = () => {
             <div style={{width: "100%", height: "90%"}}>
                 <MapBase
                     googleapi_maps_uri="https://maps.googleapis.com/maps/api/js?v=3.exp&libraries=geometry,places,drawing&key=AIzaSyA0tp0r6ImLSnn9vy4zXjZWar1F3U5eOaY"
+                    default_center={{ lng: 14.40567, lat: 56.65918}}
+                    default_zoom={8}
                 />
             </div>
         </div>
