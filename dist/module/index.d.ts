@@ -176,7 +176,7 @@ export default class WrappedMapBase extends React.Component<MapBaseProps, any> {
     setPolygon(id: string, options: PolygonOptions, hover_options?: PolygonOptions | null): Promise<WrappedPolygon>;
     unsetPolygon(id: string): Promise<boolean>;
     clearPolygons(): Promise<boolean[]>;
-    setMarker(id: string, options: MarkerOptions, hover_options?: MarkerOptions | null): Promise<WrappedGmapObj>;
+    setMarker(id: string, options: MarkerOptions, hover_options?: MarkerOptions | null): Promise<WrappedMarker>;
     unsetMarker(id: string): Promise<boolean>;
     clearMarkers(): Promise<boolean[]>;
     registerDragEndCB(cb: () => void): void;
