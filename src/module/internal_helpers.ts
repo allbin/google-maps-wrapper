@@ -110,13 +110,13 @@ export function fitToBoundsOfObjectArray(map_ref: WrappedMapBase, arr_of_latlngl
 }
 
 export function setPolyline(map_ref: WrappedMapBase, id: string, options: PolylineOptions, hover_options: PolylineOptions | null = null): Promise<WrappedPolyline> {
-    return setMapObject(this, "polyline", id, options, hover_options) as Promise<WrappedPolyline>;
+    return setMapObject(map_ref, "polyline", id, options, hover_options) as Promise<WrappedPolyline>;
 }
 export function setPolygon(map_ref: WrappedMapBase, id: string, options: PolylineOptions, hover_options: PolylineOptions | null = null): Promise<WrappedPolygon> {
-    return setMapObject(this, "polygon", id, options, hover_options) as Promise<WrappedPolygon>;
+    return setMapObject(map_ref, "polygon", id, options, hover_options) as Promise<WrappedPolygon>;
 }
 export function setMarker(map_ref: WrappedMapBase, id: string, options: MarkerOptions, hover_options: MarkerOptions | null = null): Promise<WrappedMarker> {
-    return setMapObject(this, "marker", id, options, hover_options) as Promise<WrappedMarker>;
+    return setMapObject(map_ref, "marker", id, options, hover_options) as Promise<WrappedMarker>;
 }
 
 type setMapObject = (
@@ -131,6 +131,7 @@ export const setMapObject: setMapObject = (map_ref, type, id, options, hover_opt
 
     return new Promise((resolve, reject) => {
         if (!map_ref.initialized) {
+            console.log(map_ref);
             map_ref.do_after_init.push(() => {
                 setMapObject(map_ref, type, id, options, hover_options).then((res) => {
                     resolve(res);
