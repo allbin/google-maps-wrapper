@@ -34,7 +34,7 @@ export type PolylineEvents = "click" | "dblclick" | "dragstart" | "drag" | "drag
 export type PolygonEvents = "click" | "dblclick" | "dragstart" | "drag" | "dragend" | "mouseover" | "mouseout" | "mousedown" | "mouseup" | "mousemove" | "rightclick" | "set_at" | "remove_at" | "insert_at";
 export type AllMapObjEvents = MarkerEvents | PolylineEvents | PolygonEvents;
 export interface MapBaseProps {
-    initializedCB?: () => void;
+    initializedCB?: (this_ref: WrappedMapBase) => void;
     googleapi_maps_uri: string;
     id?: string;
     default_center: LatLngLiteral;
@@ -317,7 +317,7 @@ export default class WrappedMapBase extends React.Component<MapBaseProps, any> {
 
         if (this.props.initializedCB) {
             //Tell parent we are initialized if the parent has asked for it.
-            this.props.initializedCB();
+            this.props.initializedCB(this);
         }
     }
 
