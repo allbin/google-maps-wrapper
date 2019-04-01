@@ -415,7 +415,7 @@ export default class WrappedMapBase extends React.Component<MapBaseProps, any> {
         return Promise.all(promise_arr);
     }
 
-    setMarker(id: string, options: MarkerOptions, hover_options: MarkerOptions | null = null): Promise<WrappedGmapObj> {
+    setMarker(id: string, options: MarkerOptions, hover_options: MarkerOptions | null = null): Promise<WrappedMarker> {
         return internal_helpers.setMarker(this, id, options, hover_options);
     }
     unsetMarker(id: string): Promise<boolean> {
