@@ -84,7 +84,7 @@ export interface WrappedPolygon extends WrappedGmapObj {
     options: PolygonOptions;
     hover_options: PolygonOptions;
     update: (options: PolygonOptions) => Promise<WrappedPolygon>;
-    update_hover: (options: PolygonOptions) => Promise<WrappedPolygon>;
+    updateHover: (options: PolygonOptions) => Promise<WrappedPolygon>;
     registerEventCB: (event_type: PolygonEvents, cb: (e?: any) => void) => void;
     unregisterEventCB: (event_type: PolygonEvents) => void;
 }
@@ -94,7 +94,7 @@ export interface WrappedPolyline extends WrappedGmapObj {
     options: PolylineOptions;
     hover_options: PolylineOptions;
     update: (options: PolylineOptions) => Promise<WrappedPolyline>;
-    update_hover: (options: PolylineOptions) => Promise<WrappedPolyline>;
+    updateHover: (options: PolylineOptions) => Promise<WrappedPolyline>;
     registerEventCB: (event_type: PolylineEvents, cb: (e?: any) => void) => void;
     unregisterEventCB: (event_type: PolylineEvents) => void;
 }
@@ -104,7 +104,7 @@ export interface WrappedMarker extends WrappedGmapObj {
     options: MarkerOptions;
     hover_options: MarkerOptions;
     update: (options: MarkerOptions) => Promise<WrappedMarker>;
-    update_hover: (options: MarkerOptions) => Promise<WrappedMarker>;
+    updateHover: (options: MarkerOptions) => Promise<WrappedMarker>;
     registerEventCB: (event_type: MarkerEvents, cb: (e?: any) => void) => void;
     unregisterEventCB: (event_type: MarkerEvents) => void;
 }
