@@ -58,13 +58,19 @@ gulp.task('clean', () => {
     return del("dist");
 });
 
-gulp.task('build', function () {
+gulp.task('build:static', () => {
+    return gulp.src(['./src/module/img/**/*']).pipe(gulp.dest('dist/module/img'));
+});
+
+gulp.task('build:compile', function () {
     return tsProject.src()
         .pipe(sourcemaps.init())
         .pipe(tsProject())
         .pipe(sourcemaps.write('.'))
         .pipe(gulp.dest('dist'));
 });
+
+gulp.task('build', gulp.parallel('build:static', 'build:compile'));
 
 gulp.task('bump:patch', (cb) => {
     return gulp.src('./package.json')
