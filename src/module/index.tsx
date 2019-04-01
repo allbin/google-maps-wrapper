@@ -79,7 +79,7 @@ export interface WrappedGmapObj {
     unregisterEventCB: (event_type: MarkerEvents & PolygonEvents & PolylineEvents) => void;
     options: any;
     update: (options: any) => Promise<WrappedGmapObj>;
-    update_hover: (options: any) => Promise<WrappedGmapObj>;
+    updateHover: (options: any) => Promise<WrappedGmapObj>;
 }
 
 export interface WrappedPolygon extends WrappedGmapObj {

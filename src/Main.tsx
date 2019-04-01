@@ -51,6 +51,10 @@ export default class Map extends React.Component<any, any> {
             polygon.registerEventCB("click", () => {
                 console.log("Clicked polygon.");
             });
+            let x: PolygonOptions | MarkerOptions | PolylineOptions = {
+                strokeOpacity: 0.6
+            };
+            polygon.update(x);
         });
     }
 
