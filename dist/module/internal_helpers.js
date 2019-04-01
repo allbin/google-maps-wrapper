@@ -236,7 +236,7 @@ export const setMapObject = (map_ref, type, id, options, hover_options) => {
         };
         map_obj_shell.remove = () => { return unsetMapObject(map_ref, type, id); };
         map_obj_shell.update = (new_options) => { return setMapObject(map_ref, type, id, new_options, hover_options); };
-        map_obj_shell.update_hover = (new_hover_options) => { return setMapObject(map_ref, type, id, options, new_hover_options); };
+        map_obj_shell.updateHover = (new_hover_options) => { return setMapObject(map_ref, type, id, options, new_hover_options); };
         map_obj_shell.hide = () => {
             map_obj_shell.gmaps_obj.setOptions(Object.assign({}, map_obj_shell.options, { visible: false }));
         };
