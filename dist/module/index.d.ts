@@ -1,6 +1,6 @@
 /// <reference types="googlemaps" />
 import * as React from 'react';
-import { MVCArrayToCoordArray, MVCArrayToObjArray, movePointsByCoord, makePointsAroundCircleRT90, makeRectRT90, convertFromArrayOfArray, arrayToLatLngObject, latLngArrayToCoordArray, haversineDistance } from './external_helpers';
+import { MVCArrayToCoordArray, MVCArrayToObjArray, movePointsByCoord, makePointsAroundCircleRT90, makeRectRT90, convertFromArrayOfArray, arrayToLatLngObject, latLngArrayToCoordArray, haversineDistance, makePointsAroundCircleRT90Type, makeRectRT90Type, movePointsByCoordType, arrayToLatLngObjectType, latLngArrayToCoordArrayType, convertFromArrayOfArrayType, haversineDistanceType, MVCArrayToCoordArrayType, MVCArrayToObjArrayType } from './external_helpers';
 declare global {
     interface Window {
         google: any;
@@ -112,6 +112,19 @@ export interface WrappedMarker extends WrappedGmapObj {
 }
 export declare type AnyObjectOptions = MarkerOptions | PolylineOptions | PolygonOptions;
 export declare type MapObjectType = "polyline" | "polygon" | "marker";
+export { makePointsAroundCircleRT90 as pointsAroundCircle };
+export { makeRectRT90 };
+declare const arrayRT90ToWGS84: (rt90arr: [number, number][]) => [number, number][];
+export { arrayRT90ToWGS84 };
+declare const arrayRT90ToWGS84LatLngObj: (rt90arr: [number, number][]) => LatLngLiteral[];
+export { arrayRT90ToWGS84LatLngObj };
+export { movePointsByCoord as movePointsByCoord };
+export { arrayToLatLngObject as arrToLatLngObj };
+export { latLngArrayToCoordArray };
+export { convertFromArrayOfArray as convertFromArrayOfCoords };
+export { haversineDistance };
+export { MVCArrayToCoordArray };
+export { MVCArrayToObjArray };
 export default class WrappedMapBase extends React.Component<MapBaseProps, any> {
     do_after_init: (() => void)[];
     do_on_drag_end: (() => void)[];
@@ -148,18 +161,18 @@ export default class WrappedMapBase extends React.Component<MapBaseProps, any> {
     cancel_drawing: boolean;
     helpers: {
         rt90: {
-            pointsAroundCircle: makePointsAroundCircleRT90;
-            makeRect: makeRectRT90;
+            pointsAroundCircle: makePointsAroundCircleRT90Type;
+            makeRect: makeRectRT90Type;
             arrayRT90ToWGS84: (rt90_array: [number, number][]) => [number, number][];
             arrayRT90ToWGS84LatLngObj: (rt90_array: [number, number][]) => LatLngLiteral[];
-            movePointsByCoord: movePointsByCoord;
+            movePointsByCoord: movePointsByCoordType;
         };
-        arrToLatLngObj: arrayToLatLngObject;
-        latlngArrayToCoordArray: latLngArrayToCoordArray;
-        convertFromArrayOfArray: convertFromArrayOfArray;
-        haversineDistance: haversineDistance;
-        MVCArrayToCoordArray: MVCArrayToCoordArray;
-        MVCArrayToObjArray: MVCArrayToObjArray;
+        arrToLatLngObj: arrayToLatLngObjectType;
+        latlngArrayToCoordArray: latLngArrayToCoordArrayType;
+        convertFromArrayOfArray: convertFromArrayOfArrayType;
+        haversineDistance: haversineDistanceType;
+        MVCArrayToCoordArray: MVCArrayToCoordArrayType;
+        MVCArrayToObjArray: MVCArrayToObjArrayType;
     };
     script_cache: any;
     html_element: any;

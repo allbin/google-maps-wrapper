@@ -2,7 +2,7 @@ import * as React from 'react';
 import * as ReactDOM from 'react-dom';
 import proj4 from 'proj4';
 import ScriptCache from './ScriptCache';
-import external_helpers from './external_helpers';
+import { MVCArrayToCoordArray, MVCArrayToObjArray, movePointsByCoord, makePointsAroundCircleRT90, makeRectRT90, convertFromArrayOfArray, arrayToLatLngObject, latLngArrayToCoordArray, haversineDistance } from './external_helpers';
 import * as internal_helpers from './internal_helpers';
 let ScissorIcon = require('./img/marker_scissors.svg');
 let ScissorHoverIcon = require('./img/marker_scissors_hover.svg');
@@ -17,6 +17,19 @@ const PROJECTIONS = {
 proj4.defs('GMAPS', PROJECTIONS.gmaps);
 proj4.defs('RT90', PROJECTIONS.rt90);
 proj4.defs('SWEREF99', PROJECTIONS.sweref99);
+export { makePointsAroundCircleRT90 as pointsAroundCircle };
+export { makeRectRT90 };
+const arrayRT90ToWGS84 = (rt90arr) => { return convertFromArrayOfArray("RT90", "WGS84", rt90arr); };
+export { arrayRT90ToWGS84 };
+const arrayRT90ToWGS84LatLngObj = (rt90arr) => { return arrayToLatLngObject(convertFromArrayOfArray("RT90", "WGS84", rt90arr), true); };
+export { arrayRT90ToWGS84LatLngObj };
+export { movePointsByCoord as movePointsByCoord };
+export { arrayToLatLngObject as arrToLatLngObj };
+export { latLngArrayToCoordArray };
+export { convertFromArrayOfArray as convertFromArrayOfCoords };
+export { haversineDistance };
+export { MVCArrayToCoordArray };
+export { MVCArrayToObjArray };
 export default class WrappedMapBase extends React.Component {
     constructor(props) {
         super(props);
@@ -47,18 +60,18 @@ export default class WrappedMapBase extends React.Component {
         };
         this.helpers = {
             rt90: {
-                pointsAroundCircle: external_helpers.makePointsAroundCircleRT90,
-                makeRect: external_helpers.makeRectRT90,
-                arrayRT90ToWGS84: (rt90arr) => { return external_helpers.convertFromArrayOfArray("RT90", "WGS84", rt90arr); },
-                arrayRT90ToWGS84LatLngObj: (rt90arr) => { return external_helpers.arrayToLatLngObject(external_helpers.convertFromArrayOfArray("RT90", "WGS84", rt90arr), true); },
-                movePointsByCoord: external_helpers.movePointsByCoord
+                pointsAroundCircle: makePointsAroundCircleRT90,
+                makeRect: makeRectRT90,
+                arrayRT90ToWGS84: (rt90arr) => { return convertFromArrayOfArray("RT90", "WGS84", rt90arr); },
+                arrayRT90ToWGS84LatLngObj: (rt90arr) => { return arrayToLatLngObject(convertFromArrayOfArray("RT90", "WGS84", rt90arr), true); },
+                movePointsByCoord: movePointsByCoord
             },
-            arrToLatLngObj: external_helpers.arrayToLatLngObject,
-            latlngArrayToCoordArray: external_helpers.latLngArrayToCoordArray,
-            convertFromArrayOfArray: external_helpers.convertFromArrayOfArray,
-            haversineDistance: external_helpers.haversineDistance,
-            MVCArrayToCoordArray: external_helpers.MVCArrayToCoordArray,
-            MVCArrayToObjArray: external_helpers.MVCArrayToObjArray
+            arrToLatLngObj: arrayToLatLngObject,
+            latlngArrayToCoordArray: latLngArrayToCoordArray,
+            convertFromArrayOfArray: convertFromArrayOfArray,
+            haversineDistance: haversineDistance,
+            MVCArrayToCoordArray: MVCArrayToCoordArray,
+            MVCArrayToObjArray: MVCArrayToObjArray
         };
     }
     componentWillMount() {
@@ -411,7 +424,7 @@ export default class WrappedMapBase extends React.Component {
             }
             if (type === "polyline" || type === "polygon") {
                 const overlay = e.overlay;
-                let path = external_helpers.MVCArrayToCoordArray(overlay.getPath());
+                let path = MVCArrayToCoordArray(overlay.getPath());
                 if (cb) {
                     cb(path, overlay);
                 }
@@ -509,7 +522,7 @@ export default class WrappedMapBase extends React.Component {
         let closest_dist = 9999999;
         //Find nearest index and move scissors_hover marker.
         polyline.options.path.forEach((point, i) => {
-            let dist = external_helpers.haversineDistance(mouse_coord, point);
+            let dist = haversineDistance(mouse_coord, point);
             if (dist < closest_dist) {
                 closest_index = i;
                 closest_dist = dist;
@@ -543,7 +556,7 @@ export default class WrappedMapBase extends React.Component {
         let closest_index = 0;
         let closest_dist = 9999999;
         path.forEach((point, i) => {
-            let dist = external_helpers.haversineDistance(mouse_coord, point);
+            let dist = haversineDistance(mouse_coord, point);
             if (dist < closest_dist) {
                 closest_index = i;
                 closest_dist = dist;

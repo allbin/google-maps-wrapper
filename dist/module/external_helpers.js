@@ -1,9 +1,9 @@
 import proj4 from 'proj4';
 const EARTH_RADIUS = 6378137;
-const convertFromArrayOfArray = (fromProj, toProj, points) => {
+export const convertFromArrayOfArray = (fromProj, toProj, points) => {
     return proj4(fromProj, toProj, points);
 };
-const arrayToLatLngObject = (arr, invert = false) => {
+export const arrayToLatLngObject = (arr, invert = false) => {
     if (invert) {
         return arr.map((point) => {
             return { lat: point[1], lng: point[0] };
@@ -13,7 +13,7 @@ const arrayToLatLngObject = (arr, invert = false) => {
         return { lat: point[0], lng: point[1] };
     });
 };
-const latLngArrayToCoordArray = (arr, invert) => {
+export const latLngArrayToCoordArray = (arr, invert) => {
     if (invert) {
         return arr.map((point) => {
             return [point.lng, point.lat];
@@ -23,7 +23,7 @@ const latLngArrayToCoordArray = (arr, invert) => {
         return [point.lat, point.lng];
     });
 };
-const makePointsAroundCircleRT90 = (point, r, numberOfPoints = 12) => {
+export const makePointsAroundCircleRT90 = (point, r, numberOfPoints = 12) => {
     //Returns numberOfPoints around circle at p with r radius.
     let points = [];
     let i;
@@ -35,13 +35,13 @@ const makePointsAroundCircleRT90 = (point, r, numberOfPoints = 12) => {
     }
     return points;
 };
-const makeRectRT90 = (p1, p2) => {
+export const makeRectRT90 = (p1, p2) => {
     //p1 and p2 should be opposite corners of the rectangle.
     let points = [];
     points.push([p1[0], p1[1]], [p2[0], p1[1]], [p2[0], p2[1]], [p1[0], p2[1]]);
     return points;
 };
-const movePointsByCoord = (points_arr, coord) => {
+export const movePointsByCoord = (points_arr, coord) => {
     //Adds value of Coord to all points in array.
     return points_arr.map((point) => {
         return [point[0] + coord[0], point[1] + coord[1]];
@@ -49,7 +49,7 @@ const movePointsByCoord = (points_arr, coord) => {
 };
 function squared(x) { return x * x; }
 function toRad(x) { return x * Math.PI / 180; }
-const haversineDistance = (a, b) => {
+export const haversineDistance = (a, b) => {
     const aLat = a.lat;
     const bLat = b.lat;
     const aLng = a.lng;
@@ -60,7 +60,7 @@ const haversineDistance = (a, b) => {
     const c = 2 * Math.atan2(Math.sqrt(f), Math.sqrt(1 - f));
     return EARTH_RADIUS * c;
 };
-const MVCArrayToObjArray = (MVCArr) => {
+export const MVCArrayToObjArray = (MVCArr) => {
     return MVCArr.getArray().map((gmapsLatLng) => {
         return {
             lat: gmapsLatLng.lat(),
@@ -68,21 +68,10 @@ const MVCArrayToObjArray = (MVCArr) => {
         };
     });
 };
-const MVCArrayToCoordArray = (MVCArr) => {
+export const MVCArrayToCoordArray = (MVCArr) => {
     return MVCArr.getArray().map((gmapsLatLng) => {
         return [gmapsLatLng.lat(), gmapsLatLng.lng()];
     });
-};
-export default {
-    MVCArrayToObjArray,
-    MVCArrayToCoordArray,
-    haversineDistance,
-    convertFromArrayOfArray,
-    latLngArrayToCoordArray,
-    arrayToLatLngObject,
-    makeRectRT90,
-    movePointsByCoord,
-    makePointsAroundCircleRT90,
 };
 
 //# sourceMappingURL=external_helpers.js.map
