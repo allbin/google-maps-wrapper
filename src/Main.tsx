@@ -12,7 +12,14 @@ export default class Map extends React.Component<any, any> {
             position: { lng: 14.40567, lat: 56.65918 },
             draggable: true
         };
-        this.map.setMarker("marker1", marker_opts);
+        this.map.setMarker("marker1", marker_opts).then((marker) => {
+            setTimeout(() => {
+                console.log("pan to");
+                if (this.map) {
+                    this.map.panToObject(marker);
+                }
+            }, 6000);
+        });
 
         let polyline_opts: PolylineOptions = {
             path: [
@@ -55,6 +62,12 @@ export default class Map extends React.Component<any, any> {
                 strokeOpacity: 0.6
             };
             polygon.update(x);
+            setTimeout(() => {
+                console.log("zoom to");
+                if (this.map) {
+                    this.map.zoomToObject(polygon);
+                }
+            }, 3000);
         });
     }
 

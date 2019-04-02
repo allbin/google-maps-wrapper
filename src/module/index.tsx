@@ -432,6 +432,12 @@ export default class WrappedMapBase extends React.Component<MapBaseProps, any> {
         return Promise.all(promise_arr);
     }
 
+    zoomToObject(obj: WrappedMarker | WrappedPolygon | WrappedPolyline) {
+        internal_helpers.panZoomToObject(this, obj, true);
+    }
+    panToObject(obj: WrappedMarker | WrappedPolygon | WrappedPolyline) {
+        internal_helpers.panZoomToObject(this, obj, false);
+    }
 
     registerDragEndCB(cb: () => void): void {
         //Is actually triggered by Idle, not DragEnd!

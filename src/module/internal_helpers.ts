@@ -343,3 +343,61 @@ export function mapObjectEventCB(map_ref: WrappedMapBase, map_obj: WrappedGmapOb
     }
     return true;
 }
+
+export function panZoomToObject(map_ref: WrappedMapBase, obj: WrappedMarker | WrappedPolygon | WrappedPolyline, zoom: boolean = true) {
+    if (!map_ref.map) {
+        return;
+    }
+    switch (obj.type) {
+        case "marker": {
+            let position = obj.gmaps_obj.getPosition();
+            map_ref.map.setCenter(position);
+            if (zoom) {
+                map_ref.map.setZoom(14);
+            }
+            break;
+        }
+        case "polyline": {
+            let bounds = {
+                north: -9999,
+                south: 9999,
+                west: 9999,
+                east: -9999
+            };
+            obj.gmaps_obj.getPath().forEach((point) => {
+                bounds.north = point.lat() > bounds.north ? point.lat() : bounds.north;
+                bounds.south = point.lat() < bounds.south ? point.lat() : bounds.south;
+                bounds.west = point.lng() < bounds.west ? point.lng() : bounds.west;
+                bounds.east = point.lng() > bounds.east ? point.lng() : bounds.east;
+            });
+            if (zoom) {
+                map_ref.map.fitBounds(bounds);
+            } else {
+                map_ref.map.panToBounds(bounds);
+            }
+            break;
+        }
+        case "polygon": {
+            let bounds = {
+                north: -9999,
+                south: 9999,
+                west: 9999,
+                east: -9999
+            };
+            obj.gmaps_obj.getPaths().forEach((path) => {
+                path.forEach((point) => {
+                    bounds.north = point.lat() > bounds.north ? point.lat() : bounds.north;
+                    bounds.south = point.lat() < bounds.south ? point.lat() : bounds.south;
+                    bounds.west = point.lng() < bounds.west ? point.lng() : bounds.west;
+                    bounds.east = point.lng() > bounds.east ? point.lng() : bounds.east;
+                });
+            });
+            if (zoom) {
+                map_ref.map.fitBounds(bounds);
+            } else {
+                map_ref.map.panToBounds(bounds);
+            }
+            break;
+        }
+    }
+}
