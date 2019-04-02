@@ -14,10 +14,8 @@ export default class Map extends React.Component<any, any> {
         };
         this.map.setMarker("marker1", marker_opts).then((marker) => {
             setTimeout(() => {
-                console.log("pan to");
-                if (this.map) {
-                    this.map.panToObject(marker);
-                }
+                console.log("marker.panTo()");
+                marker.panTo();
             }, 6000);
         });
 
@@ -63,7 +61,7 @@ export default class Map extends React.Component<any, any> {
             };
             polygon.update(x);
             setTimeout(() => {
-                console.log("zoom to");
+                console.log("this.map.zoomToObject(polygon);");
                 if (this.map) {
                     this.map.zoomToObject(polygon);
                 }

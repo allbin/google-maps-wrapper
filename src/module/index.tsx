@@ -80,6 +80,8 @@ export interface WrappedGmapObj {
     options: any;
     update: (options: any) => Promise<WrappedGmapObj>;
     updateHover: (options: any) => Promise<WrappedGmapObj>;
+    zoomTo: () => void;
+    panTo: () => void;
 }
 
 export interface WrappedPolygon extends WrappedGmapObj {

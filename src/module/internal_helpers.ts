@@ -277,16 +277,34 @@ export const setMapObject: setMapObject = (map_ref, type, id, options, hover_opt
 
         switch (map_obj.type) {
             case "polyline": {
+                map_obj.zoomTo = () => {
+                    panZoomToObject(map_ref, map_obj as WrappedPolyline, true);
+                };
+                map_obj.panTo = () => {
+                    panZoomToObject(map_ref, map_obj as WrappedPolyline, false);
+                };
                 map_ref.map_objects[type][id] = map_obj as WrappedPolyline;
                 resolve(map_obj as WrappedPolyline);
                 break;
             }
             case "polygon": {
+                map_obj.zoomTo = () => {
+                    panZoomToObject(map_ref, map_obj as WrappedPolygon, true);
+                };
+                map_obj.panTo = () => {
+                    panZoomToObject(map_ref, map_obj as WrappedPolygon, false);
+                };
                 map_ref.map_objects[type][id] = map_obj as WrappedPolygon;
                 resolve(map_obj as WrappedPolygon);
                 break;
             }
             case "marker": {
+                map_obj.zoomTo = () => {
+                    panZoomToObject(map_ref, map_obj as WrappedMarker, true);
+                };
+                map_obj.panTo = () => {
+                    panZoomToObject(map_ref, map_obj as WrappedMarker, false);
+                };
                 map_ref.map_objects[type][id] = map_obj as WrappedMarker;
                 resolve(map_obj as WrappedMarker);
                 break;
