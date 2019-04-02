@@ -306,7 +306,7 @@ export function unsetMapObject(map_ref, type, id) {
         }
         if (map_ref.map_objects[type].hasOwnProperty(id)) {
             //This ID has been drawn.
-            if (map_ref.cutting.id !== id) {
+            if (map_ref.cutting.id && map_ref.cutting.id !== id) {
                 //This object is currently being cut, it cannot be deleted.
                 reject(new Error("MAP: Object is currently in cuttingMode; it cannot be removed!"));
                 return;
