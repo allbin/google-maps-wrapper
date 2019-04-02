@@ -9,4 +9,5 @@ declare type setMapObject = (map_ref: WrappedMapBase, type: MapObjectType, id: s
 export declare const setMapObject: setMapObject;
 export declare function unsetMapObject(map_ref: WrappedMapBase, type: MapObjectType, id: string | number): Promise<boolean>;
 export declare function mapObjectEventCB(map_ref: WrappedMapBase, map_obj: WrappedGmapObj, event_type: AllMapObjEvents, e: any): boolean;
+export declare function panZoomToObject(map_ref: WrappedMapBase, obj: WrappedMarker | WrappedPolygon | WrappedPolyline, zoom?: boolean): void;
 export {};

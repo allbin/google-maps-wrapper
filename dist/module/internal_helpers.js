@@ -253,16 +253,34 @@ export const setMapObject = (map_ref, type, id, options, hover_options) => {
         map_obj.gmaps_obj.setMap(map_ref.map);
         switch (map_obj.type) {
             case "polyline": {
+                map_obj.zoomTo = () => {
+                    panZoomToObject(map_ref, map_obj, true);
+                };
+                map_obj.panTo = () => {
+                    panZoomToObject(map_ref, map_obj, false);
+                };
                 map_ref.map_objects[type][id] = map_obj;
                 resolve(map_obj);
                 break;
             }
             case "polygon": {
+                map_obj.zoomTo = () => {
+                    panZoomToObject(map_ref, map_obj, true);
+                };
+                map_obj.panTo = () => {
+                    panZoomToObject(map_ref, map_obj, false);
+                };
                 map_ref.map_objects[type][id] = map_obj;
                 resolve(map_obj);
                 break;
             }
             case "marker": {
+                map_obj.zoomTo = () => {
+                    panZoomToObject(map_ref, map_obj, true);
+                };
+                map_obj.panTo = () => {
+                    panZoomToObject(map_ref, map_obj, false);
+                };
                 map_ref.map_objects[type][id] = map_obj;
                 resolve(map_obj);
                 break;
@@ -316,6 +334,65 @@ export function mapObjectEventCB(map_ref, map_obj, event_type, e) {
         map_obj._cbs[event_type](e);
     }
     return true;
+}
+export function panZoomToObject(map_ref, obj, zoom = true) {
+    if (!map_ref.map) {
+        return;
+    }
+    switch (obj.type) {
+        case "marker": {
+            let position = obj.gmaps_obj.getPosition();
+            map_ref.map.setCenter(position);
+            if (zoom) {
+                map_ref.map.setZoom(14);
+            }
+            break;
+        }
+        case "polyline": {
+            let bounds = {
+                north: -9999,
+                south: 9999,
+                west: 9999,
+                east: -9999
+            };
+            obj.gmaps_obj.getPath().forEach((point) => {
+                bounds.north = point.lat() > bounds.north ? point.lat() : bounds.north;
+                bounds.south = point.lat() < bounds.south ? point.lat() : bounds.south;
+                bounds.west = point.lng() < bounds.west ? point.lng() : bounds.west;
+                bounds.east = point.lng() > bounds.east ? point.lng() : bounds.east;
+            });
+            if (zoom) {
+                map_ref.map.fitBounds(bounds);
+            }
+            else {
+                map_ref.map.panToBounds(bounds);
+            }
+            break;
+        }
+        case "polygon": {
+            let bounds = {
+                north: -9999,
+                south: 9999,
+                west: 9999,
+                east: -9999
+            };
+            obj.gmaps_obj.getPaths().forEach((path) => {
+                path.forEach((point) => {
+                    bounds.north = point.lat() > bounds.north ? point.lat() : bounds.north;
+                    bounds.south = point.lat() < bounds.south ? point.lat() : bounds.south;
+                    bounds.west = point.lng() < bounds.west ? point.lng() : bounds.west;
+                    bounds.east = point.lng() > bounds.east ? point.lng() : bounds.east;
+                });
+            });
+            if (zoom) {
+                map_ref.map.fitBounds(bounds);
+            }
+            else {
+                map_ref.map.panToBounds(bounds);
+            }
+            break;
+        }
+    }
 }
 
 //# sourceMappingURL=internal_helpers.js.map

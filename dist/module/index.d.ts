@@ -77,6 +77,8 @@ export interface WrappedGmapObj {
     options: any;
     update: (options: any) => Promise<WrappedGmapObj>;
     updateHover: (options: any) => Promise<WrappedGmapObj>;
+    zoomTo: () => void;
+    panTo: () => void;
 }
 export interface WrappedPolygon extends WrappedGmapObj {
     gmaps_obj: Polygon;
@@ -182,6 +184,8 @@ export default class WrappedMapBase extends React.Component<MapBaseProps, any> {
     setMarker(id: string | number, options: MarkerOptions, hover_options?: MarkerOptions | null): Promise<WrappedMarker>;
     unsetMarker(id: string | number): Promise<boolean>;
     clearMarkers(): Promise<boolean[]>;
+    zoomToObject(obj: WrappedMarker | WrappedPolygon | WrappedPolyline): void;
+    panToObject(obj: WrappedMarker | WrappedPolygon | WrappedPolyline): void;
     registerDragEndCB(cb: () => void): void;
     unregisterDragEndCB(cb: () => void): void;
     registerDragStartCB(cb: () => void): void;

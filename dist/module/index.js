@@ -244,6 +244,12 @@ export default class WrappedMapBase extends React.Component {
         });
         return Promise.all(promise_arr);
     }
+    zoomToObject(obj) {
+        internal_helpers.panZoomToObject(this, obj, true);
+    }
+    panToObject(obj) {
+        internal_helpers.panZoomToObject(this, obj, false);
+    }
     registerDragEndCB(cb) {
         //Is actually triggered by Idle, not DragEnd!
         this.do_on_drag_end.push(cb);
