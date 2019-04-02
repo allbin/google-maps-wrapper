@@ -120,12 +120,15 @@ export default class WrappedMapBase extends React.Component<MapBaseProps, any> {
     map_objects: {
         marker: {
             [key: string]: WrappedMarker;
+            [index: number]: WrappedMarker;
         };
         polygon: {
             [key: string]: WrappedPolygon;
+            [index: number]: WrappedPolygon;
         };
         polyline: {
             [key: string]: WrappedPolyline;
+            [index: number]: WrappedPolyline;
         };
     };
     cutting_objects: {
@@ -135,7 +138,7 @@ export default class WrappedMapBase extends React.Component<MapBaseProps, any> {
     overlay: google.maps.OverlayView | null;
     cutting: {
         enabled: boolean;
-        id: string | null;
+        id: string | number | null;
         indexes: number[] | null;
         arr?: [number, number][];
     };
@@ -170,14 +173,14 @@ export default class WrappedMapBase extends React.Component<MapBaseProps, any> {
     fromLatLngToPixel(map_ref: WrappedMapBase, latLng: LatLng): any;
     toPixel(lat_lng_input: LatLng | LatLngLiteral): [number, number];
     setZoom(zoom_level: number): Promise<void>;
-    setPolyline(id: string, options: PolylineOptions, hover_options?: PolylineOptions | null): Promise<WrappedPolyline>;
-    unsetPolyline(id: string): Promise<boolean>;
+    setPolyline(id: string | number, options: PolylineOptions, hover_options?: PolylineOptions | null): Promise<WrappedPolyline>;
+    unsetPolyline(id: string | number): Promise<boolean>;
     clearPolylines(): Promise<boolean[]>;
-    setPolygon(id: string, options: PolygonOptions, hover_options?: PolygonOptions | null): Promise<WrappedPolygon>;
-    unsetPolygon(id: string): Promise<boolean>;
+    setPolygon(id: string | number, options: PolygonOptions, hover_options?: PolygonOptions | null): Promise<WrappedPolygon>;
+    unsetPolygon(id: string | number): Promise<boolean>;
     clearPolygons(): Promise<boolean[]>;
-    setMarker(id: string, options: MarkerOptions, hover_options?: MarkerOptions | null): Promise<WrappedMarker>;
-    unsetMarker(id: string): Promise<boolean>;
+    setMarker(id: string | number, options: MarkerOptions, hover_options?: MarkerOptions | null): Promise<WrappedMarker>;
+    unsetMarker(id: string | number): Promise<boolean>;
     clearMarkers(): Promise<boolean[]>;
     registerDragEndCB(cb: () => void): void;
     unregisterDragEndCB(cb: () => void): void;
@@ -187,7 +190,7 @@ export default class WrappedMapBase extends React.Component<MapBaseProps, any> {
     setDrawingMode(type: "polyline" | "polygon", opts: PolylineOptions | PolygonOptions, cb: (path: [number, number][] | [number, number] | null, overlay: Polygon | Polyline | Marker) => void): void;
     completeDrawingMode(): void;
     cancelDrawingMode(debug_src?: string): void;
-    setCuttingMode(polyline_id: string, cb?: null): void;
+    setCuttingMode(polyline_id: string | number, cb?: null): void;
     cuttingPositionUpdate(mouse_event: MouseEvent): void;
     cuttingClick(mouse_event: google.maps.MouseEvent): void;
     completeCuttingMode(): void;

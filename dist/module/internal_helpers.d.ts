@@ -2,11 +2,11 @@ import WrappedMapBase, { AnyObjectOptions, WrappedGmapObj, AllMapObjEvents, LatL
 export declare function fromLatLngToPixel(map_ref: WrappedMapBase, latLng: LatLng): any;
 export declare function fitToBoundsOfArray(map_ref: WrappedMapBase, arr_of_coords: [number, number][]): Promise<{}>;
 export declare function fitToBoundsOfObjectArray(map_ref: WrappedMapBase, arr_of_latlngliteral: LatLngLiteral[]): Promise<{}>;
-export declare function setPolyline(map_ref: WrappedMapBase, id: string, options: PolylineOptions, hover_options?: PolylineOptions | null): Promise<WrappedPolyline>;
-export declare function setPolygon(map_ref: WrappedMapBase, id: string, options: PolylineOptions, hover_options?: PolylineOptions | null): Promise<WrappedPolygon>;
-export declare function setMarker(map_ref: WrappedMapBase, id: string, options: MarkerOptions, hover_options?: MarkerOptions | null): Promise<WrappedMarker>;
-declare type setMapObject = (map_ref: WrappedMapBase, type: MapObjectType, id: string, options: AnyObjectOptions, hover_options: AnyObjectOptions | null) => Promise<WrappedPolyline | WrappedPolygon | WrappedMarker>;
+export declare function setPolyline(map_ref: WrappedMapBase, id: string | number, options: PolylineOptions, hover_options?: PolylineOptions | null): Promise<WrappedPolyline>;
+export declare function setPolygon(map_ref: WrappedMapBase, id: string | number, options: PolylineOptions, hover_options?: PolylineOptions | null): Promise<WrappedPolygon>;
+export declare function setMarker(map_ref: WrappedMapBase, id: string | number, options: MarkerOptions, hover_options?: MarkerOptions | null): Promise<WrappedMarker>;
+declare type setMapObject = (map_ref: WrappedMapBase, type: MapObjectType, id: string | number, options: AnyObjectOptions, hover_options: AnyObjectOptions | null) => Promise<WrappedPolyline | WrappedPolygon | WrappedMarker>;
 export declare const setMapObject: setMapObject;
-export declare function unsetMapObject(map_ref: WrappedMapBase, type: MapObjectType, id: string): Promise<boolean>;
+export declare function unsetMapObject(map_ref: WrappedMapBase, type: MapObjectType, id: string | number): Promise<boolean>;
 export declare function mapObjectEventCB(map_ref: WrappedMapBase, map_obj: WrappedGmapObj, event_type: AllMapObjEvents, e: any): boolean;
 export {};
