@@ -109,20 +109,20 @@ export function fitToBoundsOfObjectArray(map_ref: WrappedMapBase, arr_of_latlngl
     });
 }
 
-export function setPolyline(map_ref: WrappedMapBase, id: string, options: PolylineOptions, hover_options: PolylineOptions | null = null): Promise<WrappedPolyline> {
+export function setPolyline(map_ref: WrappedMapBase, id: string | number, options: PolylineOptions, hover_options: PolylineOptions | null = null): Promise<WrappedPolyline> {
     return setMapObject(map_ref, "polyline", id, options, hover_options) as Promise<WrappedPolyline>;
 }
-export function setPolygon(map_ref: WrappedMapBase, id: string, options: PolylineOptions, hover_options: PolylineOptions | null = null): Promise<WrappedPolygon> {
+export function setPolygon(map_ref: WrappedMapBase, id: string | number, options: PolylineOptions, hover_options: PolylineOptions | null = null): Promise<WrappedPolygon> {
     return setMapObject(map_ref, "polygon", id, options, hover_options) as Promise<WrappedPolygon>;
 }
-export function setMarker(map_ref: WrappedMapBase, id: string, options: MarkerOptions, hover_options: MarkerOptions | null = null): Promise<WrappedMarker> {
+export function setMarker(map_ref: WrappedMapBase, id: string | number, options: MarkerOptions, hover_options: MarkerOptions | null = null): Promise<WrappedMarker> {
     return setMapObject(map_ref, "marker", id, options, hover_options) as Promise<WrappedMarker>;
 }
 
 type setMapObject = (
     map_ref: WrappedMapBase,
     type: MapObjectType,
-    id: string,
+    id: string | number,
     options: AnyObjectOptions,
     hover_options: AnyObjectOptions | null
 ) => Promise<WrappedPolyline|WrappedPolygon|WrappedMarker>;
@@ -299,7 +299,7 @@ export const setMapObject: setMapObject = (map_ref, type, id, options, hover_opt
     });
 };
 
-export function unsetMapObject(map_ref: WrappedMapBase, type: MapObjectType, id: string) {
+export function unsetMapObject(map_ref: WrappedMapBase, type: MapObjectType, id: string | number) {
     return new Promise<boolean>((resolve, reject) => {
         if (!map_ref.initialized) {
             map_ref.do_after_init.push(() => {

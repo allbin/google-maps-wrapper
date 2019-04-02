@@ -45,9 +45,9 @@ export default class Map extends React.Component<any, any> {
         let polygon_hover: PolygonOptions = {
             strokeWeight: 2,
             strokeColor: "#CC0000",
-            fillOpacity: 0.3
+            fillOpacity: 0.1
         };
-        this.map.setPolygon("polygon1", polygon_opts, polygon_hover).then((polygon) => {
+        this.map.setPolygon(2, polygon_opts, polygon_hover).then((polygon) => {
             polygon.registerEventCB("click", () => {
                 console.log("Clicked polygon.");
             });

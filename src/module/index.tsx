@@ -145,12 +145,15 @@ export default class WrappedMapBase extends React.Component<MapBaseProps, any> {
     map_objects: {
         marker: {
             [key: string]: WrappedMarker;
+            [index: number]: WrappedMarker;
         }
         polygon: {
             [key: string]: WrappedPolygon;
+            [index: number]: WrappedPolygon;
         }
         polyline: {
             [key: string]: WrappedPolyline;
+            [index: number]: WrappedPolyline;
         }
     } = {
         marker: {},
@@ -164,7 +167,7 @@ export default class WrappedMapBase extends React.Component<MapBaseProps, any> {
     overlay: google.maps.OverlayView | null = null;
     cutting: {
         enabled: boolean,
-        id: string | null,
+        id: string | number | null,
         indexes: number[] | null,
         arr?: [number, number][]
     } = {
@@ -387,10 +390,10 @@ export default class WrappedMapBase extends React.Component<MapBaseProps, any> {
         });
     }
 
-    setPolyline(id: string, options: PolylineOptions, hover_options: PolylineOptions | null = null): Promise<WrappedPolyline> {
+    setPolyline(id: string | number, options: PolylineOptions, hover_options: PolylineOptions | null = null): Promise<WrappedPolyline> {
         return internal_helpers.setPolyline(this, id, options, hover_options);
     }
-    unsetPolyline(id: string): Promise<boolean> {
+    unsetPolyline(id: string | number): Promise<boolean> {
         return internal_helpers.unsetMapObject(this, "polyline", id);
     }
     clearPolylines(): Promise<boolean[]> {
@@ -401,10 +404,10 @@ export default class WrappedMapBase extends React.Component<MapBaseProps, any> {
         return Promise.all(promise_arr);
     }
 
-    setPolygon(id: string, options: PolygonOptions, hover_options: PolygonOptions | null = null): Promise<WrappedPolygon> {
+    setPolygon(id: string | number, options: PolygonOptions, hover_options: PolygonOptions | null = null): Promise<WrappedPolygon> {
         return internal_helpers.setPolygon(this, id, options, hover_options);
     }
-    unsetPolygon(id: string): Promise<boolean> {
+    unsetPolygon(id: string | number): Promise<boolean> {
         return internal_helpers.unsetMapObject(this, "polygon", id);
     }
     clearPolygons(): Promise<boolean[]> {
@@ -415,10 +418,10 @@ export default class WrappedMapBase extends React.Component<MapBaseProps, any> {
         return Promise.all(promise_arr);
     }
 
-    setMarker(id: string, options: MarkerOptions, hover_options: MarkerOptions | null = null): Promise<WrappedMarker> {
+    setMarker(id: string | number, options: MarkerOptions, hover_options: MarkerOptions | null = null): Promise<WrappedMarker> {
         return internal_helpers.setMarker(this, id, options, hover_options);
     }
-    unsetMarker(id: string): Promise<boolean> {
+    unsetMarker(id: string | number): Promise<boolean> {
         return internal_helpers.unsetMapObject(this, "marker", id);
     }
     clearMarkers(): Promise<boolean[]> {
@@ -635,7 +638,7 @@ export default class WrappedMapBase extends React.Component<MapBaseProps, any> {
 
 
 
-    setCuttingMode(polyline_id: string, cb = null) {
+    setCuttingMode(polyline_id: string | number, cb = null) {
         if (this.map_objects.polyline.hasOwnProperty(polyline_id) === false) {
             console.error("MAP: Cannot set cutting mode, provided object id not on map: ", polyline_id);
             return;
