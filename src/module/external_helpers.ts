@@ -9,13 +9,13 @@ const EARTH_RADIUS = 6378137;
 ////////////EXPORTED HELPER FUNCTIONS
 //Check Map.helpers for usage.
 
-export type convertFromArrayOfArray = (fromProj: Projection, toProj: Projection, points: [number, number][]) => [number, number][];
-const convertFromArrayOfArray: convertFromArrayOfArray = (fromProj, toProj, points) => {
+export type convertFromArrayOfArrayType = (fromProj: Projection, toProj: Projection, points: [number, number][]) => [number, number][];
+export const convertFromArrayOfArray: convertFromArrayOfArrayType = (fromProj, toProj, points) => {
     return proj4(fromProj, toProj, points);
 };
 
-export type arrayToLatLngObject = (coords: [number, number][], invert: boolean) => LatLngLiteral[];
-const arrayToLatLngObject: arrayToLatLngObject = (arr, invert = false) => {
+export type arrayToLatLngObjectType = (coords: [number, number][], invert: boolean) => LatLngLiteral[];
+export const arrayToLatLngObject: arrayToLatLngObjectType = (arr, invert = false) => {
     if (invert) {
         return arr.map((point) => {
             return { lat: point[1], lng: point[0] };
@@ -26,8 +26,8 @@ const arrayToLatLngObject: arrayToLatLngObject = (arr, invert = false) => {
     });
 };
 
-export type latLngArrayToCoordArray = (latLngArray: LatLngLiteral[], invert: boolean) => [number, number][];
-const latLngArrayToCoordArray: latLngArrayToCoordArray = (arr, invert) => {
+export type latLngArrayToCoordArrayType = (latLngArray: LatLngLiteral[], invert: boolean) => [number, number][];
+export const latLngArrayToCoordArray: latLngArrayToCoordArrayType = (arr, invert) => {
     if (invert) {
         return arr.map((point) => {
             return [point.lng, point.lat] as [number, number];
@@ -38,8 +38,8 @@ const latLngArrayToCoordArray: latLngArrayToCoordArray = (arr, invert) => {
     });
 };
 
-export type makePointsAroundCircleRT90 = (p: number[], r: number, numberOfPoints: number) => [number, number][];
-const makePointsAroundCircleRT90: makePointsAroundCircleRT90 = (point, r, numberOfPoints = 12) => {
+export type makePointsAroundCircleRT90Type = (p: number[], r: number, numberOfPoints: number) => [number, number][];
+export const makePointsAroundCircleRT90: makePointsAroundCircleRT90Type = (point, r, numberOfPoints = 12) => {
     //Returns numberOfPoints around circle at p with r radius.
 
     let points = [];
@@ -55,8 +55,8 @@ const makePointsAroundCircleRT90: makePointsAroundCircleRT90 = (point, r, number
     return points;
 };
 
-export type makeRectRT90 = (p1: number[], p2: number[]) => [number, number][];
-const makeRectRT90: makeRectRT90 = (p1, p2) => {
+export type makeRectRT90Type = (p1: number[], p2: number[]) => [number, number][];
+export const makeRectRT90: makeRectRT90Type = (p1, p2) => {
     //p1 and p2 should be opposite corners of the rectangle.
     let points = [];
 
@@ -70,8 +70,8 @@ const makeRectRT90: makeRectRT90 = (p1, p2) => {
     return points as [number, number][];
 };
 
-export type movePointsByCoord = (points_arr: [number, number][], coord: number[]) => [number, number][];
-const movePointsByCoord: movePointsByCoord = (points_arr: [number, number][], coord: number[]) => {
+export type movePointsByCoordType = (points_arr: [number, number][], coord: number[]) => [number, number][];
+export const movePointsByCoord: movePointsByCoordType = (points_arr: [number, number][], coord: number[]) => {
     //Adds value of Coord to all points in array.
     return points_arr.map((point) => {
         return [point[0] + coord[0], point[1] + coord[1]] as [number, number];
@@ -81,8 +81,8 @@ const movePointsByCoord: movePointsByCoord = (points_arr: [number, number][], co
 
 function squared(x: number): number { return x * x; }
 function toRad(x: number): number { return x * Math.PI / 180; }
-export type haversineDistance = (a: LatLngLiteral, b: LatLngLiteral) => number;
-const haversineDistance: haversineDistance = (a, b) => {
+export type haversineDistanceType = (a: LatLngLiteral, b: LatLngLiteral) => number;
+export const haversineDistance: haversineDistanceType = (a, b) => {
     const aLat = a.lat;
     const bLat = b.lat;
     const aLng = a.lng;
@@ -96,8 +96,8 @@ const haversineDistance: haversineDistance = (a, b) => {
     return EARTH_RADIUS * c;
 };
 
-export type MVCArrayToObjArray = (MVCArr: google.maps.MVCArray<google.maps.LatLng>) => LatLngLiteral[];
-const MVCArrayToObjArray: MVCArrayToObjArray = (MVCArr) => {
+export type MVCArrayToObjArrayType = (MVCArr: google.maps.MVCArray<google.maps.LatLng>) => LatLngLiteral[];
+export const MVCArrayToObjArray: MVCArrayToObjArrayType = (MVCArr) => {
     return MVCArr.getArray().map((gmapsLatLng) => {
         return {
             lat: gmapsLatLng.lat(),
@@ -106,21 +106,9 @@ const MVCArrayToObjArray: MVCArrayToObjArray = (MVCArr) => {
     });
 };
 
-export type MVCArrayToCoordArray = (MVCArr: google.maps.MVCArray<google.maps.LatLng>) => number[][];
-const MVCArrayToCoordArray: MVCArrayToCoordArray = (MVCArr) => {
+export type MVCArrayToCoordArrayType = (MVCArr: google.maps.MVCArray<google.maps.LatLng>) => number[][];
+export const MVCArrayToCoordArray: MVCArrayToCoordArrayType = (MVCArr) => {
     return MVCArr.getArray().map((gmapsLatLng) => {
         return [gmapsLatLng.lat(), gmapsLatLng.lng()];
     });
-};
-
-export default {
-    MVCArrayToObjArray,
-    MVCArrayToCoordArray,
-    haversineDistance,
-    convertFromArrayOfArray,
-    latLngArrayToCoordArray,
-    arrayToLatLngObject,
-    makeRectRT90,
-    movePointsByCoord,
-    makePointsAroundCircleRT90,
 };

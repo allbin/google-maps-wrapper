@@ -3,7 +3,7 @@ import * as ReactDOM from 'react-dom';
 import proj4 from 'proj4';
 
 import ScriptCache from './ScriptCache';
-import external_helpers, { MVCArrayToCoordArray, MVCArrayToObjArray, movePointsByCoord, makePointsAroundCircleRT90, makeRectRT90, convertFromArrayOfArray, arrayToLatLngObject, latLngArrayToCoordArray, haversineDistance} from './external_helpers';
+import { MVCArrayToCoordArray, MVCArrayToObjArray, movePointsByCoord, makePointsAroundCircleRT90, makeRectRT90, convertFromArrayOfArray, arrayToLatLngObject, latLngArrayToCoordArray, haversineDistance, makePointsAroundCircleRT90Type, makeRectRT90Type, movePointsByCoordType, arrayToLatLngObjectType, latLngArrayToCoordArrayType, convertFromArrayOfArrayType, haversineDistanceType, MVCArrayToCoordArrayType, MVCArrayToObjArrayType} from './external_helpers';
 import * as internal_helpers from './internal_helpers';
 let ScissorIcon = require('./img/marker_scissors.svg');
 let ScissorHoverIcon = require('./img/marker_scissors_hover.svg');
@@ -136,6 +136,23 @@ proj4.defs('GMAPS', PROJECTIONS.gmaps);
 proj4.defs('RT90', PROJECTIONS.rt90);
 proj4.defs('SWEREF99', PROJECTIONS.sweref99);
 
+
+
+export { makePointsAroundCircleRT90 as pointsAroundCircle };
+export { makeRectRT90 };
+const arrayRT90ToWGS84 = (rt90arr: [number, number][]) => { return convertFromArrayOfArray("RT90", "WGS84", rt90arr); };
+export { arrayRT90ToWGS84 };
+const arrayRT90ToWGS84LatLngObj = (rt90arr: [number, number][]) => { return arrayToLatLngObject(convertFromArrayOfArray("RT90", "WGS84", rt90arr), true); };
+export {arrayRT90ToWGS84LatLngObj };
+export { movePointsByCoord as movePointsByCoord };
+export { arrayToLatLngObject as arrToLatLngObj };
+export { latLngArrayToCoordArray };
+export { convertFromArrayOfArray as convertFromArrayOfCoords };
+export { haversineDistance };
+export { MVCArrayToCoordArray };
+export { MVCArrayToObjArray };
+
+
 export default class WrappedMapBase extends React.Component<MapBaseProps, any> {
 
     do_after_init: (() => void)[] = [];
@@ -181,18 +198,18 @@ export default class WrappedMapBase extends React.Component<MapBaseProps, any> {
     cancel_drawing: boolean = false;
     helpers: {
         rt90: {
-            pointsAroundCircle: makePointsAroundCircleRT90;
-            makeRect: makeRectRT90;
+            pointsAroundCircle: makePointsAroundCircleRT90Type;
+            makeRect: makeRectRT90Type;
             arrayRT90ToWGS84: (rt90_array: [number, number][]) => [number, number][];
             arrayRT90ToWGS84LatLngObj: (rt90_array: [number, number][]) => LatLngLiteral[];
-            movePointsByCoord: movePointsByCoord;
+            movePointsByCoord: movePointsByCoordType;
         };
-        arrToLatLngObj: arrayToLatLngObject;
-        latlngArrayToCoordArray: latLngArrayToCoordArray;
-        convertFromArrayOfArray: convertFromArrayOfArray;
-        haversineDistance: haversineDistance;
-        MVCArrayToCoordArray: MVCArrayToCoordArray;
-        MVCArrayToObjArray: MVCArrayToObjArray;
+        arrToLatLngObj: arrayToLatLngObjectType;
+        latlngArrayToCoordArray: latLngArrayToCoordArrayType;
+        convertFromArrayOfArray: convertFromArrayOfArrayType;
+        haversineDistance: haversineDistanceType;
+        MVCArrayToCoordArray: MVCArrayToCoordArrayType;
+        MVCArrayToObjArray: MVCArrayToObjArrayType;
     };
     script_cache: any;
     html_element: any;
@@ -215,18 +232,18 @@ export default class WrappedMapBase extends React.Component<MapBaseProps, any> {
 
         this.helpers = {
             rt90: {
-                pointsAroundCircle: external_helpers.makePointsAroundCircleRT90,
-                makeRect: external_helpers.makeRectRT90,
-                arrayRT90ToWGS84: (rt90arr) => { return external_helpers.convertFromArrayOfArray("RT90", "WGS84", rt90arr); },
-                arrayRT90ToWGS84LatLngObj: (rt90arr) => { return external_helpers.arrayToLatLngObject(external_helpers.convertFromArrayOfArray("RT90", "WGS84", rt90arr), true); },
-                movePointsByCoord: external_helpers.movePointsByCoord
+                pointsAroundCircle: makePointsAroundCircleRT90,
+                makeRect: makeRectRT90,
+                arrayRT90ToWGS84: (rt90arr) => { return convertFromArrayOfArray("RT90", "WGS84", rt90arr); },
+                arrayRT90ToWGS84LatLngObj: (rt90arr) => { return arrayToLatLngObject(convertFromArrayOfArray("RT90", "WGS84", rt90arr), true); },
+                movePointsByCoord: movePointsByCoord
             },
-            arrToLatLngObj: external_helpers.arrayToLatLngObject,
-            latlngArrayToCoordArray: external_helpers.latLngArrayToCoordArray,
-            convertFromArrayOfArray: external_helpers.convertFromArrayOfArray,
-            haversineDistance: external_helpers.haversineDistance,
-            MVCArrayToCoordArray: external_helpers.MVCArrayToCoordArray,
-            MVCArrayToObjArray: external_helpers.MVCArrayToObjArray
+            arrToLatLngObj: arrayToLatLngObject,
+            latlngArrayToCoordArray: latLngArrayToCoordArray,
+            convertFromArrayOfArray: convertFromArrayOfArray,
+            haversineDistance: haversineDistance,
+            MVCArrayToCoordArray: MVCArrayToCoordArray,
+            MVCArrayToObjArray: MVCArrayToObjArray
         };
     }
 
@@ -609,7 +626,7 @@ export default class WrappedMapBase extends React.Component<MapBaseProps, any> {
                 }
                 if (type === "polyline" || type === "polygon") {
                     const overlay = e.overlay as Polygon | Polyline;
-                    let path = external_helpers.MVCArrayToCoordArray(overlay.getPath());
+                    let path = MVCArrayToCoordArray(overlay.getPath());
                     if (cb) { cb(path as [number, number][], overlay); }
                 } else if (type === "marker") {
                     const overlay = e.overlay as Marker;
@@ -709,7 +726,7 @@ export default class WrappedMapBase extends React.Component<MapBaseProps, any> {
         let closest_dist = 9999999;
         //Find nearest index and move scissors_hover marker.
         polyline.options.path!.forEach((point: any, i: number) => {
-            let dist = external_helpers.haversineDistance(mouse_coord, point);
+            let dist = haversineDistance(mouse_coord, point);
             if (dist < closest_dist) {
                 closest_index = i;
                 closest_dist = dist;
@@ -742,7 +759,7 @@ export default class WrappedMapBase extends React.Component<MapBaseProps, any> {
         let closest_index = 0;
         let closest_dist = 9999999;
         path.forEach((point: any, i: number) => {
-            let dist = external_helpers.haversineDistance(mouse_coord, point);
+            let dist = haversineDistance(mouse_coord, point);
             if (dist < closest_dist) {
                 closest_index = i;
                 closest_dist = dist;
