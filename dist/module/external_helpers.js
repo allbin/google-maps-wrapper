@@ -1,7 +1,7 @@
 import proj4 from 'proj4';
 const EARTH_RADIUS = 6378137;
 export const convertFromArrayOfArray = (fromProj, toProj, points) => {
-    return proj4(fromProj, toProj, points);
+    return points.map(point => proj4(fromProj, toProj, point));
 };
 export const arrayToLatLngObject = (arr, invert = false) => {
     if (invert) {
