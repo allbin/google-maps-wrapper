@@ -14,7 +14,8 @@
     },
     "dependencies": {
         "proj4": "2.5.0",
-        "@types/googlemaps": "3.30.19"
+        "@types/googlemaps": "3.30.19",
+        "@types/geojson": "7946.0.7"
     },
     "devDependencies": {
         "react": "16.8.6",

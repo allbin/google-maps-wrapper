@@ -1,6 +1,7 @@
 import * as React from 'react';
 import * as ReactDOM from 'react-dom';
 import proj4 from 'proj4';
+import { GeometryObject, FeatureCollection, Feature } from 'geojson';
 
 import ScriptCache from './ScriptCache';
 import { MVCArrayToCoordArray, MVCArrayToObjArray, movePointsByCoord, makePointsAroundCircleRT90, makeRectRT90, convertFromArrayOfArray, arrayToLatLngObject, latLngArrayToCoordArray, haversineDistance, makePointsAroundCircleRT90Type, makeRectRT90Type, movePointsByCoordType, arrayToLatLngObjectType, latLngArrayToCoordArrayType, convertFromArrayOfArrayType, haversineDistanceType, MVCArrayToCoordArrayType, MVCArrayToObjArrayType} from './external_helpers';
@@ -120,7 +121,13 @@ export type AnyObjectOptions = MarkerOptions | PolylineOptions | PolygonOptions;
 
 export type MapObjectType = "polyline" | "polygon" | "marker";
 
+export interface GeoJSONFeature<G extends GeometryObject, T> extends Feature<G> {
+    properties: T;
+}
 
+export interface GeoJSONFeatureCollection<G extends GeometryObject, T> extends FeatureCollection<G> {
+    features: GeoJSONFeature<G, T>[];
+}
 
 
 const CUTTING_SNAP_DISTANCE = 200;
@@ -449,6 +456,12 @@ export default class WrappedMapBase extends React.Component<MapBaseProps, any> {
             promise_arr.push(internal_helpers.unsetMapObject(this, "marker", id));
         });
         return Promise.all(promise_arr);
+    }
+
+    setGeoJson(collection: GeoJson) {
+        if (this.map) {
+            this.map.data.add
+        }
     }
 
     zoomToObject(obj: WrappedMarker | WrappedPolygon | WrappedPolyline) {
