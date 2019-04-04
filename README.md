@@ -1,6 +1,9 @@
 # Google Maps Wrapper
 
-changelog 0.3.0
+Changelog 0.3.1
+Fixed error in helper function `convertFromArrayOfCoords` and other functions dependant on it.
+
+Changelog 0.3.0
 Exporting helper functions from root. No need to initialize a map instance to access them.
 
 Changelog 0.2.1
