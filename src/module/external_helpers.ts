@@ -11,7 +11,7 @@ const EARTH_RADIUS = 6378137;
 
 export type convertFromArrayOfArrayType = (fromProj: Projection, toProj: Projection, points: [number, number][]) => [number, number][];
 export const convertFromArrayOfArray: convertFromArrayOfArrayType = (fromProj, toProj, points) => {
-    return proj4(fromProj, toProj, points);
+    return points.map(point => proj4(fromProj, toProj, point));
 };
 
 export type arrayToLatLngObjectType = (coords: [number, number][], invert: boolean) => LatLngLiteral[];
