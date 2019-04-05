@@ -148,7 +148,6 @@ export const setMapObject: setMapObject = (map_ref, type, id, options, selected_
 
     return new Promise((resolve, reject) => {
         if (!map_ref.initialized) {
-            console.log(map_ref);
             map_ref.do_after_init.push(() => {
                 setMapObject(map_ref, type, id, options, selected_options_id).then((res) => {
                     resolve(res);
