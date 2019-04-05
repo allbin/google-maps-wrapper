@@ -1,5 +1,7 @@
 import React from 'react';
-import MapBase, { MarkerOptions, PolylineOptions, PolygonOptions } from './module';
+import MapBase, { MarkerOptions, PolylineOptions, PolygonOptions, arrayRT90ToWGS84 } from './module';
+import example_geo_json from './example_geo_json';
+
 
 
 export default class Map extends React.Component<any, any> {
@@ -14,7 +16,6 @@ export default class Map extends React.Component<any, any> {
         };
         this.map.setMarker("marker1", { default: marker_opts }).then((marker) => {
             setTimeout(() => {
-                console.log("marker.panTo()");
                 marker.panTo();
             }, 6000);
         });
@@ -48,12 +49,12 @@ export default class Map extends React.Component<any, any> {
             strokeColor: "#FF0000",
             strokeWeight: 2,
             fillColor: "#FF0000",
-            fillOpacity: 0.5
+            fillOpacity: 0.2
         };
         let polygon_hover: PolygonOptions = {
             strokeWeight: 2,
             strokeColor: "#CC0000",
-            fillOpacity: 0.1
+            fillOpacity: 0.6
         };
         this.map.setPolygon(2, {
             default: polygon_opts,
@@ -66,14 +67,27 @@ export default class Map extends React.Component<any, any> {
                 polygon.applyOptions('default');
             });
 
-            polygon_opts.strokeOpacity = 0.6;
+            polygon_opts.strokeOpacity = 0.4;
             polygon.setOptions({ default: polygon_opts, hover: polygon_hover });
             setTimeout(() => {
-                console.log("this.map.zoomToObject(polygon);");
                 if (this.map) {
                     this.map.zoomToObject(polygon);
                 }
             }, 3000);
+        });
+        example_geo_json.geometry.coordinates = example_geo_json.geometry.coordinates.map((x) => {
+            return x.map((y) => {
+                return arrayRT90ToWGS84(y as [number, number][]);
+            });
+        });
+        this.map.setGeoJSONFeature(example_geo_json, {
+            default: { visible: true, fillColor: "#ff0000", fillOpacity: 0.3 },
+            hover: { fillOpacity: 0.6 }
+        }).then((x) => {
+            console.log(x);
+            if (this.map && this.map.features_layer) {
+                console.log(this.map.features_layer.getFeatureById("my_id"));
+            }
         });
     }
 

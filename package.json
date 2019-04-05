@@ -32,6 +32,6 @@
         "gulp-sourcemaps": "2.6.4",
         "gulp4": "4.0.2",
         "tslint-eslint-rules": "5.4.0",
-        "typescript": "3.3.4000"
+        "typescript": "3.4.1"
     }
 }

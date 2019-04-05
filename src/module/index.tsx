@@ -6,6 +6,7 @@ import { Feature, GeoJsonProperties, Geometry, GeoJsonObject } from 'geojson';
 import ScriptCache from './ScriptCache';
 import { MVCArrayToCoordArray, MVCArrayToObjArray, movePointsByCoord, makePointsAroundCircleRT90, makeRectRT90, convertFromArrayOfArray, arrayToLatLngObject, latLngArrayToCoordArray, haversineDistance, makePointsAroundCircleRT90Type, makeRectRT90Type, movePointsByCoordType, arrayToLatLngObjectType, latLngArrayToCoordArrayType, convertFromArrayOfArrayType, haversineDistanceType, MVCArrayToCoordArrayType, MVCArrayToObjArrayType} from './external_helpers';
 import * as internal_helpers from './internal_helpers';
+import * as feature_helpers from './feature_helpers';
 let ScissorIcon = require('./img/marker_scissors.svg');
 let ScissorHoverIcon = require('./img/marker_scissors_hover.svg');
 
@@ -153,8 +154,16 @@ export interface WrappedMarker extends WrappedGmapObj {
     unregisterEventCB: (event_type: MarkerEvents) => void;
 }
 export interface WrappedFeature {
-    gmaps_feature: Feature;
+    gmaps_feature: google.maps.Data.Feature;
     options: FeatureOptionsSet;
+    /** Do not modify this property.
+     * It is used internally to track visibility state of the feature.
+     * */
+    _visible: boolean;
+    selected_options_id: string;
+    show: () => void;
+    hide: () => void;
+    remove: () => void;
     setOptions: (options: FeatureOptionsSet) => Promise<WrappedFeature>;
     applyOptions: (options_id: string) => void;
     registerEventCB: (event_type: MarkerEvents, cb: (e?: any) => void) => void;
@@ -211,6 +220,8 @@ export default class WrappedMapBase extends React.Component<MapBaseProps, any> {
     do_on_drag_start: (() => void)[] = [];
     drawing_completed_listener: google.maps.MapsEventListener | null = null;
     map: google.maps.Map | null = null;
+    features_layer: google.maps.Data | null = null;
+    feature_layers: google.maps.Data[] = [];
     initialized: boolean = false;
     map_objects: {
         marker: {
@@ -358,6 +369,7 @@ export default class WrappedMapBase extends React.Component<MapBaseProps, any> {
             const maps = window.google.maps;
 
             this.map = new maps.Map(this.html_element, mapConfig);
+            this.features_layer = new maps.Data();
             this.services = {
                 geocoderService: new window.google.maps.Geocoder(),
                 directionsService: new window.google.maps.DirectionsService(),
@@ -507,20 +519,20 @@ export default class WrappedMapBase extends React.Component<MapBaseProps, any> {
         return Promise.all(promise_arr);
     }
 
-    setGeoJson(collection: GeoJSONFeatureCollection, options: google.maps.Data.StyleOptions) {
-        if (this.map) {
-            let data_layer = new google.maps.Data();
-            // let features: WrappedFeature[] = data_layer.addGeoJson(collection).map(gmaps_feature => ({
-            //     gmaps_feature: gmaps_feature,
-            // }));
-
-
-            data_layer.setStyle(options);
+    setGeoJSONCollection(collection: GeoJSONFeatureCollection, options: FeatureOptionsSet) {
+        return feature_helpers.setGeoJSONCollection(this, collection, options);
+    }
+    setGeoJSONFeature(feature: GeoJSONFeature, options: FeatureOptionsSet) {
+        return feature_helpers.setGeoJSONFeature(this, feature, options);
+    }
+    clearFeatureCollections() {
+        this.feature_layers.forEach(x => x.setMap(null));
+        this.feature_layers = [];
+        if (this.features_layer) {
+            Object.keys(this.map_objects.features).forEach((feature_key) => {
+                this.map_objects.features[feature_key].remove();
+            });
         }
-        return {
-            layer: true,
-            features: []
-        };
     }
 
     zoomToObject(obj: WrappedMarker | WrappedPolygon | WrappedPolyline) {

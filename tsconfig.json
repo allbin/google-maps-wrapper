@@ -1,5 +1,7 @@
 {
     "compilerOptions": {
+        "incremental": true,
+        "tsBuildInfoFile": "./buildcache/build_info",
         "paths": {
             "*": [
                 "types/*"
