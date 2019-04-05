@@ -12,7 +12,7 @@ export default class Map extends React.Component<any, any> {
             position: { lng: 14.40567, lat: 56.65918 },
             draggable: true
         };
-        this.map.setMarker("marker1", marker_opts).then((marker) => {
+        this.map.setMarker("marker1", { default: marker_opts }).then((marker) => {
             setTimeout(() => {
                 console.log("marker.panTo()");
                 marker.panTo();
@@ -33,7 +33,10 @@ export default class Map extends React.Component<any, any> {
             strokeWeight: 4,
             strokeColor: "#CC0000"
         };
-        this.map.setPolyline("polyline1", polyline_opts, polyline_hover);
+        this.map.setPolyline("polyline1", {
+            default: polyline_opts,
+            hover: polyline_hover
+        });
 
         let polygon_opts: PolygonOptions = {
             paths: [
@@ -52,14 +55,19 @@ export default class Map extends React.Component<any, any> {
             strokeColor: "#CC0000",
             fillOpacity: 0.1
         };
-        this.map.setPolygon(2, polygon_opts, polygon_hover).then((polygon) => {
-            polygon.registerEventCB("click", () => {
-                console.log("Clicked polygon.");
+        this.map.setPolygon(2, {
+            default: polygon_opts,
+            hover: polygon_hover
+        }).then((polygon) => {
+            polygon.registerEventCB("mouseover", () => {
+                polygon.applyOptions('hover');
             });
-            let x: PolygonOptions | MarkerOptions | PolylineOptions = {
-                strokeOpacity: 0.6
-            };
-            polygon.update(x);
+            polygon.registerEventCB("mouseout", () => {
+                polygon.applyOptions('default');
+            });
+
+            polygon_opts.strokeOpacity = 0.6;
+            polygon.setOptions({ default: polygon_opts, hover: polygon_hover });
             setTimeout(() => {
                 console.log("this.map.zoomToObject(polygon);");
                 if (this.map) {

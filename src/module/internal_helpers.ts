@@ -1,4 +1,21 @@
-import WrappedMapBase, { AnyObjectOptions, WrappedGmapObj, AllMapObjEvents, LatLng, LatLngLiteral, MapObjectType, PolylineOptions, WrappedPolyline, MarkerOptions, WrappedMarker, PolygonOptions, WrappedPolygon } from './';
+import WrappedMapBase, {
+    // AnyObjectOptions,
+    AnyObjectOptionsSet,
+    WrappedGmapObj,
+    AllMapObjEvents,
+    LatLng,
+    LatLngLiteral,
+    MapObjectType,
+    PolylineOptions,
+    PolylineOptionsSet,
+    WrappedPolyline,
+    MarkerOptions,
+    MarkerOptionsSet,
+    WrappedMarker,
+    PolygonOptions,
+    PolygonOptionsSet,
+    WrappedPolygon
+} from './';
 
 /////////////////////////////////
 //INTERNAL MAP HELPER FUNCTIONS
@@ -109,31 +126,31 @@ export function fitToBoundsOfObjectArray(map_ref: WrappedMapBase, arr_of_latlngl
     });
 }
 
-export function setPolyline(map_ref: WrappedMapBase, id: string | number, options: PolylineOptions, hover_options: PolylineOptions | null = null): Promise<WrappedPolyline> {
-    return setMapObject(map_ref, "polyline", id, options, hover_options) as Promise<WrappedPolyline>;
+export function setPolyline(map_ref: WrappedMapBase, id: string | number, options: PolylineOptionsSet): Promise<WrappedPolyline> {
+    return setMapObject(map_ref, "polyline", id, options) as Promise<WrappedPolyline>;
 }
-export function setPolygon(map_ref: WrappedMapBase, id: string | number, options: PolylineOptions, hover_options: PolylineOptions | null = null): Promise<WrappedPolygon> {
-    return setMapObject(map_ref, "polygon", id, options, hover_options) as Promise<WrappedPolygon>;
+export function setPolygon(map_ref: WrappedMapBase, id: string | number, options: PolygonOptionsSet): Promise<WrappedPolygon> {
+    return setMapObject(map_ref, "polygon", id, options) as Promise<WrappedPolygon>;
 }
-export function setMarker(map_ref: WrappedMapBase, id: string | number, options: MarkerOptions, hover_options: MarkerOptions | null = null): Promise<WrappedMarker> {
-    return setMapObject(map_ref, "marker", id, options, hover_options) as Promise<WrappedMarker>;
+export function setMarker(map_ref: WrappedMapBase, id: string | number, options: MarkerOptionsSet): Promise<WrappedMarker> {
+    return setMapObject(map_ref, "marker", id, options) as Promise<WrappedMarker>;
 }
 
 type setMapObject = (
     map_ref: WrappedMapBase,
     type: MapObjectType,
     id: string | number,
-    options: AnyObjectOptions,
-    hover_options: AnyObjectOptions | null
+    options: AnyObjectOptionsSet,
+    current_options_id?: string
 ) => Promise<WrappedPolyline|WrappedPolygon|WrappedMarker>;
 
-export const setMapObject: setMapObject = (map_ref, type, id, options, hover_options) => {
+export const setMapObject: setMapObject = (map_ref, type, id, options, selected_options_id = 'default') => {
 
     return new Promise((resolve, reject) => {
         if (!map_ref.initialized) {
             console.log(map_ref);
             map_ref.do_after_init.push(() => {
-                setMapObject(map_ref, type, id, options, hover_options).then((res) => {
+                setMapObject(map_ref, type, id, options, selected_options_id).then((res) => {
                     resolve(res);
                 }).catch((err) => {
                     reject(err);
@@ -145,29 +162,23 @@ export const setMapObject: setMapObject = (map_ref, type, id, options, hover_opt
         if (map_ref.map_objects[type].hasOwnProperty(id)) {
             //This ID has already been drawn.
             let map_obj = map_ref.map_objects[type][id];
-            let opts;
-            if (map_obj.hovered && hover_options) {
-                opts = Object.assign({}, map_obj.options, options, hover_options);
-            } else {
-                opts = Object.assign({}, map_obj.options, options);
-            }
+            const visible = map_obj.gmaps_obj.getVisible();
+            let opts = Object.assign({}, map_obj.options[selected_options_id], options[selected_options_id], { visible: visible });
+            map_obj.selected_options_id = selected_options_id;
             switch (map_obj.type) {
                 case "polyline": {
                     map_obj.gmaps_obj.setOptions(opts as PolylineOptions);
-                    map_obj.options = options as PolylineOptions;
-                    if (hover_options) { map_obj.hover_options = hover_options as PolylineOptions; }
+                    map_obj.options = options as PolylineOptionsSet;
                     break;
                 }
                 case "polygon": {
                     map_obj.gmaps_obj.setOptions(opts as PolygonOptions);
-                    map_obj.options = options as PolygonOptions;
-                    if (hover_options) { map_obj.hover_options = hover_options as PolygonOptions; }
+                    map_obj.options = options as PolygonOptionsSet;
                     break;
                 }
                 case "marker": {
                     map_obj.gmaps_obj.setOptions(opts as MarkerOptions);
-                    map_obj.options = options as MarkerOptions;
-                    if (hover_options) { map_obj.hover_options = hover_options as MarkerOptions; }
+                    map_obj.options = options as MarkerOptionsSet;
                     break;
                 }
                 default: {
@@ -184,25 +195,27 @@ export const setMapObject: setMapObject = (map_ref, type, id, options, hover_opt
             _cbs: {
                 [key: string]: (e?: any) => void;
             };
+            type: MapObjectType;
+            selected_options_id: string;
         }
 
         let map_obj_shell: MapObjShell = {
             _cbs: {},
-            hovered: false,
-            type: type
+            type: type,
+            selected_options_id: selected_options_id
         };
         let events: AllMapObjEvents[] = [];
         let path_events: AllMapObjEvents[] = [];
         switch (type) {
             case "marker": {
-                let opts = Object.assign({}, DEFAULT_MARKER_OPTIONS, options);
+                let opts = Object.assign({}, DEFAULT_MARKER_OPTIONS, options.default);
                 map_obj_shell.gmaps_obj = new window.google.maps.Marker(opts);
                 map_obj_shell.options = opts;
                 events = ["click", "mouseover", "mouseout", "mousedown", "mouseup", "dragstart", "drag", "dragend", "dblclick", "rightclick"];
                 break;
             }
             case "polygon": {
-                let opts = Object.assign({}, DEFAULT_POLYGON_OPTIONS, options);
+                let opts = Object.assign({}, DEFAULT_POLYGON_OPTIONS, options.default);
                 map_obj_shell.gmaps_obj = new window.google.maps.Polygon(opts);
                 map_obj_shell.options = opts;
                 events = ["click", "dblclick", "dragstart", "drag", "dragend", "mouseover", "mouseout", "mousedown", "mouseup", "mousemove", "rightclick"];
@@ -210,7 +223,7 @@ export const setMapObject: setMapObject = (map_ref, type, id, options, hover_opt
                 break;
             }
             case "polyline": {
-                let opts = Object.assign({}, DEFAULT_POLYLINE_OPTIONS, options);
+                let opts = Object.assign({}, DEFAULT_POLYLINE_OPTIONS, options.default);
                 map_obj_shell.gmaps_obj = new window.google.maps.Polyline(opts);
                 map_obj_shell.options = opts;
                 events = ["click", "dblclick", "dragstart", "drag", "dragend", "mouseover", "mouseout", "mousedown", "mouseup", "mousemove", "rightclick"];
@@ -222,7 +235,7 @@ export const setMapObject: setMapObject = (map_ref, type, id, options, hover_opt
                 return;
             }
         }
-        map_obj_shell.hover_options = hover_options;
+
 
         map_obj_shell.registerEventCB = (event_type: string, cb) => {
             map_obj_shell._cbs[event_type] = cb;
@@ -233,37 +246,20 @@ export const setMapObject: setMapObject = (map_ref, type, id, options, hover_opt
             }
         };
 
-        map_obj_shell.hover = () => {
-            if (!map_obj_shell.hover_options) { return; }
-            let opts = Object.assign({}, map_obj_shell.options, map_obj_shell.hover_options);
-            let whitelisted_opts = {
-                strokeColor: opts.strokeColor,
-                strokeWidth: opts.strokeWidth,
-                fillColor: opts.fillColor,
-                fillOpacity: opts.fillOpacity
-            };
-            map_obj_shell.gmaps_obj.setOptions(whitelisted_opts);
-            map_obj_shell.hovered = true;
-        };
-        map_obj_shell.unhover = () => {
-            let opts = Object.assign({}, map_obj_shell.options);
-            let whitelisted_opts = {
-                strokeColor: opts.strokeColor,
-                strokeWidth: opts.strokeWidth,
-                fillColor: opts.fillColor,
-                fillOpacity: opts.fillOpacity
-            };
-            map_obj_shell.gmaps_obj.setOptions(whitelisted_opts);
-            map_obj_shell.hovered = false;
-        };
+
         map_obj_shell.remove = () => { return unsetMapObject(map_ref, type, id); };
-        map_obj_shell.update = (new_options) => { return setMapObject(map_ref, type, id, new_options, hover_options); };
-        map_obj_shell.updateHover = (new_hover_options) => { return setMapObject(map_ref, type, id, options, new_hover_options); };
+        map_obj_shell.setOptions = (new_options) => { return setMapObject(map_ref, type, id, new_options, map_obj_shell.selected_options_id); };
+        map_obj_shell.applyOptions = (options_id) => {
+            map_obj_shell.selected_options_id = options_id;
+            const visible = (map_obj_shell.gmaps_obj as google.maps.Polygon).getVisible();
+            const opts_set = map_obj_shell.options;
+            map_obj_shell.gmaps_obj.setOptions(Object.assign({}, opts_set.default, opts_set[options_id], { visible: visible }));
+        };
         map_obj_shell.hide = () => {
-            map_obj_shell.gmaps_obj.setOptions(Object.assign({}, map_obj_shell.options, { visible: false }));
+            map_obj_shell.gmaps_obj.setOptions(Object.assign({}, map_obj_shell.options[map_obj_shell.selected_options_id], { visible: false }));
         };
         map_obj_shell.show = () => {
-            map_obj_shell.gmaps_obj.setOptions(Object.assign({}, map_obj_shell.options, { visible: true }));
+            map_obj_shell.gmaps_obj.setOptions(Object.assign({}, map_obj_shell.options[map_obj_shell.selected_options_id], { visible: true }));
         };
         let map_obj = map_obj_shell as WrappedGmapObj;
         events.forEach((event_type) => {
@@ -353,8 +349,6 @@ export function mapObjectEventCB(map_ref: WrappedMapBase, map_obj: WrappedGmapOb
         //When the map is in cutting mode no object event callbacks are allowed.
         return true;
     }
-    if (event_type === "mouseover") { map_obj.hover(); }
-    if (event_type === "mouseout") { map_obj.unhover(); }
 
     if (map_obj._cbs.hasOwnProperty(event_type) && map_obj._cbs[event_type]) {
         map_obj._cbs[event_type](e);

@@ -1,7 +1,7 @@
 import * as React from 'react';
 import * as ReactDOM from 'react-dom';
 import proj4 from 'proj4';
-import { GeometryObject, FeatureCollection, Feature } from 'geojson';
+import { Feature, GeoJsonProperties, Geometry, GeoJsonObject } from 'geojson';
 
 import ScriptCache from './ScriptCache';
 import { MVCArrayToCoordArray, MVCArrayToObjArray, movePointsByCoord, makePointsAroundCircleRT90, makeRectRT90, convertFromArrayOfArray, arrayToLatLngObject, latLngArrayToCoordArray, haversineDistance, makePointsAroundCircleRT90Type, makeRectRT90Type, movePointsByCoordType, arrayToLatLngObjectType, latLngArrayToCoordArrayType, convertFromArrayOfArrayType, haversineDistanceType, MVCArrayToCoordArrayType, MVCArrayToObjArrayType} from './external_helpers';
@@ -25,10 +25,55 @@ export interface LatLng extends google.maps.LatLng {}
 export interface MouseEvent extends google.maps.MouseEvent {}
 export interface Polyline extends google.maps.Polyline {}
 export interface PolylineOptions extends google.maps.PolylineOptions {}
+/**
+ * Polyline collection must contain a default property.
+ * Use Polyline.applyOptions('option_id') to apply one of the defined styles.
+ * Use Polyline.setOptions(PolylineOptionsSet) to specify new options.
+ */
+export interface PolylineOptionsSet {
+    default: PolylineOptions;
+    [id: string]: PolylineOptions;
+}
 export interface Polygon extends google.maps.Polygon {}
 export interface PolygonOptions extends google.maps.PolygonOptions {}
+/**
+ * Polygon collection must contain a default property.
+ * Use Polygon.applyOptions('option_id') to apply one of the defined styles.
+ * Use Polygon.setOptions(PolygonOptionsSet) to specify new options.
+ */
+export interface PolygonOptionsSet {
+    default: PolygonOptions;
+    [id: string]: PolygonOptions;
+}
 export interface Marker extends google.maps.Marker {}
 export interface MarkerOptions extends google.maps.MarkerOptions {}
+/**
+ * Marker collection must contain a default property.
+ * Use Marker.applyOptions('option_id') to apply one of the defined styles.
+ * Use Marker.setOptions(MarkerOptionsSet) to specify new options.
+ */
+export interface MarkerOptionsSet {
+    default: MarkerOptions;
+    [id: string]: MarkerOptions;
+}
+
+export type AnyObjectOptions = MarkerOptions | PolylineOptions | PolygonOptions;
+export type AnyObjectOptionsSet = MarkerOptionsSet | PolylineOptionsSet | PolygonOptionsSet;
+
+
+export interface Feature extends google.maps.Data.Feature {}
+export interface FeatureOptions extends google.maps.Data.StyleOptions {}
+/**
+ * Feature collection must contain a default property.
+ * Use Feature.applyOptions('option_id') to apply one of the defined styles.
+ * Use Feature.setOptions(PolylineOptionsSet) to specify new options.
+ */
+export interface FeatureOptionsSet {
+    default: FeatureOptions;
+    [id: string]: FeatureOptions;
+}
+
+
 
 export type MarkerEvents = "click" | "mouseover" | "mouseout" | "mousedown" | "mouseup" | "dragstart" | "drag" | "dragend" | "dblclick" | "rightclick";
 export type PolylineEvents = "click" | "dblclick" | "dragstart" | "drag" | "dragend" | "mouseover" | "mouseout" | "mousedown" | "mouseup" | "mousemove" | "rightclick" | "set_at" | "remove_at" | "insert_at";
@@ -66,10 +111,6 @@ export interface MapBaseProps {
 export interface WrappedGmapObj {
     gmaps_obj?: any;
     type: MapObjectType;
-    hover: () => void;
-    hovered: boolean;
-    hover_options: any;
-    unhover: () => void;
     show: () => void;
     hide: () => void;
     remove: () => void;
@@ -79,8 +120,9 @@ export interface WrappedGmapObj {
     registerEventCB: (event_type: MarkerEvents & PolygonEvents & PolylineEvents, cb: (e?: any) => void) => void;
     unregisterEventCB: (event_type: MarkerEvents & PolygonEvents & PolylineEvents) => void;
     options: any;
-    update: (options: any) => Promise<WrappedGmapObj>;
-    updateHover: (options: any) => Promise<WrappedGmapObj>;
+    selected_options_id: string;
+    setOptions: (options: any) => Promise<WrappedGmapObj>;
+    applyOptions: (options_id: string) => void;
     zoomTo: () => void;
     panTo: () => void;
 }
@@ -88,45 +130,47 @@ export interface WrappedGmapObj {
 export interface WrappedPolygon extends WrappedGmapObj {
     gmaps_obj: Polygon;
     type: "polygon";
-    options: PolygonOptions;
-    hover_options: PolygonOptions;
-    update: (options: PolygonOptions) => Promise<WrappedPolygon>;
-    updateHover: (options: PolygonOptions) => Promise<WrappedPolygon>;
+    options: PolygonOptionsSet;
+    setOptions: (options: PolygonOptionsSet) => Promise<WrappedPolygon>;
+    applyOptions: (options_id: string) => void;
     registerEventCB: (event_type: PolygonEvents, cb: (e?: any) => void) => void;
     unregisterEventCB: (event_type: PolygonEvents) => void;
 }
 export interface WrappedPolyline extends WrappedGmapObj {
     gmaps_obj: Polyline;
     type: "polyline";
-    options: PolylineOptions;
-    hover_options: PolylineOptions;
-    update: (options: PolylineOptions) => Promise<WrappedPolyline>;
-    updateHover: (options: PolylineOptions) => Promise<WrappedPolyline>;
+    options: PolylineOptionsSet;
+    setOptions: (options: PolylineOptionsSet) => Promise<WrappedPolyline>;
     registerEventCB: (event_type: PolylineEvents, cb: (e?: any) => void) => void;
     unregisterEventCB: (event_type: PolylineEvents) => void;
 }
 export interface WrappedMarker extends WrappedGmapObj {
     gmaps_obj: Marker;
     type: "marker";
-    options: MarkerOptions;
-    hover_options: MarkerOptions;
-    update: (options: MarkerOptions) => Promise<WrappedMarker>;
-    updateHover: (options: MarkerOptions) => Promise<WrappedMarker>;
+    options: MarkerOptionsSet;
+    setOptions: (options: MarkerOptionsSet) => Promise<WrappedMarker>;
+    registerEventCB: (event_type: MarkerEvents, cb: (e?: any) => void) => void;
+    unregisterEventCB: (event_type: MarkerEvents) => void;
+}
+export interface WrappedFeature {
+    gmaps_feature: Feature;
+    options: FeatureOptionsSet;
+    setOptions: (options: FeatureOptionsSet) => Promise<WrappedFeature>;
+    applyOptions: (options_id: string) => void;
     registerEventCB: (event_type: MarkerEvents, cb: (e?: any) => void) => void;
     unregisterEventCB: (event_type: MarkerEvents) => void;
 }
 
-export type AnyObjectOptions = MarkerOptions | PolylineOptions | PolygonOptions;
-
-
 export type MapObjectType = "polyline" | "polygon" | "marker";
 
-export interface GeoJSONFeature<G extends GeometryObject, T> extends Feature<G> {
-    properties: T;
+
+export interface GeoJSONFeature<G extends Geometry | null = Geometry, P extends GeoJsonProperties = null> extends Feature<G, P> {
+    id: string | number;
 }
 
-export interface GeoJSONFeatureCollection<G extends GeometryObject, T> extends FeatureCollection<G> {
-    features: GeoJSONFeature<G, T>[];
+export interface GeoJSONFeatureCollection<G extends Geometry | null = Geometry, P = GeoJsonProperties> extends GeoJsonObject {
+    type: "FeatureCollection";
+    features: Array<GeoJSONFeature<G, P>>;
 }
 
 
@@ -170,21 +214,26 @@ export default class WrappedMapBase extends React.Component<MapBaseProps, any> {
     initialized: boolean = false;
     map_objects: {
         marker: {
-            [key: string]: WrappedMarker;
-            [index: number]: WrappedMarker;
+            [id: string]: WrappedMarker;
+            [id: number]: WrappedMarker;
         }
         polygon: {
-            [key: string]: WrappedPolygon;
-            [index: number]: WrappedPolygon;
+            [id: string]: WrappedPolygon;
+            [id: number]: WrappedPolygon;
         }
         polyline: {
-            [key: string]: WrappedPolyline;
-            [index: number]: WrappedPolyline;
+            [id: string]: WrappedPolyline;
+            [id: number]: WrappedPolyline;
+        }
+        features: {
+            [id: string]: WrappedFeature;
+            [id: number]: WrappedFeature;
         }
     } = {
         marker: {},
         polygon: {},
-        polyline: {}
+        polyline: {},
+        features: {}
     };
     cutting_objects: {
         [key: string]: any;
@@ -416,8 +465,8 @@ export default class WrappedMapBase extends React.Component<MapBaseProps, any> {
         });
     }
 
-    setPolyline(id: string | number, options: PolylineOptions, hover_options: PolylineOptions | null = null): Promise<WrappedPolyline> {
-        return internal_helpers.setPolyline(this, id, options, hover_options);
+    setPolyline(id: string | number, options: PolylineOptionsSet): Promise<WrappedPolyline> {
+        return internal_helpers.setPolyline(this, id, options);
     }
     unsetPolyline(id: string | number): Promise<boolean> {
         return internal_helpers.unsetMapObject(this, "polyline", id);
@@ -430,8 +479,8 @@ export default class WrappedMapBase extends React.Component<MapBaseProps, any> {
         return Promise.all(promise_arr);
     }
 
-    setPolygon(id: string | number, options: PolygonOptions, hover_options: PolygonOptions | null = null): Promise<WrappedPolygon> {
-        return internal_helpers.setPolygon(this, id, options, hover_options);
+    setPolygon(id: string | number, options: PolygonOptionsSet): Promise<WrappedPolygon> {
+        return internal_helpers.setPolygon(this, id, options);
     }
     unsetPolygon(id: string | number): Promise<boolean> {
         return internal_helpers.unsetMapObject(this, "polygon", id);
@@ -444,8 +493,8 @@ export default class WrappedMapBase extends React.Component<MapBaseProps, any> {
         return Promise.all(promise_arr);
     }
 
-    setMarker(id: string | number, options: MarkerOptions, hover_options: MarkerOptions | null = null): Promise<WrappedMarker> {
-        return internal_helpers.setMarker(this, id, options, hover_options);
+    setMarker(id: string | number, options: MarkerOptionsSet): Promise<WrappedMarker> {
+        return internal_helpers.setMarker(this, id, options);
     }
     unsetMarker(id: string | number): Promise<boolean> {
         return internal_helpers.unsetMapObject(this, "marker", id);
@@ -458,10 +507,20 @@ export default class WrappedMapBase extends React.Component<MapBaseProps, any> {
         return Promise.all(promise_arr);
     }
 
-    setGeoJson(collection: GeoJson) {
+    setGeoJson(collection: GeoJSONFeatureCollection, options: google.maps.Data.StyleOptions) {
         if (this.map) {
-            this.map.data.add
+            let data_layer = new google.maps.Data();
+            // let features: WrappedFeature[] = data_layer.addGeoJson(collection).map(gmaps_feature => ({
+            //     gmaps_feature: gmaps_feature,
+            // }));
+
+
+            data_layer.setStyle(options);
         }
+        return {
+            layer: true,
+            features: []
+        };
     }
 
     zoomToObject(obj: WrappedMarker | WrappedPolygon | WrappedPolyline) {
@@ -738,17 +797,17 @@ export default class WrappedMapBase extends React.Component<MapBaseProps, any> {
         let closest_index = 0;
         let closest_dist = 9999999;
         //Find nearest index and move scissors_hover marker.
-        polyline.options.path!.forEach((point: any, i: number) => {
-            let dist = haversineDistance(mouse_coord, point);
+        polyline.gmaps_obj.getPath().forEach((point, i: number) => {
+            let dist = haversineDistance(mouse_coord, { lat: point.lat(), lng: point.lng() });
             if (dist < closest_dist) {
                 closest_index = i;
                 closest_dist = dist;
             }
         });
-        let path = polyline.options.path as any;
+        let path = polyline.gmaps_obj.getPath().getArray();
         if (closest_dist < CUTTING_SNAP_DISTANCE && closest_index > 0 && closest_index < path.length - 1) {
             this.cutting_objects.hover_scissors.gmaps_obj.setOptions({
-                position: path[closest_index],
+                position: { lat: path[closest_index].lat(), lng: path[closest_index].lng() },
                 visible: true
             });
         } else {
