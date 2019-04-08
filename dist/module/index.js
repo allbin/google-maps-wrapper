@@ -4,6 +4,7 @@ import proj4 from 'proj4';
 import ScriptCache from './ScriptCache';
 import { MVCArrayToCoordArray, MVCArrayToObjArray, movePointsByCoord, makePointsAroundCircleRT90, makeRectRT90, convertFromArrayOfArray, arrayToLatLngObject, latLngArrayToCoordArray, haversineDistance } from './external_helpers';
 import * as internal_helpers from './internal_helpers';
+import * as feature_helpers from './feature_helpers';
 let ScissorIcon = require('./img/marker_scissors.svg');
 let ScissorHoverIcon = require('./img/marker_scissors_hover.svg');
 const CUTTING_SNAP_DISTANCE = 200;
@@ -38,11 +39,14 @@ export default class WrappedMapBase extends React.Component {
         this.do_on_drag_start = [];
         this.drawing_completed_listener = null;
         this.map = null;
+        this.features_layer = null;
+        this.feature_layers = [];
         this.initialized = false;
         this.map_objects = {
             marker: {},
             polygon: {},
-            polyline: {}
+            polyline: {},
+            features: {}
         };
         this.cutting_objects = {};
         this.overlay = null;
@@ -120,6 +124,11 @@ export default class WrappedMapBase extends React.Component {
             });
             const maps = window.google.maps;
             this.map = new maps.Map(this.html_element, mapConfig);
+            this.features_layer = new maps.Data();
+            if (this.features_layer) {
+                this.features_layer.setMap(this.map);
+                feature_helpers.setupLayerEvents(this, this.features_layer);
+            }
             this.services = {
                 geocoderService: new window.google.maps.Geocoder(),
                 directionsService: new window.google.maps.DirectionsService(),
@@ -218,8 +227,8 @@ export default class WrappedMapBase extends React.Component {
             return;
         });
     }
-    setPolyline(id, options, hover_options = null) {
-        return internal_helpers.setPolyline(this, id, options, hover_options);
+    setPolyline(id, options) {
+        return internal_helpers.setPolyline(this, id, options);
     }
     unsetPolyline(id) {
         return internal_helpers.unsetMapObject(this, "polyline", id);
@@ -231,8 +240,8 @@ export default class WrappedMapBase extends React.Component {
         });
         return Promise.all(promise_arr);
     }
-    setPolygon(id, options, hover_options = null) {
-        return internal_helpers.setPolygon(this, id, options, hover_options);
+    setPolygon(id, options) {
+        return internal_helpers.setPolygon(this, id, options);
     }
     unsetPolygon(id) {
         return internal_helpers.unsetMapObject(this, "polygon", id);
@@ -244,8 +253,8 @@ export default class WrappedMapBase extends React.Component {
         });
         return Promise.all(promise_arr);
     }
-    setMarker(id, options, hover_options = null) {
-        return internal_helpers.setMarker(this, id, options, hover_options);
+    setMarker(id, options) {
+        return internal_helpers.setMarker(this, id, options);
     }
     unsetMarker(id) {
         return internal_helpers.unsetMapObject(this, "marker", id);
@@ -256,6 +265,21 @@ export default class WrappedMapBase extends React.Component {
             promise_arr.push(internal_helpers.unsetMapObject(this, "marker", id));
         });
         return Promise.all(promise_arr);
+    }
+    setGeoJSONCollection(collection, options) {
+        return feature_helpers.setGeoJSONCollection(this, collection, options);
+    }
+    setGeoJSONFeature(feature, options) {
+        return feature_helpers.setGeoJSONFeature(this, feature, options);
+    }
+    clearFeatureCollections() {
+        this.feature_layers.forEach(x => x.setMap(null));
+        this.feature_layers = [];
+        if (this.features_layer) {
+            Object.keys(this.map_objects.features).forEach((feature_key) => {
+                this.map_objects.features[feature_key].remove();
+            });
+        }
     }
     zoomToObject(obj) {
         internal_helpers.panZoomToObject(this, obj, true);
@@ -521,17 +545,17 @@ export default class WrappedMapBase extends React.Component {
         let closest_index = 0;
         let closest_dist = 9999999;
         //Find nearest index and move scissors_hover marker.
-        polyline.options.path.forEach((point, i) => {
-            let dist = haversineDistance(mouse_coord, point);
+        polyline.gmaps_obj.getPath().forEach((point, i) => {
+            let dist = haversineDistance(mouse_coord, { lat: point.lat(), lng: point.lng() });
             if (dist < closest_dist) {
                 closest_index = i;
                 closest_dist = dist;
             }
         });
-        let path = polyline.options.path;
+        let path = polyline.gmaps_obj.getPath().getArray();
         if (closest_dist < CUTTING_SNAP_DISTANCE && closest_index > 0 && closest_index < path.length - 1) {
             this.cutting_objects.hover_scissors.gmaps_obj.setOptions({
-                position: path[closest_index],
+                position: { lat: path[closest_index].lat(), lng: path[closest_index].lng() },
                 visible: true
             });
         }

@@ -100,21 +100,20 @@ export function fitToBoundsOfObjectArray(map_ref, arr_of_latlngliteral) {
         resolve();
     });
 }
-export function setPolyline(map_ref, id, options, hover_options = null) {
-    return setMapObject(map_ref, "polyline", id, options, hover_options);
+export function setPolyline(map_ref, id, options) {
+    return setMapObject(map_ref, "polyline", id, options);
 }
-export function setPolygon(map_ref, id, options, hover_options = null) {
-    return setMapObject(map_ref, "polygon", id, options, hover_options);
+export function setPolygon(map_ref, id, options) {
+    return setMapObject(map_ref, "polygon", id, options);
 }
-export function setMarker(map_ref, id, options, hover_options = null) {
-    return setMapObject(map_ref, "marker", id, options, hover_options);
+export function setMarker(map_ref, id, options) {
+    return setMapObject(map_ref, "marker", id, options);
 }
-export const setMapObject = (map_ref, type, id, options, hover_options) => {
+export const setMapObject = (map_ref, type, id, options, selected_options_id = 'default') => {
     return new Promise((resolve, reject) => {
         if (!map_ref.initialized) {
-            console.log(map_ref);
             map_ref.do_after_init.push(() => {
-                setMapObject(map_ref, type, id, options, hover_options).then((res) => {
+                setMapObject(map_ref, type, id, options, selected_options_id).then((res) => {
                     resolve(res);
                 }).catch((err) => {
                     reject(err);
@@ -125,36 +124,23 @@ export const setMapObject = (map_ref, type, id, options, hover_options) => {
         if (map_ref.map_objects[type].hasOwnProperty(id)) {
             //This ID has already been drawn.
             let map_obj = map_ref.map_objects[type][id];
-            let opts;
-            if (map_obj.hovered && hover_options) {
-                opts = Object.assign({}, map_obj.options, options, hover_options);
-            }
-            else {
-                opts = Object.assign({}, map_obj.options, options);
-            }
+            const visible = map_obj.gmaps_obj.getVisible();
+            let opts = Object.assign({}, map_obj.options[selected_options_id], options[selected_options_id], { visible: visible });
+            map_obj.selected_options_id = selected_options_id;
             switch (map_obj.type) {
                 case "polyline": {
                     map_obj.gmaps_obj.setOptions(opts);
                     map_obj.options = options;
-                    if (hover_options) {
-                        map_obj.hover_options = hover_options;
-                    }
                     break;
                 }
                 case "polygon": {
                     map_obj.gmaps_obj.setOptions(opts);
                     map_obj.options = options;
-                    if (hover_options) {
-                        map_obj.hover_options = hover_options;
-                    }
                     break;
                 }
                 case "marker": {
                     map_obj.gmaps_obj.setOptions(opts);
                     map_obj.options = options;
-                    if (hover_options) {
-                        map_obj.hover_options = hover_options;
-                    }
                     break;
                 }
                 default: {
@@ -166,21 +152,21 @@ export const setMapObject = (map_ref, type, id, options, hover_options) => {
         }
         let map_obj_shell = {
             _cbs: {},
-            hovered: false,
-            type: type
+            type: type,
+            selected_options_id: selected_options_id
         };
         let events = [];
         let path_events = [];
         switch (type) {
             case "marker": {
-                let opts = Object.assign({}, DEFAULT_MARKER_OPTIONS, options);
+                let opts = Object.assign({}, DEFAULT_MARKER_OPTIONS, options.default);
                 map_obj_shell.gmaps_obj = new window.google.maps.Marker(opts);
                 map_obj_shell.options = opts;
                 events = ["click", "mouseover", "mouseout", "mousedown", "mouseup", "dragstart", "drag", "dragend", "dblclick", "rightclick"];
                 break;
             }
             case "polygon": {
-                let opts = Object.assign({}, DEFAULT_POLYGON_OPTIONS, options);
+                let opts = Object.assign({}, DEFAULT_POLYGON_OPTIONS, options.default);
                 map_obj_shell.gmaps_obj = new window.google.maps.Polygon(opts);
                 map_obj_shell.options = opts;
                 events = ["click", "dblclick", "dragstart", "drag", "dragend", "mouseover", "mouseout", "mousedown", "mouseup", "mousemove", "rightclick"];
@@ -188,7 +174,7 @@ export const setMapObject = (map_ref, type, id, options, hover_options) => {
                 break;
             }
             case "polyline": {
-                let opts = Object.assign({}, DEFAULT_POLYLINE_OPTIONS, options);
+                let opts = Object.assign({}, DEFAULT_POLYLINE_OPTIONS, options.default);
                 map_obj_shell.gmaps_obj = new window.google.maps.Polyline(opts);
                 map_obj_shell.options = opts;
                 events = ["click", "dblclick", "dragstart", "drag", "dragend", "mouseover", "mouseout", "mousedown", "mouseup", "mousemove", "rightclick"];
@@ -200,7 +186,6 @@ export const setMapObject = (map_ref, type, id, options, hover_options) => {
                 return;
             }
         }
-        map_obj_shell.hover_options = hover_options;
         map_obj_shell.registerEventCB = (event_type, cb) => {
             map_obj_shell._cbs[event_type] = cb;
         };
@@ -209,39 +194,19 @@ export const setMapObject = (map_ref, type, id, options, hover_options) => {
                 delete map_obj_shell._cbs[event_type];
             }
         };
-        map_obj_shell.hover = () => {
-            if (!map_obj_shell.hover_options) {
-                return;
-            }
-            let opts = Object.assign({}, map_obj_shell.options, map_obj_shell.hover_options);
-            let whitelisted_opts = {
-                strokeColor: opts.strokeColor,
-                strokeWidth: opts.strokeWidth,
-                fillColor: opts.fillColor,
-                fillOpacity: opts.fillOpacity
-            };
-            map_obj_shell.gmaps_obj.setOptions(whitelisted_opts);
-            map_obj_shell.hovered = true;
-        };
-        map_obj_shell.unhover = () => {
-            let opts = Object.assign({}, map_obj_shell.options);
-            let whitelisted_opts = {
-                strokeColor: opts.strokeColor,
-                strokeWidth: opts.strokeWidth,
-                fillColor: opts.fillColor,
-                fillOpacity: opts.fillOpacity
-            };
-            map_obj_shell.gmaps_obj.setOptions(whitelisted_opts);
-            map_obj_shell.hovered = false;
-        };
         map_obj_shell.remove = () => { return unsetMapObject(map_ref, type, id); };
-        map_obj_shell.update = (new_options) => { return setMapObject(map_ref, type, id, new_options, hover_options); };
-        map_obj_shell.updateHover = (new_hover_options) => { return setMapObject(map_ref, type, id, options, new_hover_options); };
+        map_obj_shell.setOptions = (new_options) => { return setMapObject(map_ref, type, id, new_options, map_obj_shell.selected_options_id); };
+        map_obj_shell.applyOptions = (options_id) => {
+            map_obj_shell.selected_options_id = options_id;
+            const visible = map_obj_shell.gmaps_obj.getVisible();
+            const opts_set = map_obj_shell.options;
+            map_obj_shell.gmaps_obj.setOptions(Object.assign({}, opts_set.default, opts_set[options_id], { visible: visible }));
+        };
         map_obj_shell.hide = () => {
-            map_obj_shell.gmaps_obj.setOptions(Object.assign({}, map_obj_shell.options, { visible: false }));
+            map_obj_shell.gmaps_obj.setOptions(Object.assign({}, map_obj_shell.options[map_obj_shell.selected_options_id], { visible: false }));
         };
         map_obj_shell.show = () => {
-            map_obj_shell.gmaps_obj.setOptions(Object.assign({}, map_obj_shell.options, { visible: true }));
+            map_obj_shell.gmaps_obj.setOptions(Object.assign({}, map_obj_shell.options[map_obj_shell.selected_options_id], { visible: true }));
         };
         let map_obj = map_obj_shell;
         events.forEach((event_type) => {
@@ -323,12 +288,6 @@ export function mapObjectEventCB(map_ref, map_obj, event_type, e) {
     if (map_ref.cutting.enabled) {
         //When the map is in cutting mode no object event callbacks are allowed.
         return true;
-    }
-    if (event_type === "mouseover") {
-        map_obj.hover();
-    }
-    if (event_type === "mouseout") {
-        map_obj.unhover();
     }
     if (map_obj._cbs.hasOwnProperty(event_type) && map_obj._cbs[event_type]) {
         map_obj._cbs[event_type](e);
