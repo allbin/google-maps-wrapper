@@ -1,4 +1,4 @@
-import { GeoJSONFeature } from './module';
+import { GeoJSONFeature, GeoJSONFeatureCollection } from './module';
 import { MultiPolygon } from 'geojson';
 
 const test_rt_90: GeoJSONFeature<MultiPolygon> = {
@@ -42,4 +42,12 @@ const test_rt_90: GeoJSONFeature<MultiPolygon> = {
         ]]
     }
 };
-export default test_rt_90;
+
+let x: GeoJSONFeatureCollection<MultiPolygon> = {
+    type: "FeatureCollection",
+    features: [
+        test_rt_90
+    ]
+};
+
+export default x;

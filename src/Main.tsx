@@ -75,19 +75,25 @@ export default class Map extends React.Component<any, any> {
                 }
             }, 3000);
         });
-        example_geo_json.geometry.coordinates = example_geo_json.geometry.coordinates.map((x) => {
-            return x.map((y) => {
+
+        example_geo_json.features[0].geometry.coordinates = example_geo_json.features[0].geometry.coordinates.map((x: any) => {
+            return x.map((y:any) => {
                 return arrayRT90ToWGS84(y as [number, number][]);
             });
         });
-        this.map.setGeoJSONFeature(example_geo_json, {
+        this.map.setGeoJSONCollection(example_geo_json, {
             default: { visible: true, fillColor: "#ff0000", fillOpacity: 0.3 },
             hover: { fillOpacity: 0.6 }
         }).then((x) => {
-            console.log(x);
-            if (this.map && this.map.features_layer) {
-                console.log(this.map.features_layer.getFeatureById("my_id"));
-            }
+            x.features.forEach((y) => {
+                console.log(y);
+                y.registerEventCB('mouseover', () => {
+                    y.applyOptions('hover');
+                });
+                y.registerEventCB('mouseout', () => {
+                    y.applyOptions('default');
+                });
+            });
         });
     }
 

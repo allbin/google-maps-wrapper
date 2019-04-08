@@ -80,6 +80,7 @@ export type MarkerEvents = "click" | "mouseover" | "mouseout" | "mousedown" | "m
 export type PolylineEvents = "click" | "dblclick" | "dragstart" | "drag" | "dragend" | "mouseover" | "mouseout" | "mousedown" | "mouseup" | "mousemove" | "rightclick" | "set_at" | "remove_at" | "insert_at";
 export type PolygonEvents = "click" | "dblclick" | "dragstart" | "drag" | "dragend" | "mouseover" | "mouseout" | "mousedown" | "mouseup" | "mousemove" | "rightclick" | "set_at" | "remove_at" | "insert_at";
 export type AllMapObjEvents = MarkerEvents | PolylineEvents | PolygonEvents;
+export type FeatureEvents = "click" | "mouseover" | "mouseout" | "mousedown" | "mouseup" | "rightclick";
 export interface MapBaseProps {
     initializedCB?: (this_ref: WrappedMapBase) => void;
     googleapi_maps_uri: string;
@@ -115,6 +116,10 @@ export interface WrappedGmapObj {
     show: () => void;
     hide: () => void;
     remove: () => void;
+    /** **Do not modify this property**.
+     *
+     * It is used internally to track event callbacks.
+     * */
     _cbs: {
         [key: string]: (e?: any) => void;
     };
@@ -156,18 +161,24 @@ export interface WrappedMarker extends WrappedGmapObj {
 export interface WrappedFeature {
     gmaps_feature: google.maps.Data.Feature;
     options: FeatureOptionsSet;
-    /** Do not modify this property.
+    /** **Do not modify this property**
+     *
      * It is used internally to track visibility state of the feature.
      * */
     _visible: boolean;
+    /** **Do not modify this property**.
+     *
+     * It is used internally to track event callbacks.
+     * */
+    _cbs: { [key: string]: (e: google.maps.Data.MouseEvent) => void };
     selected_options_id: string;
     show: () => void;
     hide: () => void;
     remove: () => void;
     setOptions: (options: FeatureOptionsSet) => Promise<WrappedFeature>;
     applyOptions: (options_id: string) => void;
-    registerEventCB: (event_type: MarkerEvents, cb: (e?: any) => void) => void;
-    unregisterEventCB: (event_type: MarkerEvents) => void;
+    registerEventCB: (event_type: FeatureEvents, cb: (e: google.maps.Data.MouseEvent) => void) => void;
+    unregisterEventCB: (event_type: FeatureEvents) => void;
 }
 
 export type MapObjectType = "polyline" | "polygon" | "marker";
@@ -370,6 +381,10 @@ export default class WrappedMapBase extends React.Component<MapBaseProps, any> {
 
             this.map = new maps.Map(this.html_element, mapConfig);
             this.features_layer = new maps.Data();
+            if (this.features_layer) {
+                this.features_layer.setMap(this.map);
+                feature_helpers.setupLayerEvents(this, this.features_layer);
+            }
             this.services = {
                 geocoderService: new window.google.maps.Geocoder(),
                 directionsService: new window.google.maps.DirectionsService(),

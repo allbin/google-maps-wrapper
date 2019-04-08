@@ -1,4 +1,23 @@
-import WrappedMapBase, { GeoJSONFeatureCollection, FeatureOptionsSet, WrappedFeature, GeoJSONFeature } from '.';
+import WrappedMapBase, { GeoJSONFeatureCollection, FeatureOptionsSet, WrappedFeature, GeoJSONFeature, FeatureEvents } from '.';
+
+const feature_events: FeatureEvents[] = ["click" , "mouseover" , "mouseout" , "mousedown" , "mouseup" , "rightclick"];
+
+type setupLayerEvents = (
+    map_ref: WrappedMapBase,
+    layer: google.maps.Data
+) => void;
+export const setupLayerEvents: setupLayerEvents = (map_ref, layer) => {
+    feature_events.forEach((event_type) => {
+        layer.addListener(event_type, (data_mouse_event: google.maps.Data.MouseEvent) => {
+            const feature_id = data_mouse_event.feature.getId();
+            const wrapped_feature = map_ref.map_objects.features[feature_id];
+            if (wrapped_feature && wrapped_feature._cbs[event_type]) {
+                wrapped_feature._cbs[event_type](data_mouse_event);
+            }
+        });
+    });
+};
+
 
 type wrapGmapsFeature = (
     layer: google.maps.Data,
@@ -11,6 +30,7 @@ const wrapGmapsFeature: wrapGmapsFeature = (layer, gmaps_feature, options) => {
         options: FeatureOptionsSet;
         selected_options_id: string;
         _visible: boolean;
+        _cbs: { [key: string]: (e: google.maps.Data.MouseEvent) => void };
     }
 
     let wrapped_feature: WrappedFeatureShell = {
@@ -18,6 +38,7 @@ const wrapGmapsFeature: wrapGmapsFeature = (layer, gmaps_feature, options) => {
         options: options,
         selected_options_id: 'default',
         _visible: options.default.visible !== undefined ? options.default.visible : true,
+        _cbs: {}
     };
     wrapped_feature.setOptions = (new_options: FeatureOptionsSet) => {
         wrapped_feature.options = new_options;
@@ -42,6 +63,15 @@ const wrapGmapsFeature: wrapGmapsFeature = (layer, gmaps_feature, options) => {
     wrapped_feature.remove = () => {
         layer.remove(gmaps_feature);
     };
+    wrapped_feature.registerEventCB = (event_type, cb) => {
+        wrapped_feature._cbs[event_type] = cb;
+    };
+    wrapped_feature.unregisterEventCB = (event_type) => {
+        delete wrapped_feature._cbs[event_type];
+    };
+
+
+    wrapped_feature.applyOptions('default');
 
     return wrapped_feature as unknown as WrappedFeature;
 };
@@ -107,6 +137,7 @@ export const setGeoJSONCollection: setGeoJSONCollection = (map_ref, collection, 
 
         let layer = new window.google.maps.Data() as google.maps.Data;
         layer.setMap(map_ref.map);
+        setupLayerEvents(map_ref, layer);
 
         let features: WrappedFeature[] = layer.addGeoJson(collection).map((gmaps_feature) => {
             let wrapped_feature = wrapGmapsFeature(layer, gmaps_feature, options);
