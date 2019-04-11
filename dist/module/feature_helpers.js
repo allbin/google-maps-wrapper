@@ -23,6 +23,7 @@ const wrapGmapsFeature = (layer, gmaps_feature, options) => {
         return Promise.resolve(wrapped_feature);
     };
     wrapped_feature.applyOptions = (options_id) => {
+        wrapped_feature.selected_options_id = options_id;
         let new_options = Object.assign({}, options.default, options[wrapped_feature.selected_options_id], { visible: wrapped_feature._visible });
         layer.overrideStyle(gmaps_feature, new_options);
     };
