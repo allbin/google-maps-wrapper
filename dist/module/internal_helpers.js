@@ -219,10 +219,10 @@ export const setMapObject = (map_ref, type, id, options, selected_options_id = '
         switch (map_obj.type) {
             case "polyline": {
                 map_obj.zoomTo = () => {
-                    panZoomToObject(map_ref, map_obj, true);
+                    panZoomToObjectOrFeature(map_ref, map_obj, true);
                 };
                 map_obj.panTo = () => {
-                    panZoomToObject(map_ref, map_obj, false);
+                    panZoomToObjectOrFeature(map_ref, map_obj, false);
                 };
                 map_ref.map_objects[type][id] = map_obj;
                 resolve(map_obj);
@@ -230,10 +230,10 @@ export const setMapObject = (map_ref, type, id, options, selected_options_id = '
             }
             case "polygon": {
                 map_obj.zoomTo = () => {
-                    panZoomToObject(map_ref, map_obj, true);
+                    panZoomToObjectOrFeature(map_ref, map_obj, true);
                 };
                 map_obj.panTo = () => {
-                    panZoomToObject(map_ref, map_obj, false);
+                    panZoomToObjectOrFeature(map_ref, map_obj, false);
                 };
                 map_ref.map_objects[type][id] = map_obj;
                 resolve(map_obj);
@@ -241,10 +241,10 @@ export const setMapObject = (map_ref, type, id, options, selected_options_id = '
             }
             case "marker": {
                 map_obj.zoomTo = () => {
-                    panZoomToObject(map_ref, map_obj, true);
+                    panZoomToObjectOrFeature(map_ref, map_obj, true);
                 };
                 map_obj.panTo = () => {
-                    panZoomToObject(map_ref, map_obj, false);
+                    panZoomToObjectOrFeature(map_ref, map_obj, false);
                 };
                 map_ref.map_objects[type][id] = map_obj;
                 resolve(map_obj);
@@ -294,10 +294,20 @@ export function mapObjectEventCB(map_ref, map_obj, event_type, e) {
     }
     return true;
 }
-export function panZoomToObject(map_ref, obj, zoom = true) {
+export function panZoomToObjectOrFeature(map_ref, obj, zoom = true) {
     if (!map_ref.map) {
         return;
     }
+    if (obj.hasOwnProperty("gmaps_feature")) {
+        if (zoom) {
+            map_ref.map.fitBounds(obj._bbox);
+        }
+        else {
+            map_ref.map.panToBounds(obj._bbox);
+        }
+        return;
+    }
+    obj = obj; //Reset typing.
     switch (obj.type) {
         case "marker": {
             let position = obj.gmaps_obj.getPosition();

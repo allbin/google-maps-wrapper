@@ -1,3 +1,4 @@
+import { panZoomToObjectOrFeature } from './internal_helpers';
 const feature_events = ["click", "mouseover", "mouseout", "mousedown", "mouseup", "rightclick"];
 export const setupLayerEvents = (map_ref, layer) => {
     feature_events.forEach((event_type) => {
@@ -10,14 +11,18 @@ export const setupLayerEvents = (map_ref, layer) => {
         });
     });
 };
-const wrapGmapsFeature = (layer, gmaps_feature, options) => {
+const wrapGmapsFeature = (map_ref, layer, gmaps_feature, options) => {
     let wrapped_feature = {
         gmaps_feature: gmaps_feature,
         options: options,
         selected_options_id: 'default',
         _visible: options.default.visible !== undefined ? options.default.visible : true,
-        _cbs: {}
+        _cbs: {},
+        _bbox: new window.google.maps.LatLngBounds()
     };
+    gmaps_feature.getGeometry().forEachLatLng((point) => {
+        wrapped_feature._bbox.extend(point);
+    });
     wrapped_feature.setOptions = (new_options) => {
         wrapped_feature.options = new_options;
         return Promise.resolve(wrapped_feature);
@@ -48,6 +53,12 @@ const wrapGmapsFeature = (layer, gmaps_feature, options) => {
     wrapped_feature.unregisterEventCB = (event_type) => {
         delete wrapped_feature._cbs[event_type];
     };
+    wrapped_feature.zoomTo = () => {
+        panZoomToObjectOrFeature(map_ref, wrapped_feature, true);
+    };
+    wrapped_feature.panTo = () => {
+        panZoomToObjectOrFeature(map_ref, wrapped_feature, false);
+    };
     wrapped_feature.applyOptions('default');
     return wrapped_feature;
 };
@@ -74,7 +85,7 @@ export const setGeoJSONFeature = (map_ref, feature, options, layer = null) => {
             layer = map_ref.features_layer;
         }
         const gmaps_feature = layer.addGeoJson(feature)[0];
-        const wrapped_feature = wrapGmapsFeature(layer, gmaps_feature, options);
+        const wrapped_feature = wrapGmapsFeature(map_ref, layer, gmaps_feature, options);
         map_ref.map_objects.features[feature.id] = wrapped_feature;
         resolve(wrapped_feature);
     });
@@ -95,7 +106,7 @@ export const setGeoJSONCollection = (map_ref, collection, options) => {
         layer.setMap(map_ref.map);
         setupLayerEvents(map_ref, layer);
         let features = layer.addGeoJson(collection).map((gmaps_feature) => {
-            let wrapped_feature = wrapGmapsFeature(layer, gmaps_feature, options);
+            let wrapped_feature = wrapGmapsFeature(map_ref, layer, gmaps_feature, options);
             map_ref.map_objects.features[gmaps_feature.getId()] = wrapped_feature;
             return wrapped_feature;
         });

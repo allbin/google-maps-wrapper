@@ -1,4 +1,4 @@
-import WrappedMapBase, { AnyObjectOptionsSet, WrappedGmapObj, AllMapObjEvents, LatLng, LatLngLiteral, MapObjectType, PolylineOptionsSet, WrappedPolyline, MarkerOptionsSet, WrappedMarker, PolygonOptionsSet, WrappedPolygon } from './';
+import WrappedMapBase, { AnyObjectOptionsSet, WrappedGmapObj, AllMapObjEvents, LatLng, LatLngLiteral, MapObjectType, PolylineOptionsSet, WrappedPolyline, MarkerOptionsSet, WrappedMarker, PolygonOptionsSet, WrappedPolygon, WrappedFeature } from './';
 export declare function fromLatLngToPixel(map_ref: WrappedMapBase, latLng: LatLng): any;
 export declare function fitToBoundsOfArray(map_ref: WrappedMapBase, arr_of_coords: [number, number][]): Promise<{}>;
 export declare function fitToBoundsOfObjectArray(map_ref: WrappedMapBase, arr_of_latlngliteral: LatLngLiteral[]): Promise<{}>;
@@ -9,5 +9,5 @@ declare type setMapObject = (map_ref: WrappedMapBase, type: MapObjectType, id: s
 export declare const setMapObject: setMapObject;
 export declare function unsetMapObject(map_ref: WrappedMapBase, type: MapObjectType, id: string | number): Promise<boolean>;
 export declare function mapObjectEventCB(map_ref: WrappedMapBase, map_obj: WrappedGmapObj, event_type: AllMapObjEvents, e: any): boolean;
-export declare function panZoomToObject(map_ref: WrappedMapBase, obj: WrappedMarker | WrappedPolygon | WrappedPolyline, zoom?: boolean): void;
+export declare function panZoomToObjectOrFeature(map_ref: WrappedMapBase, obj: WrappedMarker | WrappedPolygon | WrappedPolyline | WrappedFeature, zoom?: boolean): void;
 export {};

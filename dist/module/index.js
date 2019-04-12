@@ -281,11 +281,11 @@ export default class WrappedMapBase extends React.Component {
             });
         }
     }
-    zoomToObject(obj) {
-        internal_helpers.panZoomToObject(this, obj, true);
+    zoomToObject(item) {
+        internal_helpers.panZoomToObjectOrFeature(this, item, true);
     }
-    panToObject(obj) {
-        internal_helpers.panZoomToObject(this, obj, false);
+    panToObject(item) {
+        internal_helpers.panZoomToObjectOrFeature(this, item, false);
     }
     registerDragEndCB(cb) {
         //Is actually triggered by Idle, not DragEnd!

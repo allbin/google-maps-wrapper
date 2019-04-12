@@ -158,13 +158,18 @@ export interface WrappedFeature {
      * It is used internally to track visibility state of the feature.
      * */
     _visible: boolean;
-    /** **Do not modify this property**.
+    /** **Do not modify this property**
      *
      * It is used internally to track event callbacks.
      * */
     _cbs: {
         [key: string]: (e: google.maps.Data.MouseEvent) => void;
     };
+    /** **Do not modify this property**.
+     *
+     * It is used internally for panTo and zoomTo operations.
+     * */
+    _bbox: google.maps.LatLngBounds;
     selected_options_id: string;
     show: () => void;
     hide: () => void;
@@ -173,6 +178,8 @@ export interface WrappedFeature {
     applyOptions: (options_id: string) => void;
     registerEventCB: (event_type: FeatureEvents, cb: (e: google.maps.Data.MouseEvent) => void) => void;
     unregisterEventCB: (event_type: FeatureEvents) => void;
+    zoomTo: () => void;
+    panTo: () => void;
 }
 export declare type MapObjectType = "polyline" | "polygon" | "marker";
 export interface GeoJSONFeature<G extends Geometry | null = Geometry, P extends GeoJsonProperties = null> extends Feature<G, P> {
@@ -279,8 +286,8 @@ export default class WrappedMapBase extends React.Component<MapBaseProps, any> {
     }>;
     setGeoJSONFeature(feature: GeoJSONFeature, options: FeatureOptionsSet): Promise<WrappedFeature>;
     clearFeatureCollections(): void;
-    zoomToObject(obj: WrappedMarker | WrappedPolygon | WrappedPolyline): void;
-    panToObject(obj: WrappedMarker | WrappedPolygon | WrappedPolyline): void;
+    zoomToObject(item: WrappedMarker | WrappedPolygon | WrappedPolyline | WrappedFeature): void;
+    panToObject(item: WrappedMarker | WrappedPolygon | WrappedPolyline | WrappedFeature): void;
     registerDragEndCB(cb: () => void): void;
     unregisterDragEndCB(cb: () => void): void;
     registerDragStartCB(cb: () => void): void;
