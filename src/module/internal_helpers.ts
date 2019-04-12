@@ -14,7 +14,8 @@ import WrappedMapBase, {
     WrappedMarker,
     PolygonOptions,
     PolygonOptionsSet,
-    WrappedPolygon
+    WrappedPolygon,
+    WrappedFeature
 } from './';
 
 /////////////////////////////////
@@ -273,10 +274,10 @@ export const setMapObject: setMapObject = (map_ref, type, id, options, selected_
         switch (map_obj.type) {
             case "polyline": {
                 map_obj.zoomTo = () => {
-                    panZoomToObject(map_ref, map_obj as WrappedPolyline, true);
+                    panZoomToObjectOrFeature(map_ref, map_obj as WrappedPolyline, true);
                 };
                 map_obj.panTo = () => {
-                    panZoomToObject(map_ref, map_obj as WrappedPolyline, false);
+                    panZoomToObjectOrFeature(map_ref, map_obj as WrappedPolyline, false);
                 };
                 map_ref.map_objects[type][id] = map_obj as WrappedPolyline;
                 resolve(map_obj as WrappedPolyline);
@@ -284,10 +285,10 @@ export const setMapObject: setMapObject = (map_ref, type, id, options, selected_
             }
             case "polygon": {
                 map_obj.zoomTo = () => {
-                    panZoomToObject(map_ref, map_obj as WrappedPolygon, true);
+                    panZoomToObjectOrFeature(map_ref, map_obj as WrappedPolygon, true);
                 };
                 map_obj.panTo = () => {
-                    panZoomToObject(map_ref, map_obj as WrappedPolygon, false);
+                    panZoomToObjectOrFeature(map_ref, map_obj as WrappedPolygon, false);
                 };
                 map_ref.map_objects[type][id] = map_obj as WrappedPolygon;
                 resolve(map_obj as WrappedPolygon);
@@ -295,10 +296,10 @@ export const setMapObject: setMapObject = (map_ref, type, id, options, selected_
             }
             case "marker": {
                 map_obj.zoomTo = () => {
-                    panZoomToObject(map_ref, map_obj as WrappedMarker, true);
+                    panZoomToObjectOrFeature(map_ref, map_obj as WrappedMarker, true);
                 };
                 map_obj.panTo = () => {
-                    panZoomToObject(map_ref, map_obj as WrappedMarker, false);
+                    panZoomToObjectOrFeature(map_ref, map_obj as WrappedMarker, false);
                 };
                 map_ref.map_objects[type][id] = map_obj as WrappedMarker;
                 resolve(map_obj as WrappedMarker);
@@ -355,10 +356,20 @@ export function mapObjectEventCB(map_ref: WrappedMapBase, map_obj: WrappedGmapOb
     return true;
 }
 
-export function panZoomToObject(map_ref: WrappedMapBase, obj: WrappedMarker | WrappedPolygon | WrappedPolyline, zoom: boolean = true) {
+export function panZoomToObjectOrFeature(map_ref: WrappedMapBase, obj: WrappedMarker | WrappedPolygon | WrappedPolyline | WrappedFeature, zoom: boolean = true) {
     if (!map_ref.map) {
         return;
     }
+    if (obj.hasOwnProperty("gmaps_feature")) {
+        if (zoom) {
+            map_ref.map.fitBounds((obj as WrappedFeature)._bbox);
+        } else {
+            map_ref.map.panToBounds((obj as WrappedFeature)._bbox);
+        }
+        return;
+    }
+
+    obj = obj as WrappedMarker | WrappedPolygon | WrappedPolyline; //Reset typing.
     switch (obj.type) {
         case "marker": {
             let position = obj.gmaps_obj.getPosition();

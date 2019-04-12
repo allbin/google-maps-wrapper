@@ -1,4 +1,5 @@
 import WrappedMapBase, { GeoJSONFeatureCollection, FeatureOptionsSet, WrappedFeature, GeoJSONFeature, FeatureEvents } from '.';
+import { panZoomToObjectOrFeature } from './internal_helpers';
 
 const feature_events: FeatureEvents[] = ["click" , "mouseover" , "mouseout" , "mousedown" , "mouseup" , "rightclick"];
 
@@ -20,17 +21,19 @@ export const setupLayerEvents: setupLayerEvents = (map_ref, layer) => {
 
 
 type wrapGmapsFeature = (
+    map_ref: WrappedMapBase,
     layer: google.maps.Data,
     gmaps_feature: google.maps.Data.Feature,
     options: FeatureOptionsSet
 ) => WrappedFeature;
-const wrapGmapsFeature: wrapGmapsFeature = (layer, gmaps_feature, options) => {
+const wrapGmapsFeature: wrapGmapsFeature = (map_ref, layer, gmaps_feature, options) => {
     interface WrappedFeatureShell extends Partial<WrappedFeature> {
-        gmaps_feature: any;
+        gmaps_feature: google.maps.Data.Feature;
         options: FeatureOptionsSet;
         selected_options_id: string;
         _visible: boolean;
         _cbs: { [key: string]: (e: google.maps.Data.MouseEvent) => void };
+        _bbox: google.maps.LatLngBounds;
     }
 
     let wrapped_feature: WrappedFeatureShell = {
@@ -38,8 +41,12 @@ const wrapGmapsFeature: wrapGmapsFeature = (layer, gmaps_feature, options) => {
         options: options,
         selected_options_id: 'default',
         _visible: options.default.visible !== undefined ? options.default.visible : true,
-        _cbs: {}
+        _cbs: {},
+        _bbox: new window.google.maps.LatLngBounds()
     };
+    gmaps_feature.getGeometry().forEachLatLng((point) => {
+        wrapped_feature._bbox.extend(point);
+    });
     wrapped_feature.setOptions = (new_options: FeatureOptionsSet) => {
         wrapped_feature.options = new_options;
         return Promise.resolve(wrapped_feature as WrappedFeature);
@@ -69,6 +76,12 @@ const wrapGmapsFeature: wrapGmapsFeature = (layer, gmaps_feature, options) => {
     };
     wrapped_feature.unregisterEventCB = (event_type) => {
         delete wrapped_feature._cbs[event_type];
+    };
+    wrapped_feature.zoomTo = () => {
+        panZoomToObjectOrFeature(map_ref, wrapped_feature as WrappedFeature, true);
+    };
+    wrapped_feature.panTo = () => {
+        panZoomToObjectOrFeature(map_ref, wrapped_feature as WrappedFeature, false);
     };
 
 
@@ -109,7 +122,7 @@ export const setGeoJSONFeature: setGeoJSONFeature = (map_ref, feature, options, 
             layer = map_ref.features_layer!;
         }
         const gmaps_feature = layer.addGeoJson(feature)[0];
-        const wrapped_feature = wrapGmapsFeature(layer, gmaps_feature, options);
+        const wrapped_feature = wrapGmapsFeature(map_ref, layer, gmaps_feature, options);
         map_ref.map_objects.features[feature.id] = wrapped_feature;
         resolve(wrapped_feature);
     });
@@ -141,7 +154,7 @@ export const setGeoJSONCollection: setGeoJSONCollection = (map_ref, collection, 
         setupLayerEvents(map_ref, layer);
 
         let features: WrappedFeature[] = layer.addGeoJson(collection).map((gmaps_feature) => {
-            let wrapped_feature = wrapGmapsFeature(layer, gmaps_feature, options);
+            let wrapped_feature = wrapGmapsFeature(map_ref, layer, gmaps_feature, options);
             map_ref.map_objects.features[gmaps_feature.getId()] = wrapped_feature;
             return wrapped_feature;
         });

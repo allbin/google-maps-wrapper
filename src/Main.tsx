@@ -17,7 +17,7 @@ export default class Map extends React.Component<any, any> {
         this.map.setMarker("marker1", { default: marker_opts }).then((marker) => {
             setTimeout(() => {
                 marker.panTo();
-            }, 6000);
+            }, 7000);
         });
 
         let polyline_opts: PolylineOptions = {
@@ -73,7 +73,7 @@ export default class Map extends React.Component<any, any> {
                 if (this.map) {
                     this.map.zoomToObject(polygon);
                 }
-            }, 3000);
+            }, 2000);
         });
 
         example_geo_json.features[0].geometry.coordinates = example_geo_json.features[0].geometry.coordinates.map((x: any) => {
@@ -94,6 +94,11 @@ export default class Map extends React.Component<any, any> {
                     y.applyOptions('default');
                 });
             });
+            setTimeout(() => {
+                if (this.map) {
+                    this.map.panToObject(x.features[0]);
+                }
+            }, 4000);
         });
     }
 
