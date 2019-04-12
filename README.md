@@ -1,5 +1,12 @@
 # Google Maps Wrapper
 
+## Changelog 1.1.0
+Added `Feature.zoomTo()` and `Feature.panTo()` functionality.  
+Also extended `panToObject(item)` and `zoomToObject(item)` functions to also accept Features.
+
+## Changelog 1.0.1
+Fixed error in `Feature.applyOptions()`.
+
 ## Changelog 1.0.0
 Updated API for managing options:  
 - Polygons, Markers and Polylines now takes a set of options objects, one of which must be keyed `default`. EX: `setPolyline("my_id", my_options_set)`. Example options_set:
