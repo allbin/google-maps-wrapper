@@ -1,5 +1,8 @@
 # Google Maps Wrapper
 
+## Changelog 1.1.1
+Added detection if invalid options_id is supplied to `Feature.applyOptions(options_id)` function.
+
 ## Changelog 1.1.0
 Added `Feature.zoomTo()` and `Feature.panTo()` functionality.  
 Also extended `panToObject(item)` and `zoomToObject(item)` functions to also accept Features.
