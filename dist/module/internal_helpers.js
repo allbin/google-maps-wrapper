@@ -197,6 +197,9 @@ export const setMapObject = (map_ref, type, id, options, selected_options_id = '
         map_obj_shell.remove = () => { return unsetMapObject(map_ref, type, id); };
         map_obj_shell.setOptions = (new_options) => { return setMapObject(map_ref, type, id, new_options, map_obj_shell.selected_options_id); };
         map_obj_shell.applyOptions = (options_id) => {
+            if (options.hasOwnProperty(options_id)) {
+                throw new Error("Tried to applyOptions(options_id) with '" + options_id + "', but options for given id are not defined.");
+            }
             map_obj_shell.selected_options_id = options_id;
             const visible = map_obj_shell.gmaps_obj.getVisible();
             const opts_set = map_obj_shell.options;
