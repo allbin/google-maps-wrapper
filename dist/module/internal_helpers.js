@@ -161,14 +161,14 @@ export const setMapObject = (map_ref, type, id, options, selected_options_id = '
             case "marker": {
                 let opts = Object.assign({}, DEFAULT_MARKER_OPTIONS, options.default);
                 map_obj_shell.gmaps_obj = new window.google.maps.Marker(opts);
-                map_obj_shell.options = opts;
+                map_obj_shell.options = options;
                 events = ["click", "mouseover", "mouseout", "mousedown", "mouseup", "dragstart", "drag", "dragend", "dblclick", "rightclick"];
                 break;
             }
             case "polygon": {
                 let opts = Object.assign({}, DEFAULT_POLYGON_OPTIONS, options.default);
                 map_obj_shell.gmaps_obj = new window.google.maps.Polygon(opts);
-                map_obj_shell.options = opts;
+                map_obj_shell.options = options;
                 events = ["click", "dblclick", "dragstart", "drag", "dragend", "mouseover", "mouseout", "mousedown", "mouseup", "mousemove", "rightclick"];
                 path_events = ["set_at", "remove_at", "insert_at"];
                 break;
@@ -176,7 +176,7 @@ export const setMapObject = (map_ref, type, id, options, selected_options_id = '
             case "polyline": {
                 let opts = Object.assign({}, DEFAULT_POLYLINE_OPTIONS, options.default);
                 map_obj_shell.gmaps_obj = new window.google.maps.Polyline(opts);
-                map_obj_shell.options = opts;
+                map_obj_shell.options = options;
                 events = ["click", "dblclick", "dragstart", "drag", "dragend", "mouseover", "mouseout", "mousedown", "mouseup", "mousemove", "rightclick"];
                 path_events = ["set_at", "remove_at", "insert_at"];
                 break;

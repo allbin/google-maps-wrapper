@@ -1,5 +1,8 @@
 # Google Maps Wrapper
 
+## Changelog 1.1.3
+Fixed bug where options were not correctly saved on initial creation of Markers, Polylines and Polygons.
+
 ## Changelog 1.1.2
 Fixed bug in detection if invalid options_id is supplied to `Feature.applyOptions(options_id)` function.
 
