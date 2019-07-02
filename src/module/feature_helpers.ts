@@ -52,7 +52,7 @@ const wrapGmapsFeature: wrapGmapsFeature = (map_ref, layer, gmaps_feature, optio
         return Promise.resolve(wrapped_feature as WrappedFeature);
     };
     wrapped_feature.applyOptions = (options_id: string) => {
-        if (options.hasOwnProperty(options_id)) {
+        if (options.hasOwnProperty(options_id) === false) {
             throw new Error("Tried to applyOptions(options_id) with '" + options_id + "', but options for given id are not defined.");
         }
         wrapped_feature.selected_options_id = options_id;
