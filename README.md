@@ -1,5 +1,8 @@
 # Google Maps Wrapper
 
+## Changelog 1.1.2
+Fixed bug in detection if invalid options_id is supplied to `Feature.applyOptions(options_id)` function.
+
 ## Changelog 1.1.1
 Added detection if invalid options_id is supplied to `Feature.applyOptions(options_id)` function.
 
