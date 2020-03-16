@@ -1,5 +1,8 @@
 # Google Maps Wrapper
 
+## Changelog 1.2.0
+Added `map.getBoundsLiteral()` function which returns the current map bounds in LatLngBoundsLiteral format.
+
 ## Changelog 1.1.3
 Fixed bug where options were not correctly saved on initial creation of Markers, Polylines and Polygons.
 
