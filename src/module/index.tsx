@@ -22,6 +22,12 @@ export interface LatLngLiteral {
     lat: number;
     lng: number;
 }
+export interface LatLngBoundsLiteral {
+    north: number;
+    east: number;
+    south: number;
+    west: number;
+}
 export interface LatLng extends google.maps.LatLng {}
 export interface MouseEvent extends google.maps.MouseEvent {}
 export interface Polyline extends google.maps.Polyline {}
@@ -430,6 +436,24 @@ export default class WrappedMapBase extends React.Component<MapBaseProps, any> {
         if (this.props.initializedCB) {
             //Tell parent we are initialized if the parent has asked for it.
             this.props.initializedCB(this);
+        }
+    }
+
+    getBoundsLiteral(): LatLngBoundsLiteral | null {
+        if (!this.map) {
+            return null;
+        }
+        const bounds = this.map.getBounds();
+        if (!bounds) {
+            return null;
+        }
+        const ne = bounds.getNorthEast();
+        const sw = bounds.getSouthWest();
+        return {
+            north: ne.lat(),
+            east: ne.lng(),
+            south: sw.lat(),
+            west: sw.lng()
         }
     }
 
