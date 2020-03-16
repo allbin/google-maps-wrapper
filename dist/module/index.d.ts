@@ -12,6 +12,12 @@ export interface LatLngLiteral {
     lat: number;
     lng: number;
 }
+export interface LatLngBoundsLiteral {
+    north: number;
+    east: number;
+    south: number;
+    west: number;
+}
 export interface LatLng extends google.maps.LatLng {
 }
 export interface MouseEvent extends google.maps.MouseEvent {
@@ -265,6 +271,7 @@ export default class WrappedMapBase extends React.Component<MapBaseProps, any> {
     componentWillUnmount(): void;
     componentDidMount(): void;
     doAfterInit(): void;
+    getBoundsLiteral(): LatLngBoundsLiteral | null;
     setCenter(latLng: LatLngLiteral | LatLng): Promise<void>;
     fitToBoundsArray(arr_of_coords: [number, number][]): Promise<{}>;
     fitToBoundsObjectArray(arr_of_objects: LatLngLiteral[]): Promise<{}>;

@@ -165,6 +165,23 @@ export default class WrappedMapBase extends React.Component {
             this.props.initializedCB(this);
         }
     }
+    getBoundsLiteral() {
+        if (!this.map) {
+            return null;
+        }
+        const bounds = this.map.getBounds();
+        if (!bounds) {
+            return null;
+        }
+        const ne = bounds.getNorthEast();
+        const sw = bounds.getSouthWest();
+        return {
+            north: ne.lat(),
+            east: ne.lng(),
+            south: sw.lat(),
+            west: sw.lng()
+        };
+    }
     setCenter(latLng) {
         return new Promise((resolve, reject) => {
             if (!this.initialized) {
