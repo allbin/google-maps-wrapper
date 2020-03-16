@@ -1,4 +1,4 @@
-let gulp = require('gulp4');
+let gulp = require('gulp');
 let sourcemaps = require('gulp-sourcemaps');
 let ts = require('gulp-typescript');
 let tsProject = ts.createProject('./tsconfig.prod.json');
