@@ -1,5 +1,8 @@
 # Google Maps Wrapper
 
+## Changelog 1.3.0
+Added `map.fitToBoundsLiteral()` function which will move and zoom the map to contain the bounds.
+
 ## Changelog 1.2.0
 Added `map.getBoundsLiteral()` function which returns the current map bounds in LatLngBoundsLiteral format.
 
