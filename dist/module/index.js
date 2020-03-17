@@ -204,6 +204,9 @@ export default class WrappedMapBase extends React.Component {
     fitToBoundsArray(arr_of_coords) {
         return internal_helpers.fitToBoundsOfArray(this, arr_of_coords);
     }
+    fitToBoundsLiteral(bounds) {
+        return internal_helpers.fitToBoundsLiteral(this, bounds);
+    }
     fitToBoundsObjectArray(arr_of_objects) {
         return internal_helpers.fitToBoundsOfObjectArray(this, arr_of_objects);
     }

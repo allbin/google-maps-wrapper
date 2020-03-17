@@ -1,6 +1,7 @@
-import WrappedMapBase, { AnyObjectOptionsSet, WrappedGmapObj, AllMapObjEvents, LatLng, LatLngLiteral, MapObjectType, PolylineOptionsSet, WrappedPolyline, MarkerOptionsSet, WrappedMarker, PolygonOptionsSet, WrappedPolygon, WrappedFeature } from './';
+import WrappedMapBase, { AnyObjectOptionsSet, WrappedGmapObj, AllMapObjEvents, LatLng, LatLngLiteral, MapObjectType, PolylineOptionsSet, WrappedPolyline, MarkerOptionsSet, WrappedMarker, PolygonOptionsSet, WrappedPolygon, WrappedFeature, LatLngBoundsLiteral } from './';
 export declare function fromLatLngToPixel(map_ref: WrappedMapBase, latLng: LatLng): any;
 export declare function fitToBoundsOfArray(map_ref: WrappedMapBase, arr_of_coords: [number, number][]): Promise<{}>;
+export declare function fitToBoundsLiteral(map_ref: WrappedMapBase, bounds: LatLngBoundsLiteral): Promise<{}>;
 export declare function fitToBoundsOfObjectArray(map_ref: WrappedMapBase, arr_of_latlngliteral: LatLngLiteral[]): Promise<{}>;
 export declare function setPolyline(map_ref: WrappedMapBase, id: string | number, options: PolylineOptionsSet): Promise<WrappedPolyline>;
 export declare function setPolygon(map_ref: WrappedMapBase, id: string | number, options: PolygonOptionsSet): Promise<WrappedPolygon>;

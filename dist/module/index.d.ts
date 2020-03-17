@@ -274,6 +274,7 @@ export default class WrappedMapBase extends React.Component<MapBaseProps, any> {
     getBoundsLiteral(): LatLngBoundsLiteral | null;
     setCenter(latLng: LatLngLiteral | LatLng): Promise<void>;
     fitToBoundsArray(arr_of_coords: [number, number][]): Promise<{}>;
+    fitToBoundsLiteral(bounds: LatLngBoundsLiteral): Promise<{}>;
     fitToBoundsObjectArray(arr_of_objects: LatLngLiteral[]): Promise<{}>;
     fromLatLngToPixel(map_ref: WrappedMapBase, latLng: LatLng): any;
     toPixel(lat_lng_input: LatLng | LatLngLiteral): [number, number];
