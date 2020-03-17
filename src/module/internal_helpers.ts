@@ -15,7 +15,8 @@ import WrappedMapBase, {
     PolygonOptions,
     PolygonOptionsSet,
     WrappedPolygon,
-    WrappedFeature
+    WrappedFeature,
+    LatLngBoundsLiteral
 } from './';
 
 /////////////////////////////////
@@ -69,10 +70,10 @@ export function fitToBoundsOfArray(map_ref: WrappedMapBase, arr_of_coords: [numb
             return;
         }
         let lat_lng_literal = {
-            east: -99999999,
-            west: 99999999,
-            north: 99999999,
-            south: -99999999
+            east: Number.MIN_SAFE_INTEGER,
+            west: Number.MAX_SAFE_INTEGER,
+            north: Number.MAX_SAFE_INTEGER,
+            south: Number.MIN_SAFE_INTEGER
         };
 
         arr_of_coords.forEach((point) => {
@@ -84,6 +85,25 @@ export function fitToBoundsOfArray(map_ref: WrappedMapBase, arr_of_coords: [numb
 
         if (map_ref.map) {
             map_ref.map.fitBounds(lat_lng_literal);
+        }
+        resolve();
+    });
+}
+export function fitToBoundsLiteral(map_ref: WrappedMapBase, bounds: LatLngBoundsLiteral) {
+    return new Promise((resolve, reject) => {
+        if (!map_ref.initialized) {
+            map_ref.do_after_init.push(() => {
+                fitToBoundsLiteral(map_ref, bounds).then((res) => {
+                    resolve(res);
+                }).catch((err) => {
+                    reject(err);
+                });
+            });
+            return;
+        }
+
+        if (map_ref.map) {
+            map_ref.map.fitBounds(bounds);
         }
         resolve();
     });
