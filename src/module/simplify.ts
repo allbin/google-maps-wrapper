@@ -76,7 +76,7 @@ function simplifyDPStep(
   simplified: [number, number][]
 ) {
   let maxSqDist = sqTolerance;
-  let index: number;
+  let index: number = 0;
 
   for (let i = first + 1; i < last; i++) {
     let sqDist = getSqSegDist(points[i], points[first], points[last]);

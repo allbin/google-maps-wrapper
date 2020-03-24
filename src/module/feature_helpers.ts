@@ -1,11 +1,11 @@
-import WrappedMapBase, {
-  GeoJSONFeatureCollection,
-  FeatureOptionsSet,
-  WrappedFeature,
-  GeoJSONFeature,
-  FeatureEvents
-} from ".";
+import WrappedMapBase from ".";
 import { panZoomToObjectOrFeature } from "./internal_helpers";
+import { GoogleMapsWrapper } from "google_maps_wrapper";
+import FeatureOptionsSet = GoogleMapsWrapper.FeatureOptionsSet;
+import FeatureEvents = GoogleMapsWrapper.FeatureEvents;
+import WrappedFeature = GoogleMapsWrapper.WrappedFeature;
+import GeoJSONFeature = GoogleMapsWrapper.GeoJSONFeature;
+import GeoJSONFeatureCollection = GoogleMapsWrapper.GeoJSONFeatureCollection;
 
 const feature_events: FeatureEvents[] = [
   "click",
@@ -73,7 +73,7 @@ const wrapGmapsFeature: wrapGmapsFeature = (
     return Promise.resolve(wrapped_feature as WrappedFeature);
   };
   wrapped_feature.applyOptions = (options_id: string) => {
-    if (options.hasOwnProperty(options_id) === false) {
+    if (!options.hasOwnProperty(options_id)) {
       throw new Error(
         "Tried to applyOptions(options_id) with '" +
           options_id +
@@ -126,15 +126,16 @@ type setGeoJSONFeature = (
   map_ref: WrappedMapBase,
   feature: GeoJSONFeature,
   options: FeatureOptionsSet,
-  layer?: google.maps.Data | null
+  layer?: google.maps.Data
 ) => Promise<WrappedFeature>;
+
 export const setGeoJSONFeature: setGeoJSONFeature = (
   map_ref,
   feature,
   options,
-  layer = null
-) => {
-  return new Promise((resolve, reject) => {
+  layer
+) =>
+  new Promise((resolve, reject) => {
     if (!map_ref.initialized) {
       map_ref.do_after_init.push(() => {
         setGeoJSONFeature(map_ref, feature, options, layer)
@@ -155,21 +156,22 @@ export const setGeoJSONFeature: setGeoJSONFeature = (
 
     if (!layer) {
       if (!map_ref.features_layer) {
-        reject("Internal error in map wrapper: Features layer not created.");
+        return reject(
+          "Internal error in map wrapper: Features layer not created."
+        );
       }
-      layer = map_ref.features_layer!;
     }
-    const gmaps_feature = layer.addGeoJson(feature)[0];
+    const feature_layer = map_ref.features_layer;
+    const gmaps_feature = feature_layer.addGeoJson(feature)[0];
     const wrapped_feature = wrapGmapsFeature(
       map_ref,
-      layer,
+      feature_layer,
       gmaps_feature,
       options
     );
     map_ref.map_objects.features[feature.id] = wrapped_feature;
     resolve(wrapped_feature);
   });
-};
 
 type setGeoJSONCollection = (
   map_ref: WrappedMapBase,

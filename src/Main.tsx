@@ -1,11 +1,10 @@
 import React from "react";
-import MapBase, {
-  MarkerOptions,
-  PolylineOptions,
-  PolygonOptions,
-  arrayRT90ToWGS84
-} from "./module";
+import MapBase, { arrayRT90ToWGS84 } from "./module";
 import example_geo_json from "./example_geo_json";
+import { GoogleMapsWrapper } from "google_maps_wrapper";
+import MarkerOptions = GoogleMapsWrapper.MarkerOptions;
+import PolylineOptions = GoogleMapsWrapper.PolylineOptions;
+import PolygonOptions = GoogleMapsWrapper.PolygonOptions;
 
 export default class Map extends React.Component<any, any> {
   map: MapBase | null = null;
@@ -17,11 +16,13 @@ export default class Map extends React.Component<any, any> {
       position: { lng: 14.40567, lat: 56.65918 },
       draggable: true
     };
-    this.map.setMarker("marker1", { default: marker_opts }).then(marker => {
-      setTimeout(() => {
-        marker.panTo();
-      }, 7000);
-    });
+    this.map
+      .setMarker("marker1", { default: marker_opts })
+      .then((marker: any) => {
+        setTimeout(() => {
+          marker.panTo();
+        }, 7000);
+      });
 
     let polyline_opts: PolylineOptions = {
       path: [
@@ -64,7 +65,7 @@ export default class Map extends React.Component<any, any> {
         default: polygon_opts,
         hover: polygon_hover
       })
-      .then(polygon => {
+      .then((polygon: any) => {
         polygon.registerEventCB("mouseover", () => {
           polygon.applyOptions("hover");
         });
@@ -93,8 +94,8 @@ export default class Map extends React.Component<any, any> {
         default: { visible: true, fillColor: "#ff0000", fillOpacity: 0.3 },
         hover: { fillOpacity: 0.6 }
       })
-      .then(x => {
-        x.features.forEach(y => {
+      .then((x: any) => {
+        x.features.forEach((y: any) => {
           console.log(y);
           y.registerEventCB("mouseover", () => {
             y.applyOptions("hover");
@@ -125,7 +126,7 @@ export default class Map extends React.Component<any, any> {
                 strokeColor: "#000000",
                 strokeWeight: 3
               },
-              path => {
+              (path: any) => {
                 console.log("path: ", path);
               }
             );
@@ -138,7 +139,7 @@ export default class Map extends React.Component<any, any> {
             googleapi_maps_uri="https://maps.googleapis.com/maps/api/js?v=3.exp&libraries=geometry,places,drawing&key=AIzaSyA0tp0r6ImLSnn9vy4zXjZWar1F3U5eOaY"
             default_center={{ lng: 14.40567, lat: 56.65918 }}
             default_zoom={8}
-            initializedCB={ref => {
+            initializedCB={(ref: any) => {
               this.onMapInitialized(ref);
             }}
           />

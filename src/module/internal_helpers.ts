@@ -1,28 +1,27 @@
-import WrappedMapBase, {
-  // AnyObjectOptions,
-  AnyObjectOptionsSet,
-  WrappedGmapObj,
-  AllMapObjEvents,
-  LatLng,
-  LatLngLiteral,
-  MapObjectType,
-  PolylineOptions,
-  PolylineOptionsSet,
-  WrappedPolyline,
-  MarkerOptions,
-  MarkerOptionsSet,
-  WrappedMarker,
-  PolygonOptions,
-  PolygonOptionsSet,
-  WrappedPolygon,
-  WrappedFeature,
-  LatLngBoundsLiteral
-} from "./";
-
 /////////////////////////////////
 //INTERNAL MAP HELPER FUNCTIONS
 //These functions are not exported to enduser, only used
 //internally by the map.
+
+import WrappedMapBase from "./index";
+import { GoogleMapsWrapper } from "google_maps_wrapper";
+import LatLng = GoogleMapsWrapper.LatLng;
+import LatLngBoundsLiteral = GoogleMapsWrapper.LatLngBoundsLiteral;
+import LatLngLiteral = GoogleMapsWrapper.LatLngLiteral;
+import PolylineOptionsSet = GoogleMapsWrapper.PolylineOptionsSet;
+import WrappedPolyline = GoogleMapsWrapper.WrappedPolyline;
+import PolygonOptionsSet = GoogleMapsWrapper.PolygonOptionsSet;
+import WrappedPolygon = GoogleMapsWrapper.WrappedPolygon;
+import MarkerOptionsSet = GoogleMapsWrapper.MarkerOptionsSet;
+import WrappedMarker = GoogleMapsWrapper.WrappedMarker;
+import MapObjectType = GoogleMapsWrapper.MapObjectType;
+import AnyObjectOptionsSet = GoogleMapsWrapper.AnyObjectOptionsSet;
+import PolylineOptions = GoogleMapsWrapper.PolylineOptions;
+import PolygonOptions = GoogleMapsWrapper.PolygonOptions;
+import MarkerOptions = GoogleMapsWrapper.MarkerOptions;
+import WrappedGmapObj = GoogleMapsWrapper.WrappedGmapObj;
+import AllMapObjEvents = GoogleMapsWrapper.AllMapObjEvents;
+import WrappedFeature = GoogleMapsWrapper.WrappedFeature;
 
 const DEFAULT_POLYLINE_OPTIONS = {
   visible: true
@@ -43,10 +42,12 @@ export function fromLatLngToPixel(map_ref: WrappedMapBase, latLng: LatLng) {
   if (!bounds) {
     throw new Error("Map not mounted when calling fromLatLngToPixel");
   }
-  var topRight = map.getProjection().fromLatLngToPoint(bounds.getNorthEast());
-  var bottomLeft = map.getProjection().fromLatLngToPoint(bounds.getSouthWest());
-  var scale = Math.pow(2, map.getZoom());
-  var worldPoint = map.getProjection().fromLatLngToPoint(latLng);
+  const topRight = map.getProjection().fromLatLngToPoint(bounds.getNorthEast());
+  const bottomLeft = map
+    .getProjection()
+    .fromLatLngToPoint(bounds.getSouthWest());
+  const scale = Math.pow(2, map.getZoom());
+  const worldPoint = map.getProjection().fromLatLngToPoint(latLng);
   return new window.google.maps.Point(
     (worldPoint.x - bottomLeft.x) * scale,
     (worldPoint.y - topRight.y) * scale
@@ -148,10 +149,10 @@ export function fitToBoundsOfObjectArray(
       return;
     }
     let lat_lng_literal = {
-      east: -99999999,
-      west: 99999999,
-      north: 99999999,
-      south: -99999999
+      east: -Infinity,
+      west: Infinity,
+      north: Infinity,
+      south: -Infinity
     };
 
     arr_of_latlngliteral.forEach(point => {
@@ -366,7 +367,7 @@ export const setMapObject: setMapObject = (
       );
     };
     map_obj_shell.applyOptions = options_id => {
-      if (options.hasOwnProperty(options_id) === false) {
+      if (!options.hasOwnProperty(options_id)) {
         throw new Error(
           "Tried to applyOptions(options_id) with '" +
             options_id +
@@ -543,10 +544,10 @@ export function panZoomToObjectOrFeature(
     }
     case "polyline": {
       let bounds = {
-        north: -9999,
-        south: 9999,
-        west: 9999,
-        east: -9999
+        north: -Infinity,
+        south: Infinity,
+        west: Infinity,
+        east: -Infinity
       };
       obj.gmaps_obj.getPath().forEach(point => {
         bounds.north = point.lat() > bounds.north ? point.lat() : bounds.north;
@@ -563,10 +564,10 @@ export function panZoomToObjectOrFeature(
     }
     case "polygon": {
       let bounds = {
-        north: -9999,
-        south: 9999,
-        west: 9999,
-        east: -9999
+        north: -Infinity,
+        south: Infinity,
+        west: Infinity,
+        east: -Infinity
       };
       obj.gmaps_obj.getPaths().forEach(path => {
         path.forEach(point => {

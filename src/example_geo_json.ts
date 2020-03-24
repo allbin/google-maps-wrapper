@@ -1,5 +1,7 @@
-import { GeoJSONFeature, GeoJSONFeatureCollection } from "./module";
+import { GoogleMapsWrapper } from "google_maps_wrapper";
 import { MultiPolygon } from "geojson";
+import GeoJSONFeature = GoogleMapsWrapper.GeoJSONFeature;
+import GeoJSONFeatureCollection = GoogleMapsWrapper.GeoJSONFeatureCollection;
 
 const test_rt_90: GeoJSONFeature<MultiPolygon> = {
   id: "my_id",

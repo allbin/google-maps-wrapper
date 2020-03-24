@@ -1,5 +1,5 @@
 import proj4 from "proj4";
-import { LatLngLiteral } from ".";
+import { GoogleMapsWrapper } from "google_maps_wrapper";
 
 type Projection = "GMAPS" | "RT90" | "SWEREF99" | "WGS84";
 
@@ -24,7 +24,7 @@ export const convertFromArrayOfArray: convertFromArrayOfArrayType = (
 export type arrayToLatLngObjectType = (
   coords: [number, number][],
   invert: boolean
-) => LatLngLiteral[];
+) => GoogleMapsWrapper.LatLngLiteral[];
 export const arrayToLatLngObject: arrayToLatLngObjectType = (
   arr,
   invert = false
@@ -40,7 +40,7 @@ export const arrayToLatLngObject: arrayToLatLngObjectType = (
 };
 
 export type latLngArrayToCoordArrayType = (
-  latLngArray: LatLngLiteral[],
+  latLngArray: GoogleMapsWrapper.LatLngLiteral[],
   invert: boolean
 ) => [number, number][];
 export const latLngArrayToCoordArray: latLngArrayToCoordArrayType = (
@@ -116,8 +116,8 @@ function toRad(x: number): number {
   return (x * Math.PI) / 180;
 }
 export type haversineDistanceType = (
-  a: LatLngLiteral,
-  b: LatLngLiteral
+  a: GoogleMapsWrapper.LatLngLiteral,
+  b: GoogleMapsWrapper.LatLngLiteral
 ) => number;
 export const haversineDistance: haversineDistanceType = (a, b) => {
   const aLat = a.lat;
@@ -139,7 +139,7 @@ export const haversineDistance: haversineDistanceType = (a, b) => {
 
 export type MVCArrayToObjArrayType = (
   MVCArr: google.maps.MVCArray<google.maps.LatLng>
-) => LatLngLiteral[];
+) => GoogleMapsWrapper.LatLngLiteral[];
 export const MVCArrayToObjArray: MVCArrayToObjArrayType = MVCArr => {
   return MVCArr.getArray().map(gmapsLatLng => {
     return {
@@ -156,4 +156,14 @@ export const MVCArrayToCoordArray: MVCArrayToCoordArrayType = MVCArr => {
   return MVCArr.getArray().map(gmapsLatLng => {
     return [gmapsLatLng.lat(), gmapsLatLng.lng()];
   });
+};
+
+export const arrayRT90ToWGS84 = (rt90arr: [number, number][]) => {
+  return convertFromArrayOfArray("RT90", "WGS84", rt90arr);
+};
+export const arrayRT90ToWGS84LatLngObj = (rt90arr: [number, number][]) => {
+  return arrayToLatLngObject(
+    convertFromArrayOfArray("RT90", "WGS84", rt90arr),
+    true
+  );
 };
