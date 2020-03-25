@@ -1,5 +1,5 @@
 import proj4 from "proj4";
-import { GoogleMapsWrapper } from "google_maps_wrapper";
+import { GoogleMapsWrapper } from "./google_maps_wrapper";
 
 type Projection = "GMAPS" | "RT90" | "SWEREF99" | "WGS84";
 

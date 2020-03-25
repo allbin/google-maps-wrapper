@@ -4,7 +4,7 @@
 //internally by the map.
 
 import WrappedMapBase from "./index";
-import { GoogleMapsWrapper } from "google_maps_wrapper";
+import { GoogleMapsWrapper } from "./google_maps_wrapper";
 import LatLng = GoogleMapsWrapper.LatLng;
 import LatLngBoundsLiteral = GoogleMapsWrapper.LatLngBoundsLiteral;
 import LatLngLiteral = GoogleMapsWrapper.LatLngLiteral;

@@ -1,6 +1,6 @@
 import WrappedMapBase from ".";
 import { panZoomToObjectOrFeature } from "./internal_helpers";
-import { GoogleMapsWrapper } from "google_maps_wrapper";
+import { GoogleMapsWrapper } from "./google_maps_wrapper";
 import FeatureOptionsSet = GoogleMapsWrapper.FeatureOptionsSet;
 import FeatureEvents = GoogleMapsWrapper.FeatureEvents;
 import WrappedFeature = GoogleMapsWrapper.WrappedFeature;
