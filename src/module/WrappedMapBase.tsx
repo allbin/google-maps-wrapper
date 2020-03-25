@@ -26,7 +26,6 @@ const ScissorHoverIcon = require("./img/marker_scissors_hover.svg");
 import * as internal_helpers from "./internal_helpers";
 import * as feature_helpers from "./feature_helpers";
 import { GoogleMapsWrapper } from "google_maps_wrapper";
-import MapBaseProps = GoogleMapsWrapper.MapBaseProps;
 import WrappedMarker = GoogleMapsWrapper.WrappedMarker;
 import WrappedPolygon = GoogleMapsWrapper.WrappedPolygon;
 import WrappedPolyline = GoogleMapsWrapper.WrappedPolyline;
@@ -45,217 +44,53 @@ import Marker = GoogleMapsWrapper.Marker;
 import Polyline = GoogleMapsWrapper.Polyline;
 import Polygon = GoogleMapsWrapper.Polygon;
 import GeoJSONFeature = GoogleMapsWrapper.GeoJSONFeature;
+import {useEffect, useState} from "react";
 
 const CUTTING_SNAP_DISTANCE = 200;
 const Z_INDEX_SCISSORS = 9001;
 const Z_INDEX_SCISSORS_HOVER = 9002;
-interface Props = {
 
-};
-const WrappedMapBase: React.FunctionComponent<Props> = () => {
-  do_after_init: (() => void)[] = [];
-  do_on_drag_end: (() => void)[] = [];
-  do_on_drag_start: (() => void)[] = [];
-  drawing_completed_listener: google.maps.MapsEventListener | null = null;
-  map: google.maps.Map | null = null;
-  features_layer: google.maps.Data | null = null;
-  feature_layers: google.maps.Data[] = [];
-  initialized: boolean = false;
-  map_objects: {
-    marker: {
-      [id: string]: WrappedMarker;
-      [id: number]: WrappedMarker;
-    };
-    polygon: {
-      [id: string]: WrappedPolygon;
-      [id: number]: WrappedPolygon;
-    };
-    polyline: {
-      [id: string]: WrappedPolyline;
-      [id: number]: WrappedPolyline;
-    };
-    features: {
-      [id: string]: WrappedFeature;
-      [id: number]: WrappedFeature;
-    };
-  } = {
-    marker: {},
-    polygon: {},
-    polyline: {},
-    features: {}
-  };
-  cutting_objects: {
-    [key: string]: any;
-    hover_scissors?: any;
-  } = {};
-  overlay: google.maps.OverlayView | null = null;
-  cutting: {
-    enabled: boolean;
-    id: string | number | null;
-    indexes: number[] | null;
-    arr?: [number, number][];
-  } = {
-    enabled: false,
-    id: null,
-    indexes: null
-  };
-  cutting_completed_listener:
-    | ((segments: [number, number][][] | null) => void)
-    | null = null;
-  cancel_drawing: boolean = false;
-  helpers: {
-    rt90: {
-      pointsAroundCircle: makePointsAroundCircleRT90Type;
-      makeRect: makeRectRT90Type;
-      arrayRT90ToWGS84: (rt90_array: [number, number][]) => [number, number][];
-      arrayRT90ToWGS84LatLngObj: (
-        rt90_array: [number, number][]
-      ) => LatLngLiteral[];
-      movePointsByCoord: movePointsByCoordType;
-    };
-    arrToLatLngObj: arrayToLatLngObjectType;
-    latlngArrayToCoordArray: latLngArrayToCoordArrayType;
-    convertFromArrayOfArray: convertFromArrayOfArrayType;
-    haversineDistance: haversineDistanceType;
-    MVCArrayToCoordArray: MVCArrayToCoordArrayType;
-    MVCArrayToObjArray: MVCArrayToObjArrayType;
-  };
-  script_cache: any;
-  html_element: any;
-  services: any;
-
-  constructor(props: MapBaseProps) {
-    super(props);
-
-    this.cutting = {
-      enabled: false,
-      id: null,
-      indexes: null
-    };
-
-    this.helpers = {
-      rt90: {
-        pointsAroundCircle: makePointsAroundCircleRT90,
-        makeRect: makeRectRT90,
-        arrayRT90ToWGS84: rt90arr => {
-          return convertFromArrayOfArray("RT90", "WGS84", rt90arr);
-        },
-        arrayRT90ToWGS84LatLngObj: rt90arr => {
-          return arrayToLatLngObject(
-            convertFromArrayOfArray("RT90", "WGS84", rt90arr),
-            true
-          );
-        },
-        movePointsByCoord: movePointsByCoord
-      },
-      arrToLatLngObj: arrayToLatLngObject,
-      latlngArrayToCoordArray: latLngArrayToCoordArray,
-      convertFromArrayOfArray: convertFromArrayOfArray,
-      haversineDistance: haversineDistance,
-      MVCArrayToCoordArray: MVCArrayToCoordArray,
-      MVCArrayToObjArray: MVCArrayToObjArray
-    };
-  }
-
-  componentWillMount() {
-    this.script_cache = ScriptCache({
-      google: this.props.googleapi_maps_uri
+interface MapBaseProps {
+  initializedCB?: (this_ref: WrappedMapBase) => void;
+  googleapi_maps_uri: string;
+  id?: string;
+  default_center: LatLngLiteral;
+  default_zoom: number;
+  default_options?: object;
+  onCenterChanged?: () => void;
+  onBoundsChanged?: () => void;
+  onClick?: (e: any) => void;
+  onDoubleClick?: (e: any) => void;
+  onDrag?: () => void;
+  onDragEnd?: () => void;
+  onDragStart?: () => void;
+  onHeadingChanged?: () => void;
+  onIdle?: () => void;
+  onMapTypeIdChanged?: () => void;
+  onMouseMove?: (e: any) => void;
+  onMouseOut?: (e: any) => void;
+  onMouseOver?: (e: any) => void;
+  onProjectionChanged?: () => void;
+  onResize?: () => void;
+  onRightClick?: (e: any) => void;
+  onTilesLoaded?: () => void;
+  onTiltChanged?: () => void;
+  onZoomChanged?: () => void;
+  styles?: object;
+}
+const WrappedMapBase: React.FunctionComponent<MapBaseProps> = ({googleapi_maps_uri,id,default_center,default_options,default_zoom,
+                                                                 onDoubleClick,onBoundsChanged,onCenterChanged,onClick,onDrag,onDragEnd
+                                                                 ,onDragStart,
+                                                                 onHeadingChanged,onIdle,onMapTypeIdChanged,onMouseMove,
+                                                                 onMouseOut,onMouseOver,onProjectionChanged,
+                                                                 onResize,onRightClick,
+                                                                 onTilesLoaded,onTiltChanged,
+                                                                 onZoomChanged,styles,initializedCB}) => {
+  const [cutting, setCutting] =
+  useEffect(()=> {
+    const script_cache = ScriptCache({
+      google: googleapi_maps_uri
     });
-  }
-
-  componentWillUnmount() {
-    if (this.map && this.initialized) {
-      window.google.maps.event.clearInstanceListeners(this.map);
-    }
-  }
-
-  componentDidMount() {
-    const refs = this.refs;
-    if (this.props.id) {
-      if (window.hasOwnProperty("allbin_gmaps")) {
-        window.wrapped_gmaps[this.props.id] = this;
-      }
-    }
-    this.script_cache.google.onLoad(() => {
-      function CanvasProjectionOverlay() {}
-      CanvasProjectionOverlay.prototype = new window.google.maps.OverlayView();
-      CanvasProjectionOverlay.prototype.constructor = CanvasProjectionOverlay;
-      CanvasProjectionOverlay.prototype.onAdd = function() {};
-      CanvasProjectionOverlay.prototype.draw = function() {};
-      CanvasProjectionOverlay.prototype.onRemove = function() {};
-
-      const mapRef = refs.map;
-      this.html_element = ReactDOM.findDOMNode(mapRef);
-
-      let center = this.props.default_center;
-      if (!center) {
-        throw new Error(
-          "Could not create map: Requires 'default_center' prop."
-        );
-      }
-      let zoom =
-        typeof this.props.default_zoom !== "undefined"
-          ? this.props.default_zoom
-          : null;
-      if (!zoom) {
-        throw new Error("Could not create map: Requires 'default_zoom' prop.");
-      }
-      if (!this.props.googleapi_maps_uri) {
-        throw new Error(
-          "Could not create map: Requires 'googleapi_maps_uri' prop. Ex: https://maps.googleapis.com/maps/api/js?v=3.exp&libraries=geometry,places,drawing&key=XXXXXXXXXX"
-        );
-      }
-      let defaults = this.props.default_options || {};
-      let mapConfig = Object.assign({}, defaults, {
-        center: new window.google.maps.LatLng(center.lat, center.lng),
-        zoom: zoom,
-        gestureHandling: "greedy",
-        styles: this.props.styles || {}
-      });
-      const maps = window.google.maps;
-
-      this.map = new maps.Map(this.html_element, mapConfig);
-      this.features_layer = new maps.Data();
-      if (this.features_layer) {
-        this.features_layer.setMap(this.map);
-        feature_helpers.setupLayerEvents(this, this.features_layer);
-      }
-      this.services = {
-        geocoderService: new window.google.maps.Geocoder(),
-        directionsService: new window.google.maps.DirectionsService()
-      };
-      if (window.google.maps.drawing) {
-        this.services.drawing = window.google.maps.drawing;
-        this.services.drawingManager = new window.google.maps.drawing.DrawingManager(
-          {
-            drawingMode: null,
-            drawingControl: false,
-            drawingControlOptions: {
-              drawingModes: []
-            }
-          }
-        );
-        this.services.drawingManager.setMap(this.map);
-      }
-
-      this.overlay = new (CanvasProjectionOverlay as any)();
-      if (this.overlay) {
-        this.overlay.setMap(this.map);
-      }
-      if (!this.map) {
-        throw new Error(
-          "Tried to setup events before map instance was defined."
-        );
-      }
-      this.setupMapEvents(this.map);
-
-      window.google.maps.event.addListenerOnce(this.map, "idle", () => {
-        this.doAfterInit();
-      });
-    });
-  }
-
-  doAfterInit(): void {
     this.initialized = true;
     this.do_after_init.forEach(cb => {
       cb();
@@ -265,9 +100,100 @@ const WrappedMapBase: React.FunctionComponent<Props> = () => {
       //Tell parent we are initialized if the parent has asked for it.
       this.props.initializedCB(this);
     }
-  }
+    return () => {
+      if (this.map && this.initialized) {
+        window.google.maps.event.clearInstanceListeners(this.map);
+      }
 
-  getBoundsLiteral(): LatLngBoundsLiteral | null {
+      const refs = this.refs;
+      if (id) {
+        if (window.hasOwnProperty("allbin_gmaps")) {
+          window.wrapped_gmaps[this.props.id] = this;
+        }
+      }
+      this.script_cache.google.onLoad(() => {
+        function CanvasProjectionOverlay() {}
+        CanvasProjectionOverlay.prototype = new window.google.maps.OverlayView();
+        CanvasProjectionOverlay.prototype.constructor = CanvasProjectionOverlay;
+        CanvasProjectionOverlay.prototype.onAdd = function() {};
+        CanvasProjectionOverlay.prototype.draw = function() {};
+        CanvasProjectionOverlay.prototype.onRemove = function() {};
+
+        const mapRef = refs.map;
+        this.html_element = ReactDOM.findDOMNode(mapRef);
+
+        let center = this.props.default_center;
+        if (!center) {
+          throw new Error(
+              "Could not create map: Requires 'default_center' prop."
+          );
+        }
+        let zoom =
+            typeof this.props.default_zoom !== "undefined"
+                ? this.props.default_zoom
+                : null;
+        if (!zoom) {
+          throw new Error("Could not create map: Requires 'default_zoom' prop.");
+        }
+        if (!this.props.googleapi_maps_uri) {
+          throw new Error(
+              "Could not create map: Requires 'googleapi_maps_uri' prop. Ex: https://maps.googleapis.com/maps/api/js?v=3.exp&libraries=geometry,places,drawing&key=XXXXXXXXXX"
+          );
+        }
+        let defaults = this.props.default_options || {};
+        let mapConfig = Object.assign({}, defaults, {
+          center: new window.google.maps.LatLng(center.lat, center.lng),
+          zoom: zoom,
+          gestureHandling: "greedy",
+          styles: this.props.styles || {}
+        });
+        const maps = window.google.maps;
+
+        this.map = new maps.Map(this.html_element, mapConfig);
+        this.features_layer = new maps.Data();
+        if (this.features_layer) {
+          this.features_layer.setMap(this.map);
+          feature_helpers.setupLayerEvents(this, this.features_layer);
+        }
+        this.services = {
+          geocoderService: new window.google.maps.Geocoder(),
+          directionsService: new window.google.maps.DirectionsService()
+        };
+        if (window.google.maps.drawing) {
+          this.services.drawing = window.google.maps.drawing;
+          this.services.drawingManager = new window.google.maps.drawing.DrawingManager(
+              {
+                drawingMode: null,
+                drawingControl: false,
+                drawingControlOptions: {
+                  drawingModes: []
+                }
+              }
+          );
+          this.services.drawingManager.setMap(this.map);
+        }
+
+        this.overlay = new (CanvasProjectionOverlay as any)();
+        if (this.overlay) {
+          this.overlay.setMap(this.map);
+        }
+        if (!this.map) {
+          throw new Error(
+              "Tried to setup events before map instance was defined."
+          );
+        }
+        this.setupMapEvents(this.map);
+
+        window.google.maps.event.addListenerOnce(this.map, "idle", () => {
+          this.doAfterInit();
+        });
+      });
+    }
+  },[]);
+
+
+
+  const getBoundsLiteral = () =>{
     if (!this.map) {
       return null;
     }
@@ -285,7 +211,7 @@ const WrappedMapBase: React.FunctionComponent<Props> = () => {
     };
   }
 
-  setCenter(latLng: LatLngLiteral | LatLng): Promise<void> {
+  const setCenter = (latLng: LatLngLiteral | LatLng): Promise<void>  =>{
     return new Promise((resolve, reject) => {
       if (!this.initialized) {
         this.do_after_init.push(() => {
@@ -307,21 +233,13 @@ const WrappedMapBase: React.FunctionComponent<Props> = () => {
     });
   }
 
-  fitToBoundsArray(arr_of_coords: [number, number][]) {
-    return internal_helpers.fitToBoundsOfArray(this, arr_of_coords);
-  }
-  fitToBoundsLiteral(bounds: LatLngBoundsLiteral) {
-    return internal_helpers.fitToBoundsLiteral(this, bounds);
-  }
-  fitToBoundsObjectArray(arr_of_objects: LatLngLiteral[]) {
-    return internal_helpers.fitToBoundsOfObjectArray(this, arr_of_objects);
-  }
+  const fitToBoundsArray =(arr_of_coords: [number, number][]) => internal_helpers.fitToBoundsOfArray(this, arr_of_coords);
+  const fitToBoundsLiteral = (bounds: LatLngBoundsLiteral) => internal_helpers.fitToBoundsLiteral(this, bounds);
+  const fitToBoundsObjectArray = (arr_of_objects: LatLngLiteral[]) => internal_helpers.fitToBoundsOfObjectArray(this, arr_of_objects);
 
-  fromLatLngToPixel(map_ref: WrappedMapBase, latLng: LatLng) {
-    return internal_helpers.fromLatLngToPixel(this, latLng);
-  }
+  const fromLatLngToPixel = (map_ref: WrappedMapBase, latLng: LatLng) => internal_helpers.fromLatLngToPixel(this, latLng);
 
-  toPixel(lat_lng_input: LatLng | LatLngLiteral): [number, number] {
+  const toPixel = (lat_lng_input: LatLng | LatLngLiteral): [number, number] => {
     if (!this.overlay) {
       throw new Error("Overlay not loaded when calling toPixel.");
     }
@@ -336,9 +254,9 @@ const WrappedMapBase: React.FunctionComponent<Props> = () => {
       .getProjection()
       .fromLatLngToContainerPixel(lat_lng);
     return [pixel_obj.x + node_rect.left, pixel_obj.y + node_rect.top];
-  }
+  };
 
-  setZoom(zoom_level: number): Promise<void> {
+  const setZoom = (zoom_level: number): Promise<void> =>{
     return new Promise((resolve, reject) => {
       if (!this.initialized) {
         this.do_after_init.push(() => {
@@ -358,69 +276,53 @@ const WrappedMapBase: React.FunctionComponent<Props> = () => {
       resolve();
       return;
     });
-  }
+  };
 
-  setPolyline(
+  const setPolyline = (
     id: string | number,
     options: PolylineOptionsSet
-  ): Promise<WrappedPolyline> {
-    return internal_helpers.setPolyline(this, id, options);
-  }
-  unsetPolyline(id: string | number): Promise<boolean> {
-    return internal_helpers.unsetMapObject(this, "polyline", id);
-  }
-  clearPolylines(): Promise<boolean[]> {
+  ): Promise<WrappedPolyline> => internal_helpers.setPolyline(this, id, options);
+  const unsetPolyline(id: string | number): Promise<boolean> => internal_helpers.unsetMapObject(this, "polyline", id);
+  const clearPolylines(): Promise<boolean[]> => {
     let promise_arr: Promise<boolean>[] = [];
     Object.keys(this.map_objects.polyline).forEach(id => {
       promise_arr.push(internal_helpers.unsetMapObject(this, "polyline", id));
     });
     return Promise.all(promise_arr);
-  }
+  };
 
-  setPolygon(
+  const setPolygon = (
     id: string | number,
     options: PolygonOptionsSet
-  ): Promise<WrappedPolygon> {
-    return internal_helpers.setPolygon(this, id, options);
-  }
-  unsetPolygon(id: string | number): Promise<boolean> {
-    return internal_helpers.unsetMapObject(this, "polygon", id);
-  }
-  clearPolygons(): Promise<boolean[]> {
+  ): Promise<WrappedPolygon> => internal_helpers.setPolygon(this, id, options);
+  const unsetPolygon = (id: string | number): Promise<boolean> => internal_helpers.unsetMapObject(this, "polygon", id);
+  const clearPolygons = (): Promise<boolean[]> =>{
     let promise_arr: Promise<boolean>[] = [];
     Object.keys(this.map_objects.polygon).forEach(id => {
       promise_arr.push(internal_helpers.unsetMapObject(this, "polygon", id));
     });
     return Promise.all(promise_arr);
-  }
+  };
 
-  setMarker(
+  const setMarker =(
     id: string | number,
     options: MarkerOptionsSet
-  ): Promise<WrappedMarker> {
-    return internal_helpers.setMarker(this, id, options);
-  }
-  unsetMarker(id: string | number): Promise<boolean> {
-    return internal_helpers.unsetMapObject(this, "marker", id);
-  }
-  clearMarkers(): Promise<boolean[]> {
+  ): Promise<WrappedMarker> =>internal_helpers.setMarker(this, id, options);
+  const unsetMarker = (id: string | number): Promise<boolean> => internal_helpers.unsetMapObject(this, "marker", id);
+  const clearMarkers = (): Promise<boolean[]> => {
     let promise_arr: Promise<boolean>[] = [];
     Object.keys(this.map_objects.marker).forEach(id => {
       promise_arr.push(internal_helpers.unsetMapObject(this, "marker", id));
     });
     return Promise.all(promise_arr);
-  }
+  };
 
-  setGeoJSONCollection(
+  const setGeoJSONCollection = (
     collection: GeoJSONFeatureCollection,
     options: FeatureOptionsSet
-  ) {
-    return feature_helpers.setGeoJSONCollection(this, collection, options);
-  }
-  setGeoJSONFeature(feature: GeoJSONFeature, options: FeatureOptionsSet) {
-    return feature_helpers.setGeoJSONFeature(this, feature, options);
-  }
-  clearFeatureCollections() {
+  ) => feature_helpers.setGeoJSONCollection(this, collection, options);
+  const setGeoJSONFeature = (feature: GeoJSONFeature, options: FeatureOptionsSet) => feature_helpers.setGeoJSONFeature(this, feature, options);
+  const clearFeatureCollections =() =>{
     this.feature_layers.forEach(x => x.setMap(null));
     this.feature_layers = [];
     if (this.features_layer) {
@@ -428,39 +330,32 @@ const WrappedMapBase: React.FunctionComponent<Props> = () => {
         this.map_objects.features[feature_key].remove();
       });
     }
-  }
+  };
 
-  zoomToObject(
+  const zoomToObject =(
     item: WrappedMarker | WrappedPolygon | WrappedPolyline | WrappedFeature
-  ) {
-    internal_helpers.panZoomToObjectOrFeature(this, item, true);
-  }
-  panToObject(
+  ) => internal_helpers.panZoomToObjectOrFeature(this, item, true);
+  const panToObject = (
     item: WrappedMarker | WrappedPolygon | WrappedPolyline | WrappedFeature
-  ) {
-    internal_helpers.panZoomToObjectOrFeature(this, item, false);
-  }
+  ) => internal_helpers.panZoomToObjectOrFeature(this, item, false);
 
-  registerDragEndCB(cb: () => void): void {
-    //Is actually triggered by Idle, not DragEnd!
-    this.do_on_drag_end.push(cb);
-  }
-  unregisterDragEndCB(cb: () => void): void {
+  //Is actually triggered by Idle, not DragEnd!
+  const registerDragEndCB = (cb: () => void): void  =>this.do_on_drag_end.push(cb);
+
+  const unregisterDragEndCB = (cb: () => void)=>{
     let index = this.do_on_drag_end.indexOf(cb);
     if (index > -1) {
       this.do_on_drag_end.splice(index, 1);
     }
-  }
-  registerDragStartCB(cb: () => void): void {
-    this.do_on_drag_end.push(cb);
-  }
-  unregisterDragStartCB(cb: () => void): void {
+  };
+  const registerDragStartCB = (cb: () => void) =>this.do_on_drag_end.push(cb);
+  const unregisterDragStartCB = (cb: () => void) =>{
     let index = this.do_on_drag_start.indexOf(cb);
     if (index > -1) {
       this.do_on_drag_start.splice(index, 1);
     }
-  }
-  setupMapEvents(map: google.maps.Map) {
+  };
+  const setupMapEvents = (map: google.maps.Map) =>{
     map.addListener("center_changed", () => {
       if (this.props.onCenterChanged) {
         this.props.onCenterChanged();
@@ -580,14 +475,14 @@ const WrappedMapBase: React.FunctionComponent<Props> = () => {
     });
   }
 
-  setDrawingMode(
+  const setDrawingMode =(
     type: "polyline" | "polygon",
     opts: PolylineOptions | PolygonOptions,
     cb: (
       path: [number, number][] | [number, number] | null,
       overlay: Polygon | Polyline | Marker
     ) => void
-  ) {
+  ) =>{
     let mode = null;
     if (!this.services.drawing) {
       console.error(
@@ -636,8 +531,8 @@ const WrappedMapBase: React.FunctionComponent<Props> = () => {
         this.drawing_completed_listener = null;
       }
     );
-  }
-  completeDrawingMode() {
+  };
+  const completeDrawingMode() =>{
     if (this.services.drawing) {
       this.services.drawingManager.setOptions({ drawingMode: null });
     }
@@ -645,8 +540,8 @@ const WrappedMapBase: React.FunctionComponent<Props> = () => {
       this.drawing_completed_listener.remove();
       this.drawing_completed_listener = null;
     }
-  }
-  cancelDrawingMode(debug_src?: string) {
+  };
+  const cancelDrawingMode = (debug_src?: string) =>{
     if (debug_src) {
       console.log("cancel drawing mode:", debug_src);
     }
@@ -654,9 +549,9 @@ const WrappedMapBase: React.FunctionComponent<Props> = () => {
       this.cancel_drawing = true;
       this.services.drawingManager.setOptions({ drawingMode: null });
     }
-  }
+  };
 
-  setCuttingMode(polyline_id: string | number, cb = null) {
+  const setCuttingMode = (polyline_id: string | number, cb = null) =>{
     if (!this.map_objects.polyline.hasOwnProperty(polyline_id)) {
       console.error(
         "MAP: Cannot set cutting mode, provided object id not on map: ",
@@ -713,7 +608,7 @@ const WrappedMapBase: React.FunctionComponent<Props> = () => {
       }
     };
   }
-  cuttingPositionUpdate(mouse_event: GoogleMapsWrapper.MouseEvent) {
+  const cuttingPositionUpdate = (mouse_event: GoogleMapsWrapper.MouseEvent) =>{
     if (!this.cutting.enabled || !this.cutting.id) {
       //If we are not in cutting mode ignore this function call.
       return;
@@ -755,7 +650,7 @@ const WrappedMapBase: React.FunctionComponent<Props> = () => {
       });
     }
   }
-  cuttingClick(mouse_event: google.maps.MouseEvent) {
+  const cuttingClick = (mouse_event: google.maps.MouseEvent) =>{
     if (!this.cutting.id) {
       console.error("No cutting.id set when clicking for cut.");
       return;
@@ -819,7 +714,7 @@ const WrappedMapBase: React.FunctionComponent<Props> = () => {
       this.cutting_objects["index_" + closest_index] = cut_marker;
     }
   }
-  completeCuttingMode() {
+  const completeCuttingMode = () =>{
     if (!this.cutting || this.cutting.id === null) {
       return;
     }
@@ -869,7 +764,7 @@ const WrappedMapBase: React.FunctionComponent<Props> = () => {
       this.cutting_completed_listener(resulting_segments);
     }
   }
-  cancelCuttingMode() {
+  const cancelCuttingMode = () => {
     this.cutting = {
       enabled: false,
       id: null,
@@ -894,7 +789,6 @@ const WrappedMapBase: React.FunctionComponent<Props> = () => {
     }
   }
 
-  render() {
     return (
       <div style={{ height: "100%" }}>
         <div
@@ -909,6 +803,5 @@ const WrappedMapBase: React.FunctionComponent<Props> = () => {
         />
       </div>
     );
-  }
-}
+};
 

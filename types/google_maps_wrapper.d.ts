@@ -139,35 +139,6 @@ declare namespace GoogleMapsWrapper {
     | "mouseup"
     | "rightclick";
 
-  interface MapBaseProps {
-    initializedCB?: (this_ref: WrappedMapBase) => void;
-    googleapi_maps_uri: string;
-    id?: string;
-    default_center: LatLngLiteral;
-    default_zoom: number;
-    default_options?: object;
-    onCenterChanged?: () => void;
-    onBoundsChanged?: () => void;
-    onClick?: (e: any) => void;
-    onDoubleClick?: (e: any) => void;
-    onDrag?: () => void;
-    onDragEnd?: () => void;
-    onDragStart?: () => void;
-    onHeadingChanged?: () => void;
-    onIdle?: () => void;
-    onMapTypeIdChanged?: () => void;
-    onMouseMove?: (e: any) => void;
-    onMouseOut?: (e: any) => void;
-    onMouseOver?: (e: any) => void;
-    onProjectionChanged?: () => void;
-    onResize?: () => void;
-    onRightClick?: (e: any) => void;
-    onTilesLoaded?: () => void;
-    onTiltChanged?: () => void;
-    onZoomChanged?: () => void;
-    styles?: object;
-  }
-
   interface WrappedGmapObj {
     gmaps_obj?: any;
     type: MapObjectType;
