@@ -4,7 +4,6 @@ import {
   Geometry,
   GeoJsonObject
 } from "geojson";
-import WrappedMapBase from "../src/module";
 
 declare namespace GoogleMapsWrapper {
   interface LatLngLiteral {
