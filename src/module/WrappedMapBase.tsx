@@ -78,6 +78,8 @@ export const WrappedMapBase: React.FunctionComponent<MapBaseProps> = ({
   styles,
   initializedCB
 }) => {
+
+  // TODO how to typ scriptcache?
   const [script_cache] = useState<any>(
     ScriptCache({
       google: googleapi_maps_uri

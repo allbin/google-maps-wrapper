@@ -3,6 +3,8 @@
 //These functions are not exported to enduser, only used
 //internally by the map.
 
+// TODO wrappedMapBase type? 
+
 const DEFAULT_POLYLINE_OPTIONS = {
   visible: true
 };
