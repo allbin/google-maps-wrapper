@@ -22,6 +22,7 @@ type ExportedFunctions = {
 };
 
 export interface MapBaseProps {
+  // TODO Type of ref?
   initializedCB?: (ref: any) => void;
   googleapi_maps_uri: string;
   id?: string;

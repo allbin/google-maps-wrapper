@@ -3,26 +3,6 @@
 //These functions are not exported to enduser, only used
 //internally by the map.
 
-import WrappedMapBase from "./index";
-import { GoogleMapsWrapper } from "./google_maps_wrapper";
-import LatLng = GoogleMapsWrapper.LatLng;
-import LatLngBoundsLiteral = GoogleMapsWrapper.LatLngBoundsLiteral;
-import LatLngLiteral = GoogleMapsWrapper.LatLngLiteral;
-import PolylineOptionsSet = GoogleMapsWrapper.PolylineOptionsSet;
-import WrappedPolyline = GoogleMapsWrapper.WrappedPolyline;
-import PolygonOptionsSet = GoogleMapsWrapper.PolygonOptionsSet;
-import WrappedPolygon = GoogleMapsWrapper.WrappedPolygon;
-import MarkerOptionsSet = GoogleMapsWrapper.MarkerOptionsSet;
-import WrappedMarker = GoogleMapsWrapper.WrappedMarker;
-import MapObjectType = GoogleMapsWrapper.MapObjectType;
-import AnyObjectOptionsSet = GoogleMapsWrapper.AnyObjectOptionsSet;
-import PolylineOptions = GoogleMapsWrapper.PolylineOptions;
-import PolygonOptions = GoogleMapsWrapper.PolygonOptions;
-import MarkerOptions = GoogleMapsWrapper.MarkerOptions;
-import WrappedGmapObj = GoogleMapsWrapper.WrappedGmapObj;
-import AllMapObjEvents = GoogleMapsWrapper.AllMapObjEvents;
-import WrappedFeature = GoogleMapsWrapper.WrappedFeature;
-
 const DEFAULT_POLYLINE_OPTIONS = {
   visible: true
 };
