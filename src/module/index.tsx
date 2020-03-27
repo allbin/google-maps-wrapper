@@ -1,6 +1,7 @@
-import proj4 from "proj4";
 import WrappedMapBase from "./WrappedMapBase";
 export default WrappedMapBase;
+import proj4 from "proj4";
+
 
 export {
   convertFromArrayOfArray,

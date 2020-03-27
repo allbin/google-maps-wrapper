@@ -1,4 +1,3 @@
-import { GoogleMapsWrapper } from "./module/google_maps_wrapper";
 import { MultiPolygon } from "geojson";
 import GeoJSONFeature = GoogleMapsWrapper.GeoJSONFeature;
 import GeoJSONFeatureCollection = GoogleMapsWrapper.GeoJSONFeatureCollection;

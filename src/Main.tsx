@@ -1,10 +1,6 @@
 import React from "react";
 import MapBase, { arrayRT90ToWGS84 } from "./module";
 import example_geo_json from "./example_geo_json";
-import { GoogleMapsWrapper } from "./module/google_maps_wrapper";
-import MarkerOptions = GoogleMapsWrapper.MarkerOptions;
-import PolylineOptions = GoogleMapsWrapper.PolylineOptions;
-import PolygonOptions = GoogleMapsWrapper.PolygonOptions;
 
 export default class Map extends React.Component<any, any> {
   map: MapBase | null = null;
