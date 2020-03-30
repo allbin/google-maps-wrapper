@@ -3,8 +3,6 @@
 //These functions are not exported to enduser, only used
 //internally by the map.
 
-// TODO wrappedMapBase type? 
-
 const DEFAULT_POLYLINE_OPTIONS = {
   visible: true
 };
@@ -15,11 +13,10 @@ const DEFAULT_MARKER_OPTIONS = {
   visible: true
 };
 
-export function fromLatLngToPixel(map_ref: WrappedMapBase, latLng: LatLng) {
-  if (!map_ref.map) {
+export function fromLatLngToPixel(map: google.maps.Map, latLng: LatLng) {
+  if (!map) {
     throw new Error("Cannot call fromLatLngToPixel before init is finished.");
   }
-  let map = map_ref.map;
   let bounds = map.getBounds();
   if (!bounds) {
     throw new Error("Map not mounted when calling fromLatLngToPixel");
@@ -37,7 +34,7 @@ export function fromLatLngToPixel(map_ref: WrappedMapBase, latLng: LatLng) {
 }
 
 export function fitToBoundsOfArray(
-  map_ref: WrappedMapBase,
+  map: google.maps.Map,
   arr_of_coords: [number, number][]
 ) {
   //Takes [[x, y], ...] array.
@@ -46,18 +43,6 @@ export function fitToBoundsOfArray(
       reject("Input not valid array.");
     } else if (arr_of_coords.length < 1) {
       reject("Array needs to countain at least one element.");
-    }
-    if (!map_ref.initialized) {
-      map_ref.do_after_init.push(() => {
-        fitToBoundsOfArray(map_ref, arr_of_coords)
-          .then(res => {
-            resolve(res);
-          })
-          .catch(err => {
-            reject(err);
-          });
-      });
-      return;
     }
     let lat_lng_literal = {
       east: Number.MIN_SAFE_INTEGER,
@@ -77,58 +62,31 @@ export function fitToBoundsOfArray(
         point[1] > lat_lng_literal.south ? point[1] : lat_lng_literal.south;
     });
 
-    if (map_ref.map) {
-      map_ref.map.fitBounds(lat_lng_literal);
+    if (map) {
+      map.fitBounds(lat_lng_literal);
     }
     resolve();
   });
 }
-export function fitToBoundsLiteral(
-  map_ref: WrappedMapBase,
-  bounds: LatLngBoundsLiteral
-) {
-  return new Promise((resolve, reject) => {
-    if (!map_ref.initialized) {
-      map_ref.do_after_init.push(() => {
-        fitToBoundsLiteral(map_ref, bounds)
-          .then(res => {
-            resolve(res);
-          })
-          .catch(err => {
-            reject(err);
-          });
-      });
-      return;
-    }
-
-    if (map_ref.map) {
-      map_ref.map.fitBounds(bounds);
+export const fitToBoundsLiteral = (
+  bounds: LatLngBoundsLiteral,
+  map?: google.maps.Map
+) =>
+  new Promise((resolve, reject) => {
+    if (map) {
+      map.fitBounds(bounds);
     }
     resolve();
   });
-}
-export function fitToBoundsOfObjectArray(
-  map_ref: WrappedMapBase,
-  arr_of_latlngliteral: LatLngLiteral[]
-) {
-  //Takes [{ lat: ?, lng: ? }, ...] array.
-  return new Promise((resolve, reject) => {
+export const fitToBoundsOfObjectArray = (
+  arr_of_latlngliteral: LatLngLiteral[],
+  map?: google.maps.Map
+) =>
+  new Promise((resolve, reject) => {
     if (Array.isArray(arr_of_latlngliteral) === false) {
       reject("Input not valid array.");
     } else if (arr_of_latlngliteral.length < 1) {
       reject("Array needs to countain at least one element.");
-    }
-    if (!map_ref.initialized) {
-      map_ref.do_after_init.push(() => {
-        fitToBoundsOfObjectArray(map_ref, arr_of_latlngliteral)
-          .then(res => {
-            resolve(res);
-          })
-          .catch(err => {
-            reject(err);
-          });
-      });
-      return;
     }
     let lat_lng_literal = {
       east: -Infinity,
@@ -148,41 +106,47 @@ export function fitToBoundsOfObjectArray(
         point.lat > lat_lng_literal.south ? point.lat : lat_lng_literal.south;
     });
 
-    if (map_ref.map) {
-      map_ref.map.fitBounds(lat_lng_literal);
+    if (map) {
+      map.fitBounds(lat_lng_literal);
     }
     resolve();
   });
-}
 
-export function setPolyline(
-  map_ref: WrappedMapBase,
+export const setPolyline = (
+  map: google.maps.Map,
+  map_objects: MapObjects,
+  cutting: CuttingState,
   id: string | number,
   options: PolylineOptionsSet
-): Promise<WrappedPolyline> {
-  return setMapObject(map_ref, "polyline", id, options) as Promise<
+): Promise<WrappedPolyline> =>
+  setMapObject(map, map_objects, cutting, "polyline", id, options) as Promise<
     WrappedPolyline
   >;
-}
-export function setPolygon(
-  map_ref: WrappedMapBase,
+export const setPolygon = (
+  map: google.maps.Map,
+  map_objects: MapObjects,
+  cutting: CuttingState,
   id: string | number,
   options: PolygonOptionsSet
-): Promise<WrappedPolygon> {
-  return setMapObject(map_ref, "polygon", id, options) as Promise<
+): Promise<WrappedPolygon> =>
+  setMapObject(map, map_objects, cutting, "polygon", id, options) as Promise<
     WrappedPolygon
   >;
-}
-export function setMarker(
-  map_ref: WrappedMapBase,
+export const setMarker = (
+  map: google.maps.Map,
+  map_objects: MapObjects,
+  cutting: CuttingState,
   id: string | number,
   options: MarkerOptionsSet
-): Promise<WrappedMarker> {
-  return setMapObject(map_ref, "marker", id, options) as Promise<WrappedMarker>;
-}
+): Promise<WrappedMarker> =>
+  setMapObject(map, map_objects, cutting, "marker", id, options) as Promise<
+    WrappedMarker
+  >;
 
 type setMapObject = (
-  map_ref: WrappedMapBase,
+  map: google.maps.Map,
+  map_objects: MapObjects,
+  cutting: CuttingState,
   type: MapObjectType,
   id: string | number,
   options: AnyObjectOptionsSet,
@@ -190,29 +154,18 @@ type setMapObject = (
 ) => Promise<WrappedPolyline | WrappedPolygon | WrappedMarker>;
 
 export const setMapObject: setMapObject = (
-  map_ref,
+  map,
+  map_objects,
+  cutting,
   type,
   id,
   options,
   selected_options_id = "default"
-) => {
-  return new Promise((resolve, reject) => {
-    if (!map_ref.initialized) {
-      map_ref.do_after_init.push(() => {
-        setMapObject(map_ref, type, id, options, selected_options_id)
-          .then(res => {
-            resolve(res);
-          })
-          .catch(err => {
-            reject(err);
-          });
-      });
-      return;
-    }
-
-    if (map_ref.map_objects[type].hasOwnProperty(id)) {
+) =>
+  new Promise((resolve, reject) => {
+    if (map_objects[type].hasOwnProperty(id)) {
       //This ID has already been drawn.
-      let map_obj = map_ref.map_objects[type][id];
+      let map_obj = map_objects[type][id];
       const visible = map_obj.gmaps_obj.getVisible();
       let opts = Object.assign(
         {},
@@ -337,11 +290,13 @@ export const setMapObject: setMapObject = (
     };
 
     map_obj_shell.remove = () => {
-      return unsetMapObject(map_ref, type, id);
+      return unsetMapObject(map_objects, cutting, type, id);
     };
     map_obj_shell.setOptions = new_options => {
       return setMapObject(
-        map_ref,
+        map,
+        map_objects,
+        cutting,
         type,
         id,
         new_options,
@@ -386,48 +341,48 @@ export const setMapObject: setMapObject = (
     let map_obj = map_obj_shell as WrappedGmapObj;
     events.forEach(event_type => {
       map_obj.gmaps_obj.addListener(event_type, (e: any) => {
-        return mapObjectEventCB(map_ref, map_obj, event_type, e);
+        return mapObjectEventCB(cutting, map_obj, event_type, e);
       });
     });
     path_events.forEach(event_type => {
       map_obj.gmaps_obj.getPath().addListener(event_type, (e: any) => {
-        return mapObjectEventCB(map_ref, map_obj, event_type, e);
+        return mapObjectEventCB(cutting, map_obj, event_type, e);
       });
     });
 
-    map_obj.gmaps_obj.setMap(map_ref.map);
+    map_obj.gmaps_obj.setMap(map);
 
     switch (map_obj.type) {
       case "polyline": {
         map_obj.zoomTo = () => {
-          panZoomToObjectOrFeature(map_ref, map_obj as WrappedPolyline, true);
+          panZoomToObjectOrFeature(map, map_obj as WrappedPolyline, true);
         };
         map_obj.panTo = () => {
-          panZoomToObjectOrFeature(map_ref, map_obj as WrappedPolyline, false);
+          panZoomToObjectOrFeature(map, map_obj as WrappedPolyline, false);
         };
-        map_ref.map_objects[type][id] = map_obj as WrappedPolyline;
+        map_objects[type][id] = map_obj as WrappedPolyline;
         resolve(map_obj as WrappedPolyline);
         break;
       }
       case "polygon": {
         map_obj.zoomTo = () => {
-          panZoomToObjectOrFeature(map_ref, map_obj as WrappedPolygon, true);
+          panZoomToObjectOrFeature(map, map_obj as WrappedPolygon, true);
         };
         map_obj.panTo = () => {
-          panZoomToObjectOrFeature(map_ref, map_obj as WrappedPolygon, false);
+          panZoomToObjectOrFeature(map, map_obj as WrappedPolygon, false);
         };
-        map_ref.map_objects[type][id] = map_obj as WrappedPolygon;
+        map_objects[type][id] = map_obj as WrappedPolygon;
         resolve(map_obj as WrappedPolygon);
         break;
       }
       case "marker": {
         map_obj.zoomTo = () => {
-          panZoomToObjectOrFeature(map_ref, map_obj as WrappedMarker, true);
+          panZoomToObjectOrFeature(map, map_obj as WrappedMarker, true);
         };
         map_obj.panTo = () => {
-          panZoomToObjectOrFeature(map_ref, map_obj as WrappedMarker, false);
+          panZoomToObjectOrFeature(map, map_obj as WrappedMarker, false);
         };
-        map_ref.map_objects[type][id] = map_obj as WrappedMarker;
+        map_objects[type][id] = map_obj as WrappedMarker;
         resolve(map_obj as WrappedMarker);
         break;
       }
@@ -437,31 +392,18 @@ export const setMapObject: setMapObject = (
     }
     return;
   });
-};
 
 export function unsetMapObject(
-  map_ref: WrappedMapBase,
+  map_objects: MapObjects,
+  cutting: CuttingState,
   type: MapObjectType,
   id: string | number
 ) {
   return new Promise<boolean>((resolve, reject) => {
-    if (!map_ref.initialized) {
-      map_ref.do_after_init.push(() => {
-        unsetMapObject(map_ref, type, id)
-          .then(res => {
-            resolve(res);
-          })
-          .catch(err => {
-            reject(err);
-          });
-      });
-      return;
-    }
-
-    if (map_ref.map_objects[type].hasOwnProperty(id)) {
+    if (map_objects[type].hasOwnProperty(id)) {
       //This ID has been drawn.
 
-      if (map_ref.cutting.id && map_ref.cutting.id !== id) {
+      if (cutting.id && cutting.id !== id) {
         //This object is currently being cut, it cannot be deleted.
         reject(
           new Error(
@@ -471,22 +413,21 @@ export function unsetMapObject(
         return;
       }
 
-      map_ref.map_objects[type][id].gmaps_obj.setMap(null);
-      delete map_ref.map_objects[type][id];
+      map_objects[type][id].gmaps_obj.setMap(null);
+      delete map_objects[type][id];
       resolve(true);
       return;
     }
     reject(new Error("MAP: MapObject does not exist."));
   });
 }
-
-export function mapObjectEventCB(
-  map_ref: WrappedMapBase,
+export const mapObjectEventCB = (
+  cutting: CuttingState,
   map_obj: WrappedGmapObj,
   event_type: AllMapObjEvents,
   e: any
-) {
-  if (map_ref.cutting.enabled) {
+) => {
+  if (cutting.enabled) {
     //When the map is in cutting mode no object event callbacks are allowed.
     return true;
   }
@@ -495,21 +436,21 @@ export function mapObjectEventCB(
     map_obj._cbs[event_type](e);
   }
   return true;
-}
+};
 
-export function panZoomToObjectOrFeature(
-  map_ref: WrappedMapBase,
+export const panZoomToObjectOrFeature = (
+  map: google.maps.Map,
   obj: WrappedMarker | WrappedPolygon | WrappedPolyline | WrappedFeature,
   zoom: boolean = true
-) {
-  if (!map_ref.map) {
+) => {
+  if (!map) {
     return;
   }
   if (obj.hasOwnProperty("gmaps_feature")) {
     if (zoom) {
-      map_ref.map.fitBounds((obj as WrappedFeature)._bbox);
+      map.fitBounds((obj as WrappedFeature)._bbox);
     } else {
-      map_ref.map.panToBounds((obj as WrappedFeature)._bbox);
+      map.panToBounds((obj as WrappedFeature)._bbox);
     }
     return;
   }
@@ -518,9 +459,9 @@ export function panZoomToObjectOrFeature(
   switch (obj.type) {
     case "marker": {
       let position = obj.gmaps_obj.getPosition();
-      map_ref.map.setCenter(position);
+      map.setCenter(position);
       if (zoom) {
-        map_ref.map.setZoom(14);
+        map.setZoom(14);
       }
       break;
     }
@@ -538,9 +479,9 @@ export function panZoomToObjectOrFeature(
         bounds.east = point.lng() > bounds.east ? point.lng() : bounds.east;
       });
       if (zoom) {
-        map_ref.map.fitBounds(bounds);
+        map.fitBounds(bounds);
       } else {
-        map_ref.map.panToBounds(bounds);
+        map.panToBounds(bounds);
       }
       break;
     }
@@ -562,11 +503,11 @@ export function panZoomToObjectOrFeature(
         });
       });
       if (zoom) {
-        map_ref.map.fitBounds(bounds);
+        map.fitBounds(bounds);
       } else {
-        map_ref.map.panToBounds(bounds);
+        map.panToBounds(bounds);
       }
       break;
     }
   }
-}
+};

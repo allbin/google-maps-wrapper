@@ -1,5 +1,4 @@
 import proj4 from "proj4";
-import { GoogleMapsWrapper } from "./google_maps_wrapper";
 
 type Projection = "GMAPS" | "RT90" | "SWEREF99" | "WGS84";
 
@@ -24,7 +23,7 @@ export const convertFromArrayOfArray: convertFromArrayOfArrayType = (
 export type arrayToLatLngObjectType = (
   coords: [number, number][],
   invert: boolean
-) => GoogleMapsWrapper.LatLngLiteral[];
+) => LatLngLiteral[];
 export const arrayToLatLngObject: arrayToLatLngObjectType = (
   arr,
   invert = false
@@ -40,7 +39,7 @@ export const arrayToLatLngObject: arrayToLatLngObjectType = (
 };
 
 export type latLngArrayToCoordArrayType = (
-  latLngArray: GoogleMapsWrapper.LatLngLiteral[],
+  latLngArray: LatLngLiteral[],
   invert: boolean
 ) => [number, number][];
 export const latLngArrayToCoordArray: latLngArrayToCoordArrayType = (
@@ -116,8 +115,8 @@ function toRad(x: number): number {
   return (x * Math.PI) / 180;
 }
 export type haversineDistanceType = (
-  a: GoogleMapsWrapper.LatLngLiteral,
-  b: GoogleMapsWrapper.LatLngLiteral
+  a: LatLngLiteral,
+  b: LatLngLiteral
 ) => number;
 export const haversineDistance: haversineDistanceType = (a, b) => {
   const aLat = a.lat;
@@ -139,7 +138,7 @@ export const haversineDistance: haversineDistanceType = (a, b) => {
 
 export type MVCArrayToObjArrayType = (
   MVCArr: google.maps.MVCArray<google.maps.LatLng>
-) => GoogleMapsWrapper.LatLngLiteral[];
+) => LatLngLiteral[];
 export const MVCArrayToObjArray: MVCArrayToObjArrayType = MVCArr => {
   return MVCArr.getArray().map(gmapsLatLng => {
     return {

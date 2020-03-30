@@ -1,8 +1,10 @@
 import * as internal_helpers from "./internal_helpers";
-import * as feature_helpers from "./feature_helpers";
 import { haversineDistance, MVCArrayToCoordArray } from "./external_helpers";
+import { Z_INDEX_SCISSORS_HOVER } from "./constants";
+let ScissorIcon = require("./img/marker_scissors.svg");
+let ScissorHoverIcon = require("./img/marker_scissors_hover.svg");
 
-export const getBoundsLiteral = (map: google.maps.Map | undefined) => {
+export const getBoundsLiteral = (map?: google.maps.Map) => {
   if (!map) {
     return null;
   }
@@ -35,7 +37,9 @@ export const setCenter = (
 };
 
 export const toPixel = (
-  lat_lng_input: LatLng | LatLngLiteral
+  lat_lng_input: LatLng | LatLngLiteral,
+  html_element: any,
+  overlay?: google.maps.OverlayView
 ): [number, number] => {
   if (!overlay) {
     throw new Error("Overlay not loaded when calling toPixel.");
@@ -52,8 +56,8 @@ export const toPixel = (
 };
 
 export const setZoom = (
-  map: google.maps.Map | undefined,
-  zoom_level: number
+  zoom_level: number,
+  map?: google.maps.Map
 ): Promise<void> =>
   new Promise((resolve, reject) => {
     map && map.setZoom(zoom_level);
@@ -61,55 +65,79 @@ export const setZoom = (
     return;
   });
 
-export const setPolyline = (
-  id: string | number,
-  options: PolylineOptionsSet,
-): Promise<WrappedPolyline> => internal_helpers.setPolyline(id, options);
-export const unsetPolyline = (id: string | number): Promise<boolean> =>
-  internal_helpers.unsetMapObject("polyline", id);
-export const clearPolylines = (): Promise<boolean[]> => {
+// TODO: Link Direkt to internal helpers
+// export const setPolyline = (
+//   map: google.maps.Map,
+//   map_objects: MapObjects,
+//   id: string | number,
+//   options: PolylineOptionsSet
+// ): Promise<WrappedPolyline> => internal_helpers.setPolyline(map,,id, options);
+// export const unsetPolyline = (id: string | number): Promise<boolean> =>
+//   internal_helpers.unsetMapObject("polyline", id);A
+
+export const clearPolylines = (
+  map_objects: MapObjects,
+  cutting: CuttingState
+): Promise<boolean[]> => {
   let promise_arr: Promise<boolean>[] = [];
   Object.keys(map_objects.polyline).forEach(id => {
-    promise_arr.push(internal_helpers.unsetMapObject("polyline", id));
+    promise_arr.push(
+      internal_helpers.unsetMapObject(map_objects, cutting, "polyline", id)
+    );
   });
   return Promise.all(promise_arr);
 };
 
-export const setPolygon = (
-  id: string | number,
-  options: PolygonOptionsSet
-): Promise<WrappedPolygon> => internal_helpers.setPolygon(id, options);
-export const unsetPolygon = (id: string | number): Promise<boolean> =>
-  internal_helpers.unsetMapObject("polygon", id);
-export const clearPolygons = (): Promise<boolean[]> =>
+// export const setPolygon = (
+//   id: string | number,
+//   options: PolygonOptionsSet
+// ): Promise<WrappedPolygon> => internal_helpers.setPolygon(id, options);
+// export const unsetPolygon = (id: string | number): Promise<boolean> =>
+//   internal_helpers.unsetMapObject("polygon", id);
+
+export const clearPolygons = (
+  map_objects: MapObjects,
+  cutting: CuttingState
+): Promise<boolean[]> =>
   Promise.all(
     Object.keys(map_objects.polygon).map(id =>
-      internal_helpers.unsetMapObject("polygon", id)
+      internal_helpers.unsetMapObject(map_objects, cutting, "polygon", id)
     )
   );
 
 export const setMarker = (
+  map: google.maps.Map,
+  map_objects: MapObjects,
+  cutting: CuttingState,
   id: string | number,
   options: MarkerOptionsSet
-): Promise<WrappedMarker> => internal_helpers.setMarker(id, options);
-export const unsetMarker = (id: string | number): Promise<boolean> =>
-  internal_helpers.unsetMapObject("marker", id);
-export const clearMarkers = (): Promise<boolean[]> =>
+): Promise<WrappedMarker> =>
+  internal_helpers.setMarker(map, map_objects, cutting, id, options);
+// export const unsetMarker = (id: string | number): Promise<boolean> =>
+//   internal_helpers.unsetMapObject(ma"marker", id);
+export const clearMarkers = (
+  map_objects: MapObjects,
+  cutting: CuttingState
+): Promise<boolean[]> =>
   Promise.all(
     Object.keys(map_objects.marker).map(id =>
-      internal_helpers.unsetMapObject("marker", id)
+      internal_helpers.unsetMapObject(map_objects, cutting, "marker", id)
     )
   );
 
-export const setGeoJSONCollection = (
-  collection: GeoJSONFeatureCollection,
-  options: FeatureOptionsSet
-) => feature_helpers.setGeoJSONCollection(collection, options);
-export const setGeoJSONFeature = (
-  feature: GeoJSONFeature,
-  options: FeatureOptionsSet
-) => feature_helpers.setGeoJSONFeature(feature, options);
-export const clearFeatureCollections = () => {
+// export const setGeoJSONCollection = (
+//   collection: GeoJSONFeatureCollection,
+//   options: FeatureOptionsSet
+// ) => feature_helpers.setGeoJSONCollection(collection, options);
+// export const setGeoJSONFeature = (
+//   feature: GeoJSONFeature,
+//   options: FeatureOptionsSet
+// ) => feature_helpers.setGeoJSONFeature(feature, options);
+export const clearFeatureCollections = (
+  map_objects: MapObjects,
+  features_layer: google.maps.Data,
+  feature_layers: google.maps.Data[]
+) => {
   feature_layers.forEach(x => x.setMap(null));
   feature_layers = [];
   if (features_layer) {
@@ -119,38 +147,23 @@ export const clearFeatureCollections = () => {
   }
 };
 
-export const zoomToObject = (
-  item: WrappedMarker | WrappedPolygon | WrappedPolyline | WrappedFeature
-) => internal_helpers.panZoomToObjectOrFeature(item, true);
-export const panToObject = (
-  item: WrappedMarker | WrappedPolygon | WrappedPolyline | WrappedFeature
-) => internal_helpers.panZoomToObjectOrFeature(item, false);
-
-//Is actually triggered by Idle, not DragEnd!
-export const registerDragEndCB = (cb: () => void): void =>
-  do_on_drag_end.push(cb);
-
-export const unregisterDragEndCB = (cb: () => void) => {
-  let index = do_on_drag_end.indexOf(cb);
-  if (index > -1) {
-    do_on_drag_end.splice(index, 1);
-  }
-};
-export const registerDragStartCB = (cb: () => void) => do_on_drag_end.push(cb);
-export const unregisterDragStartCB = (cb: () => void) => {
-  let index = do_on_drag_start.indexOf(cb);
-  if (index > -1) {
-    do_on_drag_start.splice(index, 1);
-  }
-};
+// export const zoomToObject = (
+//   item: WrappedMarker | WrappedPolygon | WrappedPolyline | WrappedFeature
+// ) => internal_helpers.panZoomToObjectOrFeature(item, true);
+// export const panToObject = (
+//   item: WrappedMarker | WrappedPolygon | WrappedPolyline | WrappedFeature
+// ) => internal_helpers.panZoomToObjectOrFeature(item, false);
 
 export const setDrawingMode = (
+  services: any,
   type: "polyline" | "polygon",
   opts: PolylineOptions | PolygonOptions,
   cb: (
     path: [number, number][] | [number, number] | null,
     overlay: Polygon | Polyline | Marker
-  ) => void
+  ) => void,
+  cancel_drawing: boolean,
+  drawing_completed_listener: google.maps.MapsEventListener
 ) => {
   let mode = null;
   if (!services.drawing) {
@@ -196,21 +209,29 @@ export const setDrawingMode = (
       } else {
         cb(null, e.overlay as any);
       }
-      cancel_drawing = false;
-      drawing_completed_listener = null;
+      // cancel_drawing = false;
+      // drawing_completed_listener = null;
     }
   );
 };
-export const completeDrawingMode = () => {
+export const completeDrawingMode = (
+  services: any,
+  drawing_completed_listener: google.maps.MapsEventListener
+) => {
   if (services.drawing) {
     services.drawingManager.setOptions({ drawingMode: null });
   }
   if (drawing_completed_listener) {
     drawing_completed_listener.remove();
-    drawing_completed_listener = null;
+    // drawing_completed_listener = null;
   }
 };
-export const cancelDrawingMode = (debug_src?: string) => {
+export const cancelDrawingMode = (
+  services: any,
+  cancel_drawing: boolean,
+  drawing_completed_listener: google.maps.MapsEventListener,
+  debug_src?: string
+) => {
   if (debug_src) {
     console.log("cancel drawing mode:", debug_src);
   }
@@ -220,7 +241,18 @@ export const cancelDrawingMode = (debug_src?: string) => {
   }
 };
 
-export const setCuttingMode = (polyline_id: string | number, cb = null) => {
+export const setCuttingMode = (
+  services: any,
+  map: google.maps.Map,
+  map_objects: MapObjects,
+  cutting: CuttingState,
+  cutting_objects: CuttingObjects,
+  default_center: LatLngLiteral,
+  cancel_drawing: boolean,
+  drawing_completed_listener: google.maps.MapsEventListener,
+  polyline_id: string | number,
+  cb = null
+) => {
   if (!map_objects.polyline.hasOwnProperty(polyline_id)) {
     console.error(
       "MAP: Cannot set cutting mode, provided object id not on map: ",
@@ -234,7 +266,12 @@ export const setCuttingMode = (polyline_id: string | number, cb = null) => {
     );
     return;
   }
-  cancelDrawingMode("setCuttingMode");
+  cancelDrawingMode(
+    services,
+    cancel_drawing,
+    drawing_completed_listener,
+    "setCuttingMode"
+  );
   let polyline = map_objects.polyline[polyline_id];
   let opts = {
     clickable: false,

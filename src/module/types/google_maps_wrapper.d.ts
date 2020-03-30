@@ -234,3 +234,33 @@ interface GeoJSONFeatureCollection<
   type: "FeatureCollection";
   features: Array<GeoJSONFeature<G, P>>;
 }
+
+interface MapObjects {
+  marker: {
+    [id: string]: WrappedMarker;
+    [id: number]: WrappedMarker;
+  };
+  polygon: {
+    [id: string]: WrappedPolygon;
+    [id: number]: WrappedPolygon;
+  };
+  polyline: {
+    [id: string]: WrappedPolyline;
+    [id: number]: WrappedPolyline;
+  };
+  features: {
+    [id: string]: WrappedFeature;
+    [id: number]: WrappedFeature;
+  };
+}
+
+interface CuttingState {
+  enabled: boolean;
+  id: string | number | null;
+  indexes: number[] | null;
+  arr?: [number, number][];
+}
+interface CuttingObjects {
+  [key: string]: any;
+  hover_scissors?: any;
+}

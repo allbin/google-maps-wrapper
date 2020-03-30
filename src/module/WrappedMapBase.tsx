@@ -1,5 +1,5 @@
 import * as React from "react";
-import { useEffect, useRef, useState } from "react";
+import { createRef, useEffect, useRef, useState } from "react";
 import ScriptCache from "./ScriptCache";
 import * as feature_helpers from "./feature_helpers";
 import * as map_funcs from "./map_functions";
@@ -78,7 +78,6 @@ export const WrappedMapBase: React.FunctionComponent<MapBaseProps> = ({
   styles,
   initializedCB
 }) => {
-
   // TODO how to typ scriptcache?
   const [script_cache] = useState<any>(
     ScriptCache({
@@ -95,42 +94,17 @@ export const WrappedMapBase: React.FunctionComponent<MapBaseProps> = ({
     google.maps.MapsEventListener
   >();
   const [features_layer, setFeatureLayers] = useState<google.maps.Data>();
-  const [feature_layers] = useState<google.maps.Data[]>([]);
-  const [map_objects] = useState<{
-    marker: {
-      [id: string]: WrappedMarker;
-      [id: number]: WrappedMarker;
-    };
-    polygon: {
-      [id: string]: WrappedPolygon;
-      [id: number]: WrappedPolygon;
-    };
-    polyline: {
-      [id: string]: WrappedPolyline;
-      [id: number]: WrappedPolyline;
-    };
-    features: {
-      [id: string]: WrappedFeature;
-      [id: number]: WrappedFeature;
-    };
-  }>({
+  const [feature_layers] = useState<google.maps.Data[]>();
+  const [map_objects] = useState<MapObjects>({
     marker: {},
     polygon: {},
     polyline: {},
     features: {}
   });
-  const [cutting_objects] = useState<{
-    [key: string]: any;
-    hover_scissors?: any;
-  }>({});
+  const [cutting_objects] = useState<CuttingObjects>({});
   const [overlay, setOverlay] = useState<google.maps.OverlayView>();
 
-  const [cutting] = useState<{
-    enabled: boolean;
-    id: string | number | null;
-    indexes: number[] | null;
-    arr?: [number, number][];
-  }>({
+  const [cutting] = useState<CuttingState>({
     enabled: false,
     id: null,
     indexes: null
@@ -140,7 +114,6 @@ export const WrappedMapBase: React.FunctionComponent<MapBaseProps> = ({
   >();
   const [cancel_drawing] = useState<boolean>(false);
   const [services, setServices] = useState<any>({});
-  const map_ref = useRef(null);
   const ic = <T extends any>(fn: () => Promise<T>): Promise<T> =>
     new Promise((resolve, reject) => {
       if (!initialized) {
@@ -160,7 +133,8 @@ export const WrappedMapBase: React.FunctionComponent<MapBaseProps> = ({
 
     if (id) {
       if (window.hasOwnProperty("allbin_gmaps")) {
-        window.wrapped_gmaps[id] = map_ref;
+        // TODO how TO?
+        // window.wrapped_gmaps[id] =map_ref;
       }
     }
     script_cache.google.onLoad(() => {
@@ -248,6 +222,23 @@ export const WrappedMapBase: React.FunctionComponent<MapBaseProps> = ({
     if (initializedCB) {
       //Tell parent we are initialized if the parent has asked for it.
       initializedCB(this);
+    }
+  };
+
+  //Is actually triggered by Idle, not DragEnd!
+  const registerDragEndCB = (cb: () => void): void => do_on_drag_end.push(cb);
+
+  const unregisterDragEndCB = (cb: () => void) => {
+    let index = do_on_drag_end.indexOf(cb);
+    if (index > -1) {
+      do_on_drag_end.splice(index, 1);
+    }
+  };
+  const registerDragStartCB = (cb: () => void) => do_on_drag_end.push(cb);
+  const unregisterDragStartCB = (cb: () => void) => {
+    let index = do_on_drag_start.indexOf(cb);
+    if (index > -1) {
+      do_on_drag_start.splice(index, 1);
     }
   };
   const [funcs] = useState({
@@ -361,7 +352,6 @@ export const WrappedMapBase: React.FunctionComponent<MapBaseProps> = ({
   return (
     <div style={{ height: "100%" }}>
       <div
-        ref={map_ref}
         style={{
           position: "absolute",
           top: "0",

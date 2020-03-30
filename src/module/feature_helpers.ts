@@ -1,11 +1,4 @@
-import WrappedMapBase from ".";
 import { panZoomToObjectOrFeature } from "./internal_helpers";
-import { GoogleMapsWrapper } from "./google_maps_wrapper";
-import FeatureOptionsSet = GoogleMapsWrapper.FeatureOptionsSet;
-import FeatureEvents = GoogleMapsWrapper.FeatureEvents;
-import WrappedFeature = GoogleMapsWrapper.WrappedFeature;
-import GeoJSONFeature = GoogleMapsWrapper.GeoJSONFeature;
-import GeoJSONFeatureCollection = GoogleMapsWrapper.GeoJSONFeatureCollection;
 
 const feature_events: FeatureEvents[] = [
   "click",
@@ -16,17 +9,16 @@ const feature_events: FeatureEvents[] = [
   "rightclick"
 ];
 
-type setupLayerEvents = (
-  map_ref: WrappedMapBase,
+export const setupLayerEvents = (
+  map_objects: MapObjects,
   layer: google.maps.Data
-) => void;
-export const setupLayerEvents: setupLayerEvents = (map_ref, layer) => {
+): void => {
   feature_events.forEach(event_type => {
     layer.addListener(
       event_type,
       (data_mouse_event: google.maps.Data.MouseEvent) => {
         const feature_id = data_mouse_event.feature.getId();
-        const wrapped_feature = map_ref.map_objects.features[feature_id];
+        const wrapped_feature = map_objects.features[feature_id];
         if (wrapped_feature && wrapped_feature._cbs[event_type]) {
           wrapped_feature._cbs[event_type](data_mouse_event);
         }
@@ -35,18 +27,13 @@ export const setupLayerEvents: setupLayerEvents = (map_ref, layer) => {
   });
 };
 
-type wrapGmapsFeature = (
-  map_ref: WrappedMapBase,
+const wrapGmapsFeature = (
+  map: google.maps.Map,
+  map_objects: MapObjects,
   layer: google.maps.Data,
   gmaps_feature: google.maps.Data.Feature,
   options: FeatureOptionsSet
-) => WrappedFeature;
-const wrapGmapsFeature: wrapGmapsFeature = (
-  map_ref,
-  layer,
-  gmaps_feature,
-  options
-) => {
+): WrappedFeature => {
   interface WrappedFeatureShell extends Partial<WrappedFeature> {
     gmaps_feature: google.maps.Data.Feature;
     options: FeatureOptionsSet;
@@ -111,10 +98,10 @@ const wrapGmapsFeature: wrapGmapsFeature = (
     delete wrapped_feature._cbs[event_type];
   };
   wrapped_feature.zoomTo = () => {
-    panZoomToObjectOrFeature(map_ref, wrapped_feature as WrappedFeature, true);
+    panZoomToObjectOrFeature(map, wrapped_feature as WrappedFeature, true);
   };
   wrapped_feature.panTo = () => {
-    panZoomToObjectOrFeature(map_ref, wrapped_feature as WrappedFeature, false);
+    panZoomToObjectOrFeature(map, wrapped_feature as WrappedFeature, false);
   };
 
   wrapped_feature.applyOptions("default");
@@ -122,98 +109,67 @@ const wrapGmapsFeature: wrapGmapsFeature = (
   return (wrapped_feature as unknown) as WrappedFeature;
 };
 
-type setGeoJSONFeature = (
-  map_ref: WrappedMapBase,
+// TODO run with ic
+export const setGeoJSONFeature = (
+  map: google.maps.Map,
+  map_objects: MapObjects,
+  features_layer: google.maps.Data,
   feature: GeoJSONFeature,
   options: FeatureOptionsSet,
   layer?: google.maps.Data
-) => Promise<WrappedFeature>;
-
-export const setGeoJSONFeature: setGeoJSONFeature = (
-  map_ref,
-  feature,
-  options,
-  layer
-) =>
+): Promise<WrappedFeature> =>
   new Promise((resolve, reject) => {
-    if (!map_ref.initialized) {
-      map_ref.do_after_init.push(() => {
-        setGeoJSONFeature(map_ref, feature, options, layer)
-          .then(res => {
-            resolve(res);
-          })
-          .catch(err => {
-            reject(err);
-          });
-      });
-      return;
-    }
-
-    if (map_ref.map_objects.features.hasOwnProperty(feature.id)) {
-      let wrapped_feature = map_ref.map_objects.features[feature.id];
+    if (map_objects.features.hasOwnProperty(feature.id)) {
+      let wrapped_feature = map_objects.features[feature.id];
       wrapped_feature.remove();
     }
 
     if (!layer) {
-      if (!map_ref.features_layer) {
+      if (!features_layer) {
         return reject(
           "Internal error in map wrapper: Features layer not created."
         );
       }
     }
-    const feature_layer = map_ref.features_layer;
+    const feature_layer = features_layer;
     const gmaps_feature = feature_layer.addGeoJson(feature)[0];
     const wrapped_feature = wrapGmapsFeature(
-      map_ref,
+      map,
+      map_objects,
       feature_layer,
       gmaps_feature,
       options
     );
-    map_ref.map_objects.features[feature.id] = wrapped_feature;
+    map_objects.features[feature.id] = wrapped_feature;
     resolve(wrapped_feature);
   });
 
-type setGeoJSONCollection = (
-  map_ref: WrappedMapBase,
+// TODO run with ic
+export const setGeoJSONCollection = (
+  map: google.maps.Map,
+  map_objects: MapObjects,
   collection: GeoJSONFeatureCollection,
   options: FeatureOptionsSet
-) => Promise<{
+): Promise<{
   layer: google.maps.Data;
   features: WrappedFeature[];
-}>;
-export const setGeoJSONCollection: setGeoJSONCollection = (
-  map_ref,
-  collection,
-  options
-) => {
-  return new Promise((resolve, reject) => {
-    if (!map_ref.initialized) {
-      map_ref.do_after_init.push(() => {
-        setGeoJSONCollection(map_ref, collection, options)
-          .then(res => {
-            resolve(res);
-          })
-          .catch(err => {
-            reject(err);
-          });
-      });
-      return;
-    }
-
+}> =>
+  new Promise((resolve, reject) => {
     let layer = new window.google.maps.Data() as google.maps.Data;
-    layer.setMap(map_ref.map);
-    setupLayerEvents(map_ref, layer);
+    layer.setMap(map);
+    setupLayerEvents(map_objects, layer);
 
     let features: WrappedFeature[] = layer
       .addGeoJson(collection)
       .map(gmaps_feature => {
         let wrapped_feature = wrapGmapsFeature(
-          map_ref,
+          map,
+          map_objects,
           layer,
           gmaps_feature,
           options
         );
-        map_ref.map_objects.features[gmaps_feature.getId()] = wrapped_feature;
+        map_objects.features[gmaps_feature.getId()] = wrapped_feature;
         return wrapped_feature;
       });
 
@@ -223,4 +179,3 @@ export const setGeoJSONCollection: setGeoJSONCollection = (
       features: features
     });
   });
-};
