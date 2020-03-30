@@ -1,6 +1,10 @@
 import * as internal_helpers from "./internal_helpers";
 import { haversineDistance, MVCArrayToCoordArray } from "./external_helpers";
-import { Z_INDEX_SCISSORS_HOVER } from "./constants";
+import {
+  CUTTING_SNAP_DISTANCE,
+  Z_INDEX_SCISSORS,
+  Z_INDEX_SCISSORS_HOVER
+} from "./constants";
 let ScissorIcon = require("./img/marker_scissors.svg");
 let ScissorHoverIcon = require("./img/marker_scissors_hover.svg");
 
@@ -251,7 +255,8 @@ export const setCuttingMode = (
   cancel_drawing: boolean,
   drawing_completed_listener: google.maps.MapsEventListener,
   polyline_id: string | number,
-  cb = null
+  cutting_completed_listener: (segments: [number, number][][] | null) => void,
+  cb?: () => any
 ) => {
   if (!map_objects.polyline.hasOwnProperty(polyline_id)) {
     console.error(
@@ -314,7 +319,12 @@ export const setCuttingMode = (
     }
   };
 };
-export const cuttingPositionUpdate = (mouse_event: MouseEvent) => {
+export const cuttingPositionUpdate = (
+  mouse_event: MouseEvent,
+  map_objects: MapObjects,
+  cutting: CuttingState,
+  cutting_objects: CuttingObjects
+) => {
   if (!cutting.enabled || !cutting.id) {
     //If we are not in cutting mode ignore function call.
     return;
@@ -356,7 +366,13 @@ export const cuttingPositionUpdate = (mouse_event: MouseEvent) => {
     });
   }
 };
-export const cuttingClick = (mouse_event: google.maps.MouseEvent): void => {
+export const cuttingClick = (
+  mouse_event: google.maps.MouseEvent,
+  map: google.maps.Map,
+  map_objects: MapObjects,
+  cutting: CuttingState,
+  cutting_objects: CuttingObjects
+): void => {
   if (!cutting.id) {
     console.error("No cutting.id set when clicking for cut.");
     return;
@@ -372,7 +388,7 @@ export const cuttingClick = (mouse_event: google.maps.MouseEvent): void => {
     lng: mouse_event.latLng.lng()
   };
   let closest_index = 0;
-  let closest_dist = In;
+  let closest_dist = Infinity;
   path.forEach((point: any, i: number) => {
     let dist = haversineDistance(mouse_coord, point);
     if (dist < closest_dist) {
@@ -420,7 +436,12 @@ export const cuttingClick = (mouse_event: google.maps.MouseEvent): void => {
     cutting_objects["index_" + closest_index] = cut_marker;
   }
 };
-export const completeCuttingMode = () => {
+export const completeCuttingMode = (
+  map_objects: MapObjects,
+  cutting: CuttingState,
+  cutting_objects: CuttingObjects,
+  cutting_completed_listener: (segments: [number, number][][] | null) => void
+) => {
   if (!cutting || cutting.id === null) {
     return;
   }
@@ -429,6 +450,7 @@ export const completeCuttingMode = () => {
   if (!polyline) {
     return;
   }
+  // TODO do not reassign inside function
   cutting = {
     enabled: false,
     id: null,
@@ -470,7 +492,12 @@ export const completeCuttingMode = () => {
     cutting_completed_listener(resulting_segments);
   }
 };
-export const cancelCuttingMode = () => {
+export const cancelCuttingMode = (
+  map_objects: MapObjects,
+  cutting: CuttingState,
+  cutting_objects: CuttingObjects
+) => {
+  //TODO no reassign of prameter
   cutting = {
     enabled: false,
     id: null,
