@@ -2,7 +2,7 @@ import React, {FunctionComponent} from "react";
 import MapBase, { arrayRT90ToWGS84 } from "./module";
 import example_geo_json from "./example_geo_json";
 // TODO Rewrite as function component
-export const Map = (): FunctionComponent => {
+export const Map: FunctionComponent = () => {
   map: MapBase ;
 
   onMapInitialized(ref: MapBase) {

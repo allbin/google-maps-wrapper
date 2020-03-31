@@ -113,7 +113,7 @@ export const fitToBoundsOfObjectArray = (
   });
 
 export const setPolyline = (
-  map: google.maps.Map,
+  map: google.maps.Map ,
   map_objects: MapObjects,
   cutting: CuttingState,
   id: string | number,

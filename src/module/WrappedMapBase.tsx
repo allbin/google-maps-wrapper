@@ -1,11 +1,16 @@
 import * as React from "react";
-import { SyntheticEvent, useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import ScriptCache from "./ScriptCache";
 import * as feature_helpers from "./feature_helpers";
 import * as map_funcs from "./map_functions";
-import { cuttingClick } from "./map_functions";
-import { cuttingPositionUpdate } from "./map_functions";
-// TODO add the function prototypes fromm map_function and internal_function
+import {
+  panZoomToObjectOrFeature,
+  setMarker,
+  setPolygon,
+  setPolyline,
+  unsetMapObject
+} from "./internal_helpers";
+
 type ExportedFunctions = {
   getBoundsLiteral: () => LatLngBoundsLiteral | undefined;
   setCenter: (lat_lng: LatLngLiteral | LatLng) => Promise<void>;
@@ -13,12 +18,60 @@ type ExportedFunctions = {
   setZoom: (zoom_level: number) => Promise<void>;
   setPolyline: (
     id: string | number,
-    options: PolylineEvents
-  ) => Promise<WrappedFeature>;
+    options: PolylineOptionsSet
+  ) => Promise<WrappedFeature> | undefined;
   setPolygon: (
     id: string | number,
-    options: PolygonEvents
-  ) => Promise<WrappedPolygon>;
+    options: PolygonOptionsSet
+  ) => Promise<WrappedPolygon> | undefined;
+  unsetPolyline: (id: string | number) => Promise<boolean>;
+  unsetPolygon: (id: string | number) => Promise<boolean>;
+  unsetMarker: (id: string | number) => Promise<boolean>;
+  clearPolylines: () => Promise<boolean[]>;
+  clearPolygons: () => Promise<boolean[]>;
+  clearFeatureCollections: (
+    map_objects: MapObjects,
+    feature_layer: google.maps.Data,
+    feature_layers: google.maps.Data[]
+  ) => void;
+  setMarker: (
+    id: string | number,
+    options: MarkerOptionsSet
+  ) => Promise<WrappedMarker>;
+  clearMarkers: () => Promise<boolean[]>;
+  setGeoJSONCollection: (
+    collection: GeoJSONFeatureCollection,
+    options: FeatureOptionsSet
+  ) => Promise<{
+    layer: google.maps.Data;
+    features: WrappedFeature[];
+  }>;
+  setGeoJSONFeature: (
+    feature: GeoJSONFeature,
+    options: FeatureOptionsSet
+  ) => Promise<WrappedFeature>;
+  zoomToObject: (
+    item: WrappedMarker | WrappedPolygon | WrappedPolyline | WrappedFeature
+  ) => void;
+  panToObject: (
+    item: WrappedMarker | WrappedPolygon | WrappedPolyline | WrappedFeature
+  ) => void;
+  setDrawingMode: (
+    type: "polyline" | "polygon",
+    opts: PolylineOptions | PolygonOptions,
+    cb: DrawingCB,
+    cancel_drawing: boolean
+  ) => void;
+  cancelDrawingMode: (cancel_drawing: boolean, debug_src?: string) => void;
+  setCuttingMode: (polyline_id: string | number, cb?: () => any) => void;
+  cuttingPositionUpdate: (mouse_event: MouseEvent) => void;
+  cuttingClick: (mouse_event: google.maps.MouseEvent) => void;
+  completeCuttingMode: () => void;
+  cancelCuttingMode: () => void;
+  registerDragStartCB: (cb: () => void) => number;
+  unregisterDragStartCB: (cb: () => void) => void;
+  registerDragEndCB: (cb: () => void) => number;
+  unregisterDragEndCB: (cb: () => void) => void;
 };
 
 export interface MapBaseProps {
@@ -78,7 +131,7 @@ export const WrappedMapBase: React.FunctionComponent<MapBaseProps> = ({
   styles,
   initializedCB
 }) => {
-  // TODO how to typ scriptcache?
+  // TODO how to type scriptcache?
   const [script_cache] = useState<any>(
     ScriptCache({
       google: googleapi_maps_uri
@@ -94,7 +147,7 @@ export const WrappedMapBase: React.FunctionComponent<MapBaseProps> = ({
     google.maps.MapsEventListener
   >();
   const [features_layer, setFeatureLayers] = useState<google.maps.Data>();
-  const [feature_layers] = useState<google.maps.Data[]>();
+  //const [feature_layers] = useState<google.maps.Data[]>();
   const [map_objects] = useState<MapObjects>({
     marker: {},
     polygon: {},
@@ -114,6 +167,7 @@ export const WrappedMapBase: React.FunctionComponent<MapBaseProps> = ({
   >();
   const [cancel_drawing] = useState<boolean>(false);
   const [services, setServices] = useState<any>({});
+  const html_element = useRef(null);
   const ic = <T extends any>(fn: () => Promise<T>): Promise<T> =>
     new Promise((resolve, reject) => {
       if (!initialized) {
@@ -171,12 +225,12 @@ export const WrappedMapBase: React.FunctionComponent<MapBaseProps> = ({
         styles: styles || {}
       });
       const maps = window.google.maps;
-
-      setMap(maps.Map(map_ref.current, mapConfig));
+      setMap(maps.Map(html_element, mapConfig));
       setFeatureLayers(new maps.Data());
       if (features_layer) {
         features_layer.setMap(map ? map : null);
-        feature_helpers.setupLayerEvents(map_ref, features_layer);
+
+        feature_helpers.setupLayerEvents(map_objects, features_layer);
       }
       setServices({
         geocoderService: new window.google.maps.Geocoder(),
@@ -228,25 +282,118 @@ export const WrappedMapBase: React.FunctionComponent<MapBaseProps> = ({
   };
 
   //Is actually triggered by Idle, not DragEnd!
-  const registerDragEndCB = (cb: () => void): void => do_on_drag_end.push(cb);
-
-  const unregisterDragEndCB = (cb: () => void) => {
-    let index = do_on_drag_end.indexOf(cb);
-    if (index > -1) {
-      do_on_drag_end.splice(index, 1);
-    }
-  };
-  const registerDragStartCB = (cb: () => void) => do_on_drag_end.push(cb);
-  const unregisterDragStartCB = (cb: () => void) => {
-    let index = do_on_drag_start.indexOf(cb);
-    if (index > -1) {
-      do_on_drag_start.splice(index, 1);
-    }
-  };
   const [funcs] = useState({
     getBoundsLiteral: () => map_funcs.getBoundsLiteral(map),
     setCenter: lat_lng => ic<void>(() => map_funcs.setCenter(map, lat_lng)),
-    toPixel: lat_lng_pixel => map_funcs.toPixel(lat_lng_pixel)
+    toPixel: lat_lng_pixel =>
+      map_funcs.toPixel(lat_lng_pixel, html_element, overlay),
+    setZoom: zoom_level => ic(() => map_funcs.setZoom(zoom_level, map)),
+    setPolyline: (id, options) =>
+      map && setPolyline(map, map_objects, cutting, id, options),
+    setPolygon: (id, options) =>
+      map && setPolygon(map, map_objects, cutting, id, options),
+    unsetPolyline: id => unsetMapObject(map_objects, cutting, "polyline", id),
+    unsetPolygon: id => unsetMapObject(map_objects, cutting, "polygon", id),
+    clearPolylines: () => map_funcs.clearPolylines(map_objects, cutting),
+    clearPolygons: () => map_funcs.clearPolygons(map_objects, cutting),
+    setMarker: (id, options) =>
+      map && setMarker(map, map_objects, cutting, id, options),
+    clearMarkers: () => map_funcs.clearMarkers(map_objects, cutting),
+    setGeoJSONCollection: (collection, options) =>
+      map &&
+      feature_helpers.setGeoJSONCollection(
+        map,
+        map_objects,
+        collection,
+        options
+      ),
+    setGeoJSONFeature: (feature, options) =>
+      map &&
+      features_layer &&
+      feature_helpers.setGeoJSONFeature(
+        map,
+        map_objects,
+        features_layer,
+        feature,
+        options
+      ),
+    zoomToObject: item => map && panZoomToObjectOrFeature(map, item, true),
+    panToObject: item => map && panZoomToObjectOrFeature(map, item, false),
+    setDrawingMode: (type, opts, cb, cancel_drawing) =>
+      drawing_completed_listener &&
+      map_funcs.setDrawingMode(
+        services,
+        type,
+        opts,
+        cb,
+        cancel_drawing,
+        drawing_completed_listener
+      ),
+    cancelDrawingMode: (cancel_drawing, debug_src) =>
+      drawing_completed_listener &&
+      map_funcs.cancelDrawingMode(
+        services,
+        cancel_drawing,
+        drawing_completed_listener,
+        debug_src
+      ),
+    setCuttingMode: (polyline_id, cb) =>
+      map &&
+      drawing_completed_listener &&
+      cutting_completed_listener &&
+      map_funcs.setCuttingMode(
+        services,
+        map,
+        map_objects,
+        cutting,
+        cutting_objects,
+        default_center,
+        cancel_drawing,
+        drawing_completed_listener,
+        polyline_id,
+        cutting_completed_listener,
+        cb
+      ),
+    cuttingPositionUpdate: mouse_event =>
+      map_funcs.cuttingPositionUpdate(
+        mouse_event,
+        map_objects,
+        cutting,
+        cutting_objects
+      ),
+    cuttingClick: mouse_event =>
+      map &&
+      map_funcs.cuttingClick(
+        mouse_event,
+        map,
+        map_objects,
+        cutting,
+        cutting_objects
+      ),
+    completeCuttingMode: () =>
+      cutting_completed_listener &&
+      map_funcs.completeCuttingMode(
+        map_objects,
+        cutting,
+        cutting_objects,
+        cutting_completed_listener
+      ),
+    cancelCuttingMode: () =>
+      map_funcs.cancelCuttingMode(map_objects, cutting, cutting_objects),
+    registerDragStartCB: cb => do_on_drag_end.push(cb),
+    unregisterDragStartCB: cb => {
+      let index = do_on_drag_start.indexOf(cb);
+      if (index > -1) {
+        do_on_drag_start.splice(index, 1);
+      }
+    },
+    registerDragEndCB: cb => do_on_drag_end.push(cb),
+    unregisterDragEndCB: cb => {
+      let index = do_on_drag_end.indexOf(cb);
+      if (index > -1) {
+        do_on_drag_end.splice(index, 1);
+      }
+    }
   } as ExportedFunctions);
 
   const setupMapEvents = (map: google.maps.Map) => {
@@ -259,7 +406,7 @@ export const WrappedMapBase: React.FunctionComponent<MapBaseProps> = ({
       () => onBoundsChanged && onBoundsChanged()
     );
     map.addListener("click", mouse_event => {
-      cutting.enabled && cuttingClick(mouse_event);
+      cutting.enabled && funcs.cuttingClick(mouse_event);
       onClick && !cutting.enabled && onClick(mouse_event);
     });
     map.addListener(
@@ -304,7 +451,7 @@ export const WrappedMapBase: React.FunctionComponent<MapBaseProps> = ({
     });
     map.addListener("mousemove", (mouse_event: MouseEvent) => {
       if (cutting.enabled) {
-        cuttingPositionUpdate(mouse_event);
+        funcs.cuttingPositionUpdate(mouse_event);
       }
       if (onMouseMove) {
         onMouseMove(mouse_event);
@@ -354,6 +501,7 @@ export const WrappedMapBase: React.FunctionComponent<MapBaseProps> = ({
   return (
     <div style={{ height: "100%" }}>
       <div
+        ref={html_element}
         style={{
           position: "absolute",
           top: "0",

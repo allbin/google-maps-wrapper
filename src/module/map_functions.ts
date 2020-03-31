@@ -8,7 +8,7 @@ import {
 let ScissorIcon = require("./img/marker_scissors.svg");
 let ScissorHoverIcon = require("./img/marker_scissors_hover.svg");
 
-export const getBoundsLiteral = (map?: google.maps.Map) => {
+export const getBoundsLiteral = (map: google.maps.Map | undefined) => {
   if (!map) {
     return null;
   }
@@ -43,7 +43,7 @@ export const setCenter = (
 export const toPixel = (
   lat_lng_input: LatLng | LatLngLiteral,
   html_element: any,
-  overlay?: google.maps.OverlayView
+  overlay: google.maps.OverlayView | undefined
 ): [number, number] => {
   if (!overlay) {
     throw new Error("Overlay not loaded when calling toPixel.");
@@ -61,23 +61,13 @@ export const toPixel = (
 
 export const setZoom = (
   zoom_level: number,
-  map?: google.maps.Map
+  map: google.maps.Map | undefined
 ): Promise<void> =>
   new Promise((resolve, reject) => {
     map && map.setZoom(zoom_level);
     resolve();
     return;
   });
-
-// TODO: Link Direkt to internal helpers
-// export const setPolyline = (
-//   map: google.maps.Map,
-//   map_objects: MapObjects,
-//   id: string | number,
-//   options: PolylineOptionsSet
-// ): Promise<WrappedPolyline> => internal_helpers.setPolyline(map,,id, options);
-// export const unsetPolyline = (id: string | number): Promise<boolean> =>
-//   internal_helpers.unsetMapObject("polyline", id);A
 
 export const clearPolylines = (
   map_objects: MapObjects,
@@ -91,13 +81,6 @@ export const clearPolylines = (
   });
   return Promise.all(promise_arr);
 };
-
-// export const setPolygon = (
-//   id: string | number,
-//   options: PolygonOptionsSet
-// ): Promise<WrappedPolygon> => internal_helpers.setPolygon(id, options);
-// export const unsetPolygon = (id: string | number): Promise<boolean> =>
-//   internal_helpers.unsetMapObject("polygon", id);
 
 export const clearPolygons = (
   map_objects: MapObjects,
@@ -117,8 +100,6 @@ export const setMarker = (
   options: MarkerOptionsSet
 ): Promise<WrappedMarker> =>
   internal_helpers.setMarker(map, map_objects, cutting, id, options);
-// export const unsetMarker = (id: string | number): Promise<boolean> =>
-//   internal_helpers.unsetMapObject(ma"marker", id);
 export const clearMarkers = (
   map_objects: MapObjects,
   cutting: CuttingState
@@ -128,15 +109,6 @@ export const clearMarkers = (
       internal_helpers.unsetMapObject(map_objects, cutting, "marker", id)
     )
   );
-
-// export const setGeoJSONCollection = (
-//   collection: GeoJSONFeatureCollection,
-//   options: FeatureOptionsSet
-// ) => feature_helpers.setGeoJSONCollection(collection, options);
-// export const setGeoJSONFeature = (
-//   feature: GeoJSONFeature,
-//   options: FeatureOptionsSet
-// ) => feature_helpers.setGeoJSONFeature(feature, options);
 export const clearFeatureCollections = (
   map_objects: MapObjects,
   features_layer: google.maps.Data,
@@ -151,21 +123,11 @@ export const clearFeatureCollections = (
   }
 };
 
-// export const zoomToObject = (
-//   item: WrappedMarker | WrappedPolygon | WrappedPolyline | WrappedFeature
-// ) => internal_helpers.panZoomToObjectOrFeature(item, true);
-// export const panToObject = (
-//   item: WrappedMarker | WrappedPolygon | WrappedPolyline | WrappedFeature
-// ) => internal_helpers.panZoomToObjectOrFeature(item, false);
-
 export const setDrawingMode = (
   services: any,
   type: "polyline" | "polygon",
   opts: PolylineOptions | PolygonOptions,
-  cb: (
-    path: [number, number][] | [number, number] | null,
-    overlay: Polygon | Polyline | Marker
-  ) => void,
+  cb: DrawingCB,
   cancel_drawing: boolean,
   drawing_completed_listener: google.maps.MapsEventListener
 ) => {

@@ -264,3 +264,7 @@ interface CuttingObjects {
   [key: string]: any;
   hover_scissors?: any;
 }
+type DrawingCB = (
+    path: [number, number][] | [number, number] | null,
+    overlay: Polygon | Polyline | Marker
+) => void
