@@ -11,7 +11,7 @@ import {
   unsetMapObject
 } from "./internal_helpers";
 
-type ExportedFunctions = {
+export type ExportedFunctions = {
   getBoundsLiteral: () => LatLngBoundsLiteral | undefined;
   setCenter: (lat_lng: LatLngLiteral | LatLng) => Promise<void>;
   toPixel: (lat_lng_pixel: LatLng | LatLngLiteral) => [number, number];
@@ -19,11 +19,11 @@ type ExportedFunctions = {
   setPolyline: (
     id: string | number,
     options: PolylineOptionsSet
-  ) => Promise<WrappedFeature> | undefined;
+  ) => Promise<WrappedPolyline>;
   setPolygon: (
     id: string | number,
     options: PolygonOptionsSet
-  ) => Promise<WrappedPolygon> | undefined;
+  ) => Promise<WrappedPolygon>;
   unsetPolyline: (id: string | number) => Promise<boolean>;
   unsetPolygon: (id: string | number) => Promise<boolean>;
   unsetMarker: (id: string | number) => Promise<boolean>;
@@ -60,7 +60,6 @@ type ExportedFunctions = {
     type: "polyline" | "polygon",
     opts: PolylineOptions | PolygonOptions,
     cb: DrawingCB,
-    cancel_drawing: boolean
   ) => void;
   cancelDrawingMode: (cancel_drawing: boolean, debug_src?: string) => void;
   setCuttingMode: (polyline_id: string | number, cb?: () => any) => void;
@@ -138,7 +137,7 @@ export const WrappedMapBase: React.FunctionComponent<MapBaseProps> = ({
 
   const [map, setMap] = useState<google.maps.Map>();
   const [initialized, setInitialized] = useState<boolean>(false);
-  const [do_after_init] = useState<(() => void)[]>([]);
+  const [do_after_init] = useState<((map: google.maps.Map) => void)[]>([]);
   const [do_on_drag_end] = useState<(() => void)[]>([]);
   const [do_on_drag_start] = useState<(() => void)[]>([]);
   const [drawing_completed_listener] = useState<
@@ -166,16 +165,18 @@ export const WrappedMapBase: React.FunctionComponent<MapBaseProps> = ({
   const [cancel_drawing] = useState<boolean>(false);
   const [services, setServices] = useState<any>({});
   const html_element = useRef(null);
-  const ic = <T extends any>(fn: () => Promise<T>): Promise<T> =>
+  const ic = <T extends any>(
+    fn: (map: google.maps.Map) => Promise<T>
+  ): Promise<T> =>
     new Promise((resolve, reject) => {
-      if (!initialized) {
-        do_after_init.push(() => {
-          fn()
+      if (!initialized || !map) {
+        do_after_init.push(map => {
+          fn(map)
             .then(resolve)
             .catch(reject);
         });
       } else {
-        fn().then(resolve);
+        fn(map).then(resolve);
       }
     });
   useEffect(() => {
@@ -266,9 +267,13 @@ export const WrappedMapBase: React.FunctionComponent<MapBaseProps> = ({
       map_funcs.toPixel(lat_lng_pixel, html_element, overlay),
     setZoom: zoom_level => ic(() => map_funcs.setZoom(zoom_level, map)),
     setPolyline: (id, options) =>
-      map && setPolyline(map, map_objects, cutting, id, options),
+      ic((map: google.maps.Map) =>
+        setPolyline(map, map_objects, cutting, id, options)
+      ),
     setPolygon: (id, options) =>
-      map && setPolygon(map, map_objects, cutting, id, options),
+      ic((map: google.maps.Map) =>
+        setPolygon(map, map_objects, cutting, id, options)
+      ),
     unsetPolyline: id => unsetMapObject(map_objects, cutting, "polyline", id),
     unsetPolygon: id => unsetMapObject(map_objects, cutting, "polygon", id),
     clearPolylines: () => map_funcs.clearPolylines(map_objects, cutting),
@@ -300,7 +305,7 @@ export const WrappedMapBase: React.FunctionComponent<MapBaseProps> = ({
       ),
     zoomToObject: item => map && panZoomToObjectOrFeature(map, item, true),
     panToObject: item => map && panZoomToObjectOrFeature(map, item, false),
-    setDrawingMode: (type, opts, cb, cancel_drawing) =>
+    setDrawingMode: (type, opts, cb) =>
       drawing_completed_listener &&
       map_funcs.setDrawingMode(
         services,
@@ -380,7 +385,7 @@ export const WrappedMapBase: React.FunctionComponent<MapBaseProps> = ({
   const doAfterInit = (map: google.maps.Map): void => {
     setInitialized(true);
     do_after_init.forEach(cb => {
-      cb();
+      cb(map);
     });
 
     if (initializedCB) {

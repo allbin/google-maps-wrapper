@@ -1,24 +1,20 @@
-import React, {FunctionComponent} from "react";
+import React, { FunctionComponent, useState } from "react";
 import MapBase, { arrayRT90ToWGS84 } from "./module";
 import example_geo_json from "./example_geo_json";
-// TODO Rewrite as function component
-export const Map: FunctionComponent = () => {
-  map: MapBase ;
-
-  onMapInitialized(ref: MapBase) {
-    this.map = ref;
-
+import { ExportedFunctions } from "./module/WrappedMapBase";
+const Map: FunctionComponent = () => {
+  const [funcs, setFuncs] = useState<ExportedFunctions>();
+  const onMapInitialized = (map: google.maps.Map, funcs: ExportedFunctions) => {
     let marker_opts: MarkerOptions = {
       position: { lng: 14.40567, lat: 56.65918 },
       draggable: true
     };
-    this.map
-      .setMarker("marker1", { default: marker_opts })
-      .then((marker: any) => {
-        setTimeout(() => {
-          marker.panTo();
-        }, 7000);
-      });
+    setFuncs(funcs);
+    funcs.setMarker("marker1", { default: marker_opts }).then((marker: any) => {
+      setTimeout(() => {
+        marker.panTo();
+      }, 7000);
+    });
 
     let polyline_opts: PolylineOptions = {
       path: [
@@ -34,7 +30,7 @@ export const Map: FunctionComponent = () => {
       strokeWeight: 4,
       strokeColor: "#CC0000"
     };
-    this.map.setPolyline("polyline1", {
+    funcs.setPolyline("polyline1", {
       default: polyline_opts,
       hover: polyline_hover
     });
@@ -56,7 +52,7 @@ export const Map: FunctionComponent = () => {
       strokeColor: "#CC0000",
       fillOpacity: 0.6
     };
-    this.map
+    funcs
       .setPolygon(2, {
         default: polygon_opts,
         hover: polygon_hover
@@ -72,9 +68,7 @@ export const Map: FunctionComponent = () => {
         polygon_opts.strokeOpacity = 0.4;
         polygon.setOptions({ default: polygon_opts, hover: polygon_hover });
         setTimeout(() => {
-          if (this.map) {
-            this.map.zoomToObject(polygon);
-          }
+          funcs.zoomToObject(polygon);
         }, 2000);
       });
 
@@ -85,7 +79,7 @@ export const Map: FunctionComponent = () => {
         });
       }
     );
-    this.map
+    funcs
       .setGeoJSONCollection(example_geo_json, {
         default: { visible: true, fillColor: "#ff0000", fillOpacity: 0.3 },
         hover: { fillOpacity: 0.6 }
@@ -101,44 +95,42 @@ export const Map: FunctionComponent = () => {
           });
         });
         setTimeout(() => {
-          if (this.map) {
-            this.map.panToObject(x.features[0]);
-          }
+          funcs.panToObject(x.features[0]);
         }, 4000);
       });
-  }
+  };
 
-    return (
-      <div>
-        <button
-          onClick={() => {
-            if (!this.map) {
-              return;
+  return (
+    <div>
+      <button
+        onClick={() => {
+          if (!funcs) {
+            return;
+          }
+          funcs.setDrawingMode(
+            "polyline",
+            {
+              strokeColor: "#000000",
+              strokeWeight: 3
+            },
+            (path: any) => {
+              console.log("path: ", path);
             }
-            this.map.setDrawingMode(
-              "polyline",
-              {
-                strokeColor: "#000000",
-                strokeWeight: 3
-              },
-              (path: any) => {
-                console.log("path: ", path);
-              }
-            );
-          }}
-        >
-          Start Drawing
-        </button>
-        <div style={{ position: "absolute", width: "90%", height: "90%" }}>
-          <MapBase
-            googleapi_maps_uri="https://maps.googleapis.com/maps/api/js?v=3.exp&libraries=geometry,places,drawing&key=AIzaSyA0tp0r6ImLSnn9vy4zXjZWar1F3U5eOaY"
-            default_center={{ lng: 14.40567, lat: 56.65918 }}
-            default_zoom={8}
-            initializedCB={(ref: any) => {
-              this.onMapInitialized(ref);
-            }}
-          />
-        </div>
+          );
+        }}
+      >
+        Start Drawing
+      </button>
+      <div style={{ position: "absolute", width: "90%", height: "90%" }}>
+        <MapBase
+          googleapi_maps_uri="https://maps.googleapis.com/maps/api/js?v=3.exp&libraries=geometry,places,drawing&key=AIzaSyA0tp0r6ImLSnn9vy4zXjZWar1F3U5eOaY"
+          default_center={{ lng: 14.40567, lat: 56.65918 }}
+          default_zoom={8}
+          initializedCB={onMapInitialized}
+        />
       </div>
-    );
-}
+    </div>
+  );
+};
+
+export default Map;
