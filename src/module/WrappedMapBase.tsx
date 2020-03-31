@@ -1,11 +1,11 @@
 import * as React from "react";
-import { createRef, useEffect, useRef, useState } from "react";
+import { SyntheticEvent, useEffect, useState } from "react";
 import ScriptCache from "./ScriptCache";
 import * as feature_helpers from "./feature_helpers";
 import * as map_funcs from "./map_functions";
 import { cuttingClick } from "./map_functions";
 import { cuttingPositionUpdate } from "./map_functions";
-
+// TODO add the function prototypes fromm map_function and internal_function
 type ExportedFunctions = {
   getBoundsLiteral: () => LatLngBoundsLiteral | undefined;
   setCenter: (lat_lng: LatLngLiteral | LatLng) => Promise<void>;
@@ -137,6 +137,8 @@ export const WrappedMapBase: React.FunctionComponent<MapBaseProps> = ({
         // window.wrapped_gmaps[id] =map_ref;
       }
     }
+
+    // TODO how to solve this, Wrong type of script_cache?
     script_cache.google.onLoad(() => {
       function CanvasProjectionOverlay() {}
 

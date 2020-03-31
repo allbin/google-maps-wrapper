@@ -1,9 +1,9 @@
-import React from "react";
+import React, {FunctionComponent} from "react";
 import MapBase, { arrayRT90ToWGS84 } from "./module";
 import example_geo_json from "./example_geo_json";
-
-export default class Map extends React.Component<any, any> {
-  map: MapBase | null = null;
+// TODO Rewrite as function component
+export const Map = (): FunctionComponent => {
+  map: MapBase ;
 
   onMapInitialized(ref: MapBase) {
     this.map = ref;
@@ -108,7 +108,6 @@ export default class Map extends React.Component<any, any> {
       });
   }
 
-  render() {
     return (
       <div>
         <button
@@ -142,5 +141,4 @@ export default class Map extends React.Component<any, any> {
         </div>
       </div>
     );
-  }
 }
