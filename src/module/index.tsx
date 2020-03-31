@@ -16,7 +16,6 @@ export {
 declare global {
   interface Window {
     google: any;
-    wrapped_gmaps: any;
   }
 }
 

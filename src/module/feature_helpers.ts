@@ -109,7 +109,6 @@ const wrapGmapsFeature = (
   return (wrapped_feature as unknown) as WrappedFeature;
 };
 
-// TODO run with ic
 export const setGeoJSONFeature = (
   map: google.maps.Map,
   map_objects: MapObjects,
@@ -144,7 +143,6 @@ export const setGeoJSONFeature = (
     resolve(wrapped_feature);
   });
 
-// TODO run with ic
 export const setGeoJSONCollection = (
   map: google.maps.Map,
   map_objects: MapObjects,

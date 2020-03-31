@@ -75,8 +75,7 @@ type ExportedFunctions = {
 };
 
 export interface MapBaseProps {
-  // TODO Type of ref?
-  initializedCB?: (ref: any) => void;
+  initializedCB?: (map: google.maps.Map, funcs: ExportedFunctions) => void;
   googleapi_maps_uri: string;
   id?: string;
   default_center: LatLngLiteral;
@@ -131,7 +130,6 @@ export const WrappedMapBase: React.FunctionComponent<MapBaseProps> = ({
   styles,
   initializedCB
 }) => {
-  // TODO how to type scriptcache?
   const [script_cache] = useState<any>(
     ScriptCache({
       google: googleapi_maps_uri
@@ -185,15 +183,7 @@ export const WrappedMapBase: React.FunctionComponent<MapBaseProps> = ({
       window.google.maps.event.clearInstanceListeners(map);
     }
 
-    if (id) {
-      if (window.hasOwnProperty("allbin_gmaps")) {
-        // TODO how TO?
-        // window.wrapped_gmaps[id] =map_ref;
-      }
-    }
-
-    // TODO how to solve this, Wrong type of script_cache?
-    script_cache.google.onLoad(() => {
+    (script_cache.google.onLoad as any)(() => {
       function CanvasProjectionOverlay() {}
 
       CanvasProjectionOverlay.prototype = new window.google.maps.OverlayView();
@@ -264,24 +254,11 @@ export const WrappedMapBase: React.FunctionComponent<MapBaseProps> = ({
       setupMapEvents(map);
 
       window.google.maps.event.addListenerOnce(map, "idle", () =>
-        doAfterInit()
+        doAfterInit(map)
       );
     });
   }, []);
 
-  const doAfterInit = (): void => {
-    setInitialized(true);
-    do_after_init.forEach(cb => {
-      cb();
-    });
-
-    if (initializedCB) {
-      //Tell parent we are initialized if the parent has asked for it.
-      initializedCB(this);
-    }
-  };
-
-  //Is actually triggered by Idle, not DragEnd!
   const [funcs] = useState({
     getBoundsLiteral: () => map_funcs.getBoundsLiteral(map),
     setCenter: lat_lng => ic<void>(() => map_funcs.setCenter(map, lat_lng)),
@@ -301,21 +278,25 @@ export const WrappedMapBase: React.FunctionComponent<MapBaseProps> = ({
     clearMarkers: () => map_funcs.clearMarkers(map_objects, cutting),
     setGeoJSONCollection: (collection, options) =>
       map &&
-      feature_helpers.setGeoJSONCollection(
-        map,
-        map_objects,
-        collection,
-        options
+      ic(() =>
+        feature_helpers.setGeoJSONCollection(
+          map,
+          map_objects,
+          collection,
+          options
+        )
       ),
     setGeoJSONFeature: (feature, options) =>
       map &&
       features_layer &&
-      feature_helpers.setGeoJSONFeature(
-        map,
-        map_objects,
-        features_layer,
-        feature,
-        options
+      ic(() =>
+        feature_helpers.setGeoJSONFeature(
+          map,
+          map_objects,
+          features_layer,
+          feature,
+          options
+        )
       ),
     zoomToObject: item => map && panZoomToObjectOrFeature(map, item, true),
     panToObject: item => map && panZoomToObjectOrFeature(map, item, false),
@@ -396,6 +377,19 @@ export const WrappedMapBase: React.FunctionComponent<MapBaseProps> = ({
     }
   } as ExportedFunctions);
 
+  const doAfterInit = (map: google.maps.Map): void => {
+    setInitialized(true);
+    do_after_init.forEach(cb => {
+      cb();
+    });
+
+    if (initializedCB) {
+      //Tell parent we are initialized if the parent has asked for it.
+      initializedCB(map, funcs);
+    }
+  };
+
+  //Is actually triggered by Idle, not DragEnd!
   const setupMapEvents = (map: google.maps.Map) => {
     map.addListener(
       "center_changed",
