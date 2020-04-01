@@ -10,11 +10,11 @@ let ScissorHoverIcon = require("./img/marker_scissors_hover.svg");
 
 export const getBoundsLiteral = (map: google.maps.Map | undefined) => {
   if (!map) {
-    return null;
+    return undefined;
   }
   const bounds = map.getBounds();
   if (!bounds) {
-    return null;
+    return undefined;
   }
   const ne = bounds.getNorthEast();
   const sw = bounds.getSouthWest();

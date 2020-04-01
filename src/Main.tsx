@@ -4,17 +4,22 @@ import example_geo_json from "./example_geo_json";
 import { ExportedFunctions } from "./module/WrappedMapBase";
 const Map: FunctionComponent = () => {
   const [funcs, setFuncs] = useState<ExportedFunctions>();
-  const onMapInitialized = (map: google.maps.Map, funcs: ExportedFunctions) => {
+  const onMapInitialized = (
+    map: google.maps.Map,
+    initial_funcs: ExportedFunctions
+  ) => {
     let marker_opts: MarkerOptions = {
       position: { lng: 14.40567, lat: 56.65918 },
       draggable: true
     };
-    setFuncs(funcs);
-    funcs.setMarker("marker1", { default: marker_opts }).then((marker: any) => {
-      setTimeout(() => {
-        marker.panTo();
-      }, 7000);
-    });
+    setFuncs(initial_funcs);
+    initial_funcs
+      .setMarker("marker1", { default: marker_opts })
+      .then(marker => {
+        setTimeout(() => {
+          marker.panTo();
+        }, 7000);
+      });
 
     let polyline_opts: PolylineOptions = {
       path: [
@@ -30,7 +35,7 @@ const Map: FunctionComponent = () => {
       strokeWeight: 4,
       strokeColor: "#CC0000"
     };
-    funcs.setPolyline("polyline1", {
+    initial_funcs.setPolyline("polyline1", {
       default: polyline_opts,
       hover: polyline_hover
     });
@@ -52,7 +57,7 @@ const Map: FunctionComponent = () => {
       strokeColor: "#CC0000",
       fillOpacity: 0.6
     };
-    funcs
+    initial_funcs
       .setPolygon(2, {
         default: polygon_opts,
         hover: polygon_hover
@@ -68,7 +73,7 @@ const Map: FunctionComponent = () => {
         polygon_opts.strokeOpacity = 0.4;
         polygon.setOptions({ default: polygon_opts, hover: polygon_hover });
         setTimeout(() => {
-          funcs.zoomToObject(polygon);
+          initial_funcs.zoomToObject(polygon);
         }, 2000);
       });
 
@@ -79,7 +84,7 @@ const Map: FunctionComponent = () => {
         });
       }
     );
-    funcs
+    initial_funcs
       .setGeoJSONCollection(example_geo_json, {
         default: { visible: true, fillColor: "#ff0000", fillOpacity: 0.3 },
         hover: { fillOpacity: 0.6 }
@@ -95,7 +100,7 @@ const Map: FunctionComponent = () => {
           });
         });
         setTimeout(() => {
-          funcs.panToObject(x.features[0]);
+          initial_funcs.panToObject(x.features[0]);
         }, 4000);
       });
   };

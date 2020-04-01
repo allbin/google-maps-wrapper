@@ -268,3 +268,10 @@ type DrawingCB = (
     path: [number, number][] | [number, number] | null,
     overlay: Polygon | Polyline | Marker
 ) => void
+
+type Services= {
+  geocoderService?: any,
+  directionsService?: any,
+  drawing?: any,
+  drawingManager?: any
+}

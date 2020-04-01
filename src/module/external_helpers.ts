@@ -27,16 +27,10 @@ export type arrayToLatLngObjectType = (
 export const arrayToLatLngObject: arrayToLatLngObjectType = (
   arr,
   invert = false
-) => {
-  if (invert) {
-    return arr.map(point => {
-      return { lat: point[1], lng: point[0] };
-    });
-  }
-  return arr.map(point => {
-    return { lat: point[0], lng: point[1] };
-  });
-};
+) =>
+  invert
+    ? arr.map(point => ({ lat: point[1], lng: point[0] }))
+    : arr.map(point => ({ lat: point[0], lng: point[1] }));
 
 export type latLngArrayToCoordArrayType = (
   latLngArray: LatLngLiteral[],
@@ -45,27 +39,16 @@ export type latLngArrayToCoordArrayType = (
 export const latLngArrayToCoordArray: latLngArrayToCoordArrayType = (
   arr,
   invert
-) => {
-  if (invert) {
-    return arr.map(point => {
-      return [point.lng, point.lat] as [number, number];
-    });
-  }
-  return arr.map(point => {
-    return [point.lat, point.lng] as [number, number];
-  });
-};
+) =>
+  invert
+    ? arr.map(point => [point.lng, point.lat] as [number, number])
+    : arr.map(point => [point.lat, point.lng] as [number, number]);
 
-export type makePointsAroundCircleRT90Type = (
-  p: number[],
+export const makePointsAroundCircleRT90 = (
+  point: number[],
   r: number,
   numberOfPoints: number
-) => [number, number][];
-export const makePointsAroundCircleRT90: makePointsAroundCircleRT90Type = (
-  point,
-  r,
-  numberOfPoints = 12
-) => {
+): [number, number][] => {
   //Returns numberOfPoints around circle at p with r radius.
 
   let points = [];
@@ -101,19 +84,13 @@ export type movePointsByCoordType = (
 export const movePointsByCoord: movePointsByCoordType = (
   points_arr: [number, number][],
   coord: number[]
-) => {
-  //Adds value of Coord to all points in array.
-  return points_arr.map(point => {
-    return [point[0] + coord[0], point[1] + coord[1]] as [number, number];
-  });
-};
+) =>
+  points_arr.map(
+    point => [point[0] + coord[0], point[1] + coord[1]] as [number, number]
+  );
 
-function squared(x: number): number {
-  return x * x;
-}
-function toRad(x: number): number {
-  return (x * Math.PI) / 180;
-}
+const squared = (x: number): number => x * x;
+const toRad = (x: number): number  =>  ((x * Math.PI) / 180);
 export type haversineDistanceType = (
   a: LatLngLiteral,
   b: LatLngLiteral
