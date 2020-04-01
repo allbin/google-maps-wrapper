@@ -135,7 +135,6 @@ export const setDrawingMode = (
   drawing_completed_listener?: google.maps.MapsEventListener
 ) => {
   let mode = null;
-  console.log(services);
   if (!services.drawing) {
     console.error(
       "MAP: Drawing library not available! Add it to google maps api request url."
@@ -187,7 +186,7 @@ export const setDrawingMode = (
   );
 };
 export const completeDrawingMode = (
-  services: any,
+  services: Services,
   drawing_completed_listener: google.maps.MapsEventListener
 ) => {
   if (services.drawing) {
@@ -199,7 +198,7 @@ export const completeDrawingMode = (
   }
 };
 export const cancelDrawingMode = (
-  services: any,
+  services: Services,
   cancel_drawing: boolean,
   drawing_completed_listener: google.maps.MapsEventListener,
   debug_src?: string
@@ -214,7 +213,7 @@ export const cancelDrawingMode = (
 };
 
 export const setCuttingMode = (
-  services: any,
+  services: Services,
   map: google.maps.Map,
   map_objects: MapObjects,
   cutting: CuttingState,

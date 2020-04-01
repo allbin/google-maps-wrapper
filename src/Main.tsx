@@ -78,8 +78,8 @@ const Map: FunctionComponent = () => {
       });
 
     example_geo_json.features[0].geometry.coordinates = example_geo_json.features[0].geometry.coordinates.map(
-      (x: any) => {
-        return x.map((y: any) => {
+      (x: number[][][]) => {
+        return x.map(y => {
           return arrayRT90ToWGS84(y as [number, number][]);
         });
       }

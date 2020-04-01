@@ -26,10 +26,10 @@ export type ExportedFunctions = {
   ) => Promise<WrappedPolygon>;
   unsetPolyline: (id: string | number) => Promise<boolean>;
   unsetPolygon: (id: string | number) => Promise<boolean>;
-  unsetMarker?: (id: string | number) => Promise<boolean>;
+  unsetMarker: (id: string | number) => Promise<boolean>;
   clearPolylines: () => Promise<boolean[]>;
   clearPolygons: () => Promise<boolean[]>;
-  clearFeatureCollections?: (
+  clearFeatureCollections: (
     map_objects: MapObjects,
     feature_layer: google.maps.Data,
     feature_layers: google.maps.Data[]
@@ -143,7 +143,7 @@ export const WrappedMapBase: React.FunctionComponent<MapBaseProps> = ({
     google.maps.MapsEventListener
   >();
   const [features_layer, setFeaturesLayer] = useState<google.maps.Data>();
-  // const [feature_layers] = useState<google.maps.Data[]>();
+  const [feature_layers] = useState<google.maps.Data[]>();
   const [map_objects] = useState<MapObjects>({
     marker: {},
     polygon: {},
@@ -241,7 +241,6 @@ export const WrappedMapBase: React.FunctionComponent<MapBaseProps> = ({
       initial_services.drawingManager.setMap(map);
     }
 
-    console.log(initial_services);
     setServices(initial_services);
   }, [map]);
   useEffect(() => {
@@ -266,6 +265,7 @@ export const WrappedMapBase: React.FunctionComponent<MapBaseProps> = ({
       clearPolygons: () => map_funcs.clearPolygons(map_objects, cutting),
       setMarker: (id, options) =>
         ic(map => setMarker(map, map_objects, cutting, id, options)),
+      unsetMarker: id => unsetMapObject(map_objects, cutting, "marker", id),
       clearMarkers: () => map_funcs.clearMarkers(map_objects, cutting),
       setGeoJSONCollection: (collection, options) =>
         ic(map =>
@@ -277,15 +277,28 @@ export const WrappedMapBase: React.FunctionComponent<MapBaseProps> = ({
           )
         ),
       setGeoJSONFeature: (feature, options) =>
-        ic(map =>
-          feature_helpers.setGeoJSONFeature(
+        ic(map => {
+          if (!features_layer) {
+            throw new Error("features layer not loaded.");
+          }
+          return feature_helpers.setGeoJSONFeature(
             map,
             map_objects,
-            features_layer!,
+            features_layer,
             feature,
             options
-          )
-        ),
+          );
+        }),
+      clearFeatureCollections: value => {
+        if (!features_layer || !feature_layers) {
+          throw new Error("features/feature layer/layers not loaded.");
+        }
+        map_funcs.clearFeatureCollections(
+          map_objects,
+          features_layer,
+          feature_layers
+        );
+      },
       zoomToObject: item => map && panZoomToObjectOrFeature(map, item, true),
       panToObject: item => map && panZoomToObjectOrFeature(map, item, false),
       setDrawingMode: (type, opts, cb) => {
@@ -308,7 +321,6 @@ export const WrappedMapBase: React.FunctionComponent<MapBaseProps> = ({
           debug_src
         ),
       setCuttingMode: (polyline_id, cb) =>
-        map &&
         drawing_completed_listener &&
         cutting_completed_listener &&
         map_funcs.setCuttingMode(
@@ -332,7 +344,6 @@ export const WrappedMapBase: React.FunctionComponent<MapBaseProps> = ({
           cutting_objects
         ),
       cuttingClick: mouse_event =>
-        map &&
         map_funcs.cuttingClick(
           mouse_event,
           map,
@@ -401,7 +412,10 @@ export const WrappedMapBase: React.FunctionComponent<MapBaseProps> = ({
 
     if (initializedCB) {
       //Tell parent we are initialized if the parent has asked for it.
-      initializedCB(map, funcs!);
+      if (!funcs) {
+        throw new Error("funcs is undefined");
+      }
+      initializedCB(map, funcs);
     }
   };
 
@@ -416,7 +430,10 @@ export const WrappedMapBase: React.FunctionComponent<MapBaseProps> = ({
       () => onBoundsChanged && onBoundsChanged()
     );
     map.addListener("click", mouse_event => {
-      cutting.enabled && funcs!.cuttingClick(mouse_event);
+      if (!funcs) {
+        throw new Error("funcs is undefined");
+      }
+      cutting.enabled && funcs.cuttingClick(mouse_event);
       onClick && !cutting.enabled && onClick(mouse_event);
     });
     map.addListener(
