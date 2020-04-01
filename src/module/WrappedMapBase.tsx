@@ -139,7 +139,7 @@ export const WrappedMapBase: React.FunctionComponent<MapBaseProps> = ({
   const [do_after_init] = useState<((map: google.maps.Map) => void)[]>([]);
   const [do_on_drag_end] = useState<(() => void)[]>([]);
   const [do_on_drag_start] = useState<(() => void)[]>([]);
-  const [drawing_completed_listener] = useState<
+  const [drawing_completed_listener, setDrawingCompletedListener] = useState<
     google.maps.MapsEventListener
   >();
   const [features_layer, setFeaturesLayer] = useState<google.maps.Data>();
@@ -162,7 +162,7 @@ export const WrappedMapBase: React.FunctionComponent<MapBaseProps> = ({
     (segments: [number, number][][] | null) => void
   >();
   const [cancel_drawing] = useState<boolean>(false);
-  const [services, setServices] = useState<Services>({});
+  const [services, setServices] = useState<Services>();
   const html_element_ref = useRef(null);
   const ic = <T extends any>(
     fn: (map: google.maps.Map) => Promise<T>
@@ -223,6 +223,31 @@ export const WrappedMapBase: React.FunctionComponent<MapBaseProps> = ({
     if (!map) {
       return;
     }
+    const initial_services: Services = {
+      geocoderService: new window.google.maps.Geocoder(),
+      directionsService: new window.google.maps.DirectionsService()
+    };
+    if (window.google.maps.drawing) {
+      initial_services.drawing = window.google.maps.drawing;
+      initial_services.drawingManager = new window.google.maps.drawing.DrawingManager(
+        {
+          drawingMode: null,
+          drawingControl: false,
+          drawingControlOptions: {
+            drawingModes: []
+          }
+        }
+      );
+      initial_services.drawingManager.setMap(map);
+    }
+
+    console.log(initial_services);
+    setServices(initial_services);
+  }, [map]);
+  useEffect(() => {
+    if (!map || !services) {
+      return;
+    }
     setFuncs({
       getBoundsLiteral: () => map_funcs.getBoundsLiteral(map),
       setCenter: lat_lng => ic<void>(map => map_funcs.setCenter(map, lat_lng)),
@@ -263,16 +288,17 @@ export const WrappedMapBase: React.FunctionComponent<MapBaseProps> = ({
         ),
       zoomToObject: item => map && panZoomToObjectOrFeature(map, item, true),
       panToObject: item => map && panZoomToObjectOrFeature(map, item, false),
-      setDrawingMode: (type, opts, cb) =>
-        drawing_completed_listener &&
+      setDrawingMode: (type, opts, cb) => {
         map_funcs.setDrawingMode(
           services,
           type,
           opts,
           cb,
           cancel_drawing,
+          setDrawingCompletedListener,
           drawing_completed_listener
-        ),
+        );
+      },
       cancelDrawingMode: (cancel_drawing, debug_src) =>
         drawing_completed_listener &&
         map_funcs.cancelDrawingMode(
@@ -344,38 +370,19 @@ export const WrappedMapBase: React.FunctionComponent<MapBaseProps> = ({
     initial_features_layer.setMap(map);
     feature_helpers.setupLayerEvents(map_objects, initial_features_layer);
 
-    const initial_services: Services = {
-      geocoderService: new window.google.maps.Geocoder(),
-      directionsService: new window.google.maps.DirectionsService()
-    };
-    if (window.google.maps.drawing) {
-      initial_services.drawing = window.google.maps.drawing;
-      initial_services.drawingManager = new window.google.maps.drawing.DrawingManager(
-        {
-          drawingMode: null,
-          drawingControl: false,
-          drawingControlOptions: {
-            drawingModes: []
-          }
-        }
-      );
-      initial_services.drawingManager.setMap(map);
-    }
-
     function CanvasProjectionOverlay() {}
-
     CanvasProjectionOverlay.prototype = new window.google.maps.OverlayView();
     CanvasProjectionOverlay.prototype.constructor = CanvasProjectionOverlay;
     CanvasProjectionOverlay.prototype.onAdd = function() {};
     CanvasProjectionOverlay.prototype.draw = function() {};
     CanvasProjectionOverlay.prototype.onRemove = function() {};
-    setServices(initial_services);
     const initial_overlay = new (CanvasProjectionOverlay as any)();
     setOverlay(initial_overlay);
     if (initial_overlay) {
       initial_overlay.setMap(map);
     }
-  }, [map]);
+  }, [services]);
+
   useEffect(() => {
     if (!funcs || !map || !features_layer || !services) {
       return;
@@ -385,7 +392,8 @@ export const WrappedMapBase: React.FunctionComponent<MapBaseProps> = ({
     window.google.maps.event.addListenerOnce(map, "idle", () =>
       doAfterInit(map)
     );
-  }, [funcs, services, features_layer]);
+  }, [funcs, features_layer]);
+
   const doAfterInit = (map: google.maps.Map): void => {
     do_after_init.forEach(cb => {
       cb(map);

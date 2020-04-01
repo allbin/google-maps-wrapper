@@ -270,8 +270,8 @@ type DrawingCB = (
 ) => void
 
 type Services= {
-  geocoderService?: any,
-  directionsService?: any,
+  geocoderService: any,
+  directionsService: any,
   drawing?: any,
   drawingManager?: any
 }

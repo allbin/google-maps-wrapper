@@ -124,14 +124,18 @@ export const clearFeatureCollections = (
 };
 
 export const setDrawingMode = (
-  services: any,
+  services: Services,
   type: "polyline" | "polygon",
   opts: PolylineOptions | PolygonOptions,
   cb: DrawingCB,
   cancel_drawing: boolean,
-  drawing_completed_listener: google.maps.MapsEventListener
+  setDrawingCompletedListener: (
+    listener: google.maps.MapsEventListener
+  ) => void,
+  drawing_completed_listener?: google.maps.MapsEventListener
 ) => {
   let mode = null;
+  console.log(services);
   if (!services.drawing) {
     console.error(
       "MAP: Drawing library not available! Add it to google maps api request url."
@@ -151,33 +155,35 @@ export const setDrawingMode = (
   if (drawing_completed_listener) {
     drawing_completed_listener.remove();
   }
-  drawing_completed_listener = google.maps.event.addListenerOnce(
-    services.drawingManager,
-    "overlaycomplete",
-    (e: google.maps.drawing.OverlayCompleteEvent) => {
-      // console.log("overlay complete", cb, cancel_drawing);
-      e.overlay.setMap(null);
-      drawing_opts.drawingMode = null;
-      services.drawingManager.setOptions(drawing_opts);
-      if (!cb || cancel_drawing) {
-        return;
-      }
-      if (type === "polyline" || type === "polygon") {
-        const overlay = e.overlay as Polygon | Polyline;
-        let path = MVCArrayToCoordArray(overlay.getPath());
-        if (cb) {
-          cb(path as [number, number][], overlay);
+  setDrawingCompletedListener(
+    google.maps.event.addListenerOnce(
+      services.drawingManager,
+      "overlaycomplete",
+      (e: google.maps.drawing.OverlayCompleteEvent) => {
+        // console.log("overlay complete", cb, cancel_drawing);
+        e.overlay.setMap(null);
+        drawing_opts.drawingMode = null;
+        services.drawingManager.setOptions(drawing_opts);
+        if (!cb || cancel_drawing) {
+          return;
         }
-      } else if (type === "marker") {
-        const overlay = e.overlay as Marker;
-        let pos = overlay.getPosition();
-        cb([pos.lat(), pos.lng()], overlay);
-      } else {
-        cb(null, e.overlay as any);
+        if (type === "polyline" || type === "polygon") {
+          const overlay = e.overlay as Polygon | Polyline;
+          let path = MVCArrayToCoordArray(overlay.getPath());
+          if (cb) {
+            cb(path as [number, number][], overlay);
+          }
+        } else if (type === "marker") {
+          const overlay = e.overlay as Marker;
+          let pos = overlay.getPosition();
+          cb([pos.lat(), pos.lng()], overlay);
+        } else {
+          cb(null, e.overlay as any);
+        }
+        // cancel_drawing = false;
+        // drawing_completed_listener = null;
       }
-      // cancel_drawing = false;
-      // drawing_completed_listener = null;
-    }
+    )
   );
 };
 export const completeDrawingMode = (
