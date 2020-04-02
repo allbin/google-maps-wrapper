@@ -19,8 +19,8 @@ const test_rt_90: GeoJSONFeature<MultiPolygon> = {
           [1371367.64247782, 6389209.429735],
           [1371967.01716375, 6388973.92939227],
           [1371818.01804966, 6388798.92951376],
-          [1371816.14235137, 6388795.42969789]
-        ]
+          [1371816.14235137, 6388795.42969789],
+        ],
       ],
       [
         [
@@ -2489,16 +2489,16 @@ const test_rt_90: GeoJSONFeature<MultiPolygon> = {
           [1372085.01842795, 6381270.92877776],
           [1372185.01815849, 6381595.92840809],
           [1372259.01859446, 6381795.9287463],
-          [1373280.01828225, 6383424.92920966]
-        ]
-      ]
-    ]
-  }
+          [1373280.01828225, 6383424.92920966],
+        ],
+      ],
+    ],
+  },
 };
 
-let x: GeoJSONFeatureCollection<MultiPolygon> = {
+const x: GeoJSONFeatureCollection<MultiPolygon> = {
   type: "FeatureCollection",
-  features: [test_rt_90]
+  features: [test_rt_90],
 };
 
 export default x;

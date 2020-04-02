@@ -3,12 +3,16 @@ import { haversineDistance, MVCArrayToCoordArray } from "./external_helpers";
 import {
   CUTTING_SNAP_DISTANCE,
   Z_INDEX_SCISSORS,
-  Z_INDEX_SCISSORS_HOVER
+  Z_INDEX_SCISSORS_HOVER,
 } from "./constants";
-let ScissorIcon = require("./img/marker_scissors.svg");
-let ScissorHoverIcon = require("./img/marker_scissors_hover.svg");
+// eslint-disable-next-line @typescript-eslint/no-var-requires
+const ScissorIcon = require("./img/marker_scissors.svg");
+// eslint-disable-next-line @typescript-eslint/no-var-requires
+const ScissorHoverIcon = require("./img/marker_scissors_hover.svg");
 
-export const getBoundsLiteral = (map: google.maps.Map | undefined) => {
+export const getBoundsLiteral = (
+  map: google.maps.Map | undefined
+): undefined | { north: number; east: number; south: number; west: number } => {
   if (!map) {
     return undefined;
   }
@@ -22,7 +26,7 @@ export const getBoundsLiteral = (map: google.maps.Map | undefined) => {
     north: ne.lat(),
     east: ne.lng(),
     south: sw.lat(),
-    west: sw.lng()
+    west: sw.lng(),
   };
 };
 
@@ -31,7 +35,7 @@ export const setCenter = (
   map: google.maps.Map | undefined,
   lat_lng: LatLngLiteral | LatLng
 ): Promise<void> => {
-  return new Promise((resolve, reject) => {
+  return new Promise((resolve) => {
     if (map) {
       map.setCenter(lat_lng);
     }
@@ -48,14 +52,14 @@ export const toPixel = (
   if (!overlay) {
     throw new Error("Overlay not loaded when calling toPixel.");
   }
-  let node_rect = html_element.getBoundingClientRect();
+  const node_rect = html_element.getBoundingClientRect();
   let lat_lng: LatLng;
   if (lat_lng_input instanceof google.maps.LatLng) {
     lat_lng = lat_lng_input;
   } else {
     lat_lng = new window.google.maps.LatLng(lat_lng_input);
   }
-  let pixel_obj = overlay.getProjection().fromLatLngToContainerPixel(lat_lng);
+  const pixel_obj = overlay.getProjection().fromLatLngToContainerPixel(lat_lng);
   return [pixel_obj.x + node_rect.left, pixel_obj.y + node_rect.top];
 };
 
@@ -63,7 +67,7 @@ export const setZoom = (
   zoom_level: number,
   map: google.maps.Map | undefined
 ): Promise<void> =>
-  new Promise((resolve, reject) => {
+  new Promise((resolve) => {
     map && map.setZoom(zoom_level);
     resolve();
     return;
@@ -73,8 +77,8 @@ export const clearPolylines = (
   map_objects: MapObjects,
   cutting: CuttingState
 ): Promise<boolean[]> => {
-  let promise_arr: Promise<boolean>[] = [];
-  Object.keys(map_objects.polyline).forEach(id => {
+  const promise_arr: Promise<boolean>[] = [];
+  Object.keys(map_objects.polyline).forEach((id) => {
     promise_arr.push(
       internal_helpers.unsetMapObject(map_objects, cutting, "polyline", id)
     );
@@ -87,7 +91,7 @@ export const clearPolygons = (
   cutting: CuttingState
 ): Promise<boolean[]> =>
   Promise.all(
-    Object.keys(map_objects.polygon).map(id =>
+    Object.keys(map_objects.polygon).map((id) =>
       internal_helpers.unsetMapObject(map_objects, cutting, "polygon", id)
     )
   );
@@ -105,7 +109,7 @@ export const clearMarkers = (
   cutting: CuttingState
 ): Promise<boolean[]> =>
   Promise.all(
-    Object.keys(map_objects.marker).map(id =>
+    Object.keys(map_objects.marker).map((id) =>
       internal_helpers.unsetMapObject(map_objects, cutting, "marker", id)
     )
   );
@@ -113,11 +117,11 @@ export const clearFeatureCollections = (
   map_objects: MapObjects,
   features_layer: google.maps.Data,
   feature_layers: google.maps.Data[]
-) => {
-  feature_layers.forEach(x => x.setMap(null));
-  feature_layers = [];
+): void => {
+  feature_layers.forEach((x) => x.setMap(null));
+  // feature_layers = [];
   if (features_layer) {
-    Object.keys(map_objects.features).forEach(feature_key => {
+    Object.keys(map_objects.features).forEach((feature_key) => {
       map_objects.features[feature_key].remove();
     });
   }
@@ -133,7 +137,7 @@ export const setDrawingMode = (
     listener: google.maps.MapsEventListener
   ) => void,
   drawing_completed_listener?: google.maps.MapsEventListener
-) => {
+): void => {
   let mode = null;
   if (!services.drawing) {
     console.error(
@@ -141,12 +145,17 @@ export const setDrawingMode = (
     );
     return;
   }
-  if (services.drawing.OverlayType.hasOwnProperty(type.toUpperCase())) {
+  if (
+    Object.prototype.hasOwnProperty.call(
+      services.drawing.OverlayType,
+      type.toUpperCase()
+    )
+  ) {
     mode = services.drawing.OverlayType[type.toUpperCase()];
   } else {
     throw new Error("MAP: Invalid drawing mode type:" + type);
   }
-  let drawing_opts = Object.assign({}, opts, { drawingMode: mode });
+  const drawing_opts = Object.assign({}, opts, { drawingMode: mode });
   services.drawingManager.setOptions(drawing_opts);
   console.log("MAP: Drawing mode started for:", type + ".");
   cancel_drawing = false;
@@ -168,19 +177,17 @@ export const setDrawingMode = (
         }
         if (type === "polyline" || type === "polygon") {
           const overlay = e.overlay as Polygon | Polyline;
-          let path = MVCArrayToCoordArray(overlay.getPath());
+          const path = MVCArrayToCoordArray(overlay.getPath());
           if (cb) {
             cb(path as [number, number][], overlay);
           }
         } else if (type === "marker") {
           const overlay = e.overlay as Marker;
-          let pos = overlay.getPosition();
+          const pos = overlay.getPosition();
           cb([pos.lat(), pos.lng()], overlay);
         } else {
           cb(null, e.overlay as any);
         }
-        // cancel_drawing = false;
-        // drawing_completed_listener = null;
       }
     )
   );
@@ -188,13 +195,12 @@ export const setDrawingMode = (
 export const completeDrawingMode = (
   services: Services,
   drawing_completed_listener: google.maps.MapsEventListener
-) => {
+): void => {
   if (services.drawing) {
     services.drawingManager.setOptions({ drawingMode: null });
   }
   if (drawing_completed_listener) {
     drawing_completed_listener.remove();
-    // drawing_completed_listener = null;
   }
 };
 export const cancelDrawingMode = (
@@ -202,7 +208,7 @@ export const cancelDrawingMode = (
   cancel_drawing: boolean,
   drawing_completed_listener: google.maps.MapsEventListener,
   debug_src?: string
-) => {
+): void => {
   if (debug_src) {
     console.log("cancel drawing mode:", debug_src);
   }
@@ -224,8 +230,10 @@ export const setCuttingMode = (
   polyline_id: string | number,
   cutting_completed_listener: (segments: [number, number][][] | null) => void,
   cb?: () => any
-) => {
-  if (!map_objects.polyline.hasOwnProperty(polyline_id)) {
+): void => {
+  if (
+    !Object.prototype.hasOwnProperty.call(map_objects.polyline, polyline_id)
+  ) {
     console.error(
       "MAP: Cannot set cutting mode, provided object id not on map: ",
       polyline_id
@@ -244,10 +252,10 @@ export const setCuttingMode = (
     drawing_completed_listener,
     "setCuttingMode"
   );
-  let polyline = map_objects.polyline[polyline_id];
-  let opts = {
+  const polyline = map_objects.polyline[polyline_id];
+  const opts = {
     clickable: false,
-    editable: false
+    editable: false,
   };
   polyline.gmaps_obj.setOptions(opts);
 
@@ -256,29 +264,31 @@ export const setCuttingMode = (
     enabled: true,
     id: polyline_id,
     indexes: [],
-    arr: path as any
+    arr: path as any,
   };
-  if (!cutting_objects.hasOwnProperty("hover_scissors")) {
-    let opts = {
+  if (
+    !Object.prototype.hasOwnProperty.call(cutting_objects, "hover_scissors")
+  ) {
+    const opts = {
       position: default_center,
       icon: {
-        url: ScissorHoverIcon
+        url: ScissorHoverIcon,
       },
       zIndex: Z_INDEX_SCISSORS_HOVER,
       visible: false,
       clickable: false,
       editable: false,
-      draggable: false
+      draggable: false,
     };
-    let hover_scissors = {
+    const hover_scissors = {
       gmaps_obj: new window.google.maps.Marker(opts),
-      options: opts
+      options: opts,
     };
     hover_scissors.gmaps_obj.setMap(map);
     cutting_objects.hover_scissors = hover_scissors;
   }
   console.log("MAP: Cutting mode started for id: " + polyline_id);
-  cutting_completed_listener = value => {
+  cutting_completed_listener = (value) => {
     if (cb) {
       (cb as any)(value);
     } else {
@@ -287,34 +297,34 @@ export const setCuttingMode = (
   };
 };
 export const cuttingPositionUpdate = (
-  mouse_event: MouseEvent,
+  mouse_event: google.maps.MouseEvent,
   map_objects: MapObjects,
   cutting: CuttingState,
   cutting_objects: CuttingObjects
-) => {
+): void => {
   if (!cutting.enabled || !cutting.id) {
     //If we are not in cutting mode ignore function call.
     return;
   }
-  let polyline = map_objects.polyline[cutting.id];
-  let mouse_coord = {
+  const polyline = map_objects.polyline[cutting.id];
+  const mouse_coord = {
     lat: mouse_event.latLng.lat(),
-    lng: mouse_event.latLng.lng()
+    lng: mouse_event.latLng.lng(),
   };
   let closest_index = 0;
   let closest_dist = Infinity;
   //Find nearest index and move scissors_hover marker.
   polyline.gmaps_obj.getPath().forEach((point, i: number) => {
-    let dist = haversineDistance(mouse_coord, {
+    const dist = haversineDistance(mouse_coord, {
       lat: point.lat(),
-      lng: point.lng()
+      lng: point.lng(),
     });
     if (dist < closest_dist) {
       closest_index = i;
       closest_dist = dist;
     }
   });
-  let path = polyline.gmaps_obj.getPath().getArray();
+  const path = polyline.gmaps_obj.getPath().getArray();
   if (
     closest_dist < CUTTING_SNAP_DISTANCE &&
     closest_index > 0 &&
@@ -323,13 +333,13 @@ export const cuttingPositionUpdate = (
     cutting_objects.hover_scissors.gmaps_obj.setOptions({
       position: {
         lat: path[closest_index].lat(),
-        lng: path[closest_index].lng()
+        lng: path[closest_index].lng(),
       },
-      visible: true
+      visible: true,
     });
   } else {
     cutting_objects.hover_scissors.gmaps_obj.setOptions({
-      visible: false
+      visible: false,
     });
   }
 };
@@ -348,16 +358,16 @@ export const cuttingClick = (
     console.error("cutting.indexes not defined when clicking for cut.");
     return;
   }
-  let polyline = map_objects.polyline[cutting.id];
-  let path = polyline.options.path as any;
-  let mouse_coord = {
+  const polyline = map_objects.polyline[cutting.id];
+  const path = polyline.options.path as any;
+  const mouse_coord = {
     lat: mouse_event.latLng.lat(),
-    lng: mouse_event.latLng.lng()
+    lng: mouse_event.latLng.lng(),
   };
   let closest_index = 0;
   let closest_dist = Infinity;
   path.forEach((point: any, i: number) => {
-    let dist = haversineDistance(mouse_coord, point);
+    const dist = haversineDistance(mouse_coord, point);
     if (dist < closest_dist) {
       closest_index = i;
       closest_dist = dist;
@@ -371,33 +381,38 @@ export const cuttingClick = (
     //We are never interested in first or last point.
     return;
   }
-  let already_selected_position = cutting.indexes.findIndex(
-    value => closest_index === value
+  const already_selected_position = cutting.indexes.findIndex(
+    (value) => closest_index === value
   );
   if (already_selected_position > -1) {
     //This index has already been selected for cutting, remove it.
     cutting.indexes.splice(already_selected_position, 1);
-    if (cutting_objects.hasOwnProperty("index_" + closest_index)) {
+    if (
+      Object.prototype.hasOwnProperty.call(
+        cutting_objects,
+        "index_" + closest_index
+      )
+    ) {
       //We have drawn a marker for cut, remove it.
       cutting_objects["index_" + closest_index].gmaps_obj.setMap(null);
       delete cutting_objects["index_" + closest_index];
     }
   } else {
     cutting.indexes.push(closest_index);
-    let opts = {
+    const opts = {
       position: path[closest_index],
       icon: {
-        url: ScissorIcon
+        url: ScissorIcon,
       },
       zIndex: Z_INDEX_SCISSORS,
       visible: true,
       clickable: false,
       editable: false,
-      draggable: false
+      draggable: false,
     };
-    let cut_marker = {
+    const cut_marker = {
       gmaps_obj: new window.google.maps.Marker(opts),
-      options: opts
+      options: opts,
     };
     cut_marker.gmaps_obj.setMap(map);
     cutting_objects["index_" + closest_index] = cut_marker;
@@ -408,12 +423,12 @@ export const completeCuttingMode = (
   cutting: CuttingState,
   cutting_objects: CuttingObjects,
   cutting_completed_listener: (segments: [number, number][][] | null) => void
-) => {
+): void => {
   if (!cutting || cutting.id === null) {
     return;
   }
-  let indexes = cutting.indexes;
-  let polyline = map_objects.polyline[cutting.id];
+  const indexes = cutting.indexes;
+  const polyline = map_objects.polyline[cutting.id];
   if (!polyline) {
     return;
   }
@@ -421,17 +436,17 @@ export const completeCuttingMode = (
   cutting = {
     enabled: false,
     id: null,
-    indexes: null
+    indexes: null,
   };
-  Object.keys(cutting_objects).forEach(marker_id => {
+  Object.keys(cutting_objects).forEach((marker_id) => {
     //Remove all cutting related markers.
     cutting_objects[marker_id].gmaps_obj.setMap(null);
     delete cutting_objects[marker_id];
   });
 
-  let opts = {
+  const opts = {
     clickable: true,
-    editable: true
+    editable: true,
   };
   polyline.gmaps_obj.setOptions(opts);
   if (!indexes || indexes.length === 0) {
@@ -442,14 +457,14 @@ export const completeCuttingMode = (
     return;
   }
 
-  let path = (polyline.options.path as unknown) as [number, number][];
+  const path = (polyline.options.path as unknown) as [number, number][];
   indexes.sort();
   //Add last index so that the remaining points form a segment as well.
   indexes.push(path.length - 1);
-  let resulting_segments: [number, number][][] = [];
+  const resulting_segments: [number, number][][] = [];
   let prev_index = 0;
-  indexes.forEach(index => {
-    let segment = path.slice(prev_index, index);
+  indexes.forEach((index) => {
+    const segment = path.slice(prev_index, index);
     //Copy last point as well.
     segment.push(path[index]);
     resulting_segments.push(segment);
@@ -463,14 +478,14 @@ export const cancelCuttingMode = (
   map_objects: MapObjects,
   cutting: CuttingState,
   cutting_objects: CuttingObjects
-) => {
+): void => {
   //TODO no reassign of prameter
   cutting = {
     enabled: false,
     id: null,
-    indexes: null
+    indexes: null,
   };
-  Object.keys(cutting_objects).forEach(marker_id => {
+  Object.keys(cutting_objects).forEach((marker_id) => {
     //Remove all cutting related markers.
     cutting_objects[marker_id].gmaps_obj.setMap(null);
     delete cutting_objects[marker_id];
@@ -479,11 +494,11 @@ export const cancelCuttingMode = (
     console.error("No cutting.id set when cancelling cutting mode.");
     return;
   }
-  let polyline = map_objects.polyline[cutting.id];
+  const polyline = map_objects.polyline[cutting.id];
   if (polyline) {
-    let opts = {
+    const opts = {
       clickable: true,
-      editable: true
+      editable: true,
     };
     polyline.gmaps_obj.setOptions(opts);
   }

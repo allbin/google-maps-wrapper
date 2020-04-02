@@ -6,14 +6,14 @@ const feature_events: FeatureEvents[] = [
   "mouseout",
   "mousedown",
   "mouseup",
-  "rightclick"
+  "rightclick",
 ];
 
 export const setupLayerEvents = (
   map_objects: MapObjects,
   layer: google.maps.Data
 ): void => {
-  feature_events.forEach(event_type => {
+  feature_events.forEach((event_type) => {
     layer.addListener(
       event_type,
       (data_mouse_event: google.maps.Data.MouseEvent) => {
@@ -43,16 +43,16 @@ const wrapGmapsFeature = (
     _bbox: google.maps.LatLngBounds;
   }
 
-  let wrapped_feature: WrappedFeatureShell = {
+  const wrapped_feature: WrappedFeatureShell = {
     gmaps_feature: gmaps_feature,
     options: options,
     selected_options_id: "default",
     _visible:
       options.default.visible !== undefined ? options.default.visible : true,
     _cbs: {},
-    _bbox: new window.google.maps.LatLngBounds()
+    _bbox: new window.google.maps.LatLngBounds(),
   };
-  gmaps_feature.getGeometry().forEachLatLng(point => {
+  gmaps_feature.getGeometry().forEachLatLng((point) => {
     wrapped_feature._bbox.extend(point);
   });
   wrapped_feature.setOptions = (new_options: FeatureOptionsSet) => {
@@ -60,7 +60,7 @@ const wrapGmapsFeature = (
     return Promise.resolve(wrapped_feature as WrappedFeature);
   };
   wrapped_feature.applyOptions = (options_id: string) => {
-    if (!options.hasOwnProperty(options_id)) {
+    if (!Object.prototype.hasOwnProperty.call(options, options_id)) {
       throw new Error(
         "Tried to applyOptions(options_id) with '" +
           options_id +
@@ -68,7 +68,7 @@ const wrapGmapsFeature = (
       );
     }
     wrapped_feature.selected_options_id = options_id;
-    let new_options = Object.assign(
+    const new_options = Object.assign(
       {},
       options.default,
       options[wrapped_feature.selected_options_id],
@@ -94,7 +94,7 @@ const wrapGmapsFeature = (
   wrapped_feature.registerEventCB = (event_type, cb) => {
     wrapped_feature._cbs[event_type] = cb;
   };
-  wrapped_feature.unregisterEventCB = event_type => {
+  wrapped_feature.unregisterEventCB = (event_type) => {
     delete wrapped_feature._cbs[event_type];
   };
   wrapped_feature.zoomTo = () => {
@@ -118,8 +118,10 @@ export const setGeoJSONFeature = (
   layer?: google.maps.Data
 ): Promise<WrappedFeature> =>
   new Promise((resolve, reject) => {
-    if (map_objects.features.hasOwnProperty(feature.id)) {
-      let wrapped_feature = map_objects.features[feature.id];
+    if (
+      Object.prototype.hasOwnProperty.call(map_objects.features, feature.id)
+    ) {
+      const wrapped_feature = map_objects.features[feature.id];
       wrapped_feature.remove();
     }
 
@@ -152,15 +154,15 @@ export const setGeoJSONCollection = (
   layer: google.maps.Data;
   features: WrappedFeature[];
 }> =>
-  new Promise((resolve, reject) => {
-    let layer = new window.google.maps.Data() as google.maps.Data;
+  new Promise((resolve) => {
+    const layer = new window.google.maps.Data() as google.maps.Data;
     layer.setMap(map);
     setupLayerEvents(map_objects, layer);
 
-    let features: WrappedFeature[] = layer
+    const features: WrappedFeature[] = layer
       .addGeoJson(collection)
-      .map(gmaps_feature => {
-        let wrapped_feature = wrapGmapsFeature(
+      .map((gmaps_feature) => {
+        const wrapped_feature = wrapGmapsFeature(
           map,
           map_objects,
           layer,
@@ -174,6 +176,6 @@ export const setGeoJSONCollection = (
     layer.setStyle(options.default);
     resolve({
       layer: layer,
-      features: features
+      features: features,
     });
   });

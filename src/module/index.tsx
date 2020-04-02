@@ -12,7 +12,7 @@ export {
   MVCArrayToCoordArray,
   MVCArrayToObjArray,
   arrayRT90ToWGS84,
-  arrayRT90ToWGS84LatLngObj
+  arrayRT90ToWGS84LatLngObj,
 } from "./external_helpers";
 declare global {
   interface Window {
@@ -26,7 +26,7 @@ const PROJECTIONS = {
   rt90:
     "+proj=tmerc +lat_0=0 +lon_0=15.80827777777778 +k=1 +x_0=1500000 +y_0=0 +ellps=bessel +towgs84=414.1,41.3,603.1,-0.855,2.141,-7.023,0 +units=m +no_defs",
   sweref99:
-    "+proj=tmerc +lat_0=0 +lon_0=15.80628452944445 +k=1.00000561024 +x_0=1500064.274 +y_0=-667.711 +ellps=GRS80 +towgs84=0,0,0,0,0,0,0 +units=m +no_defs"
+    "+proj=tmerc +lat_0=0 +lon_0=15.80628452944445 +k=1.00000561024 +x_0=1500064.274 +y_0=-667.711 +ellps=GRS80 +towgs84=0,0,0,0,0,0,0 +units=m +no_defs",
 };
 proj4.defs("GMAPS", PROJECTIONS.gmaps);
 proj4.defs("RT90", PROJECTIONS.rt90);

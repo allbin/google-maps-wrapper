@@ -10,13 +10,13 @@ interface LatLngBoundsLiteral {
   west: number;
 }
 
-interface LatLng extends google.maps.LatLng {}
+type LatLng = google.maps.LatLng;
 
-interface MouseEvent extends google.maps.MouseEvent {}
+type MouseEvent = google.maps.MouseEvent;
 
-interface Polyline extends google.maps.Polyline {}
+type Polyline = google.maps.Polyline;
 
-interface PolylineOptions extends google.maps.PolylineOptions {}
+type PolylineOptions = google.maps.PolylineOptions;
 
 /**
  * Polyline collection must contain a default property.
@@ -29,9 +29,9 @@ interface PolylineOptionsSet {
   [id: string]: PolylineOptions;
 }
 
-interface Polygon extends google.maps.Polygon {}
+type Polygon = google.maps.Polygon;
 
-interface PolygonOptions extends google.maps.PolygonOptions {}
+type PolygonOptions = google.maps.PolygonOptions;
 
 /**
  * Polygon collection must contain a default property.
@@ -44,9 +44,9 @@ interface PolygonOptionsSet {
   [id: string]: PolygonOptions;
 }
 
-interface Marker extends google.maps.Marker {}
+type Marker = google.maps.Marker;
 
-interface MarkerOptions extends google.maps.MarkerOptions {}
+type MarkerOptions = google.maps.MarkerOptions;
 
 /**
  * Marker collection must contain a default property.
@@ -65,9 +65,9 @@ type AnyObjectOptionsSet =
   | PolylineOptionsSet
   | PolygonOptionsSet;
 
-interface Feature extends google.maps.Data.Feature {}
+type Feature = google.maps.Data.Feature;
 
-interface FeatureOptions extends google.maps.Data.StyleOptions {}
+type FeatureOptions = google.maps.Data.StyleOptions;
 
 /**
  * Feature collection must contain a default property.
@@ -265,13 +265,13 @@ interface CuttingObjects {
   hover_scissors?: any;
 }
 type DrawingCB = (
-    path: [number, number][] | [number, number] | null,
-    overlay: Polygon | Polyline | Marker
-) => void
+  path: [number, number][] | [number, number] | null,
+  overlay: Polygon | Polyline | Marker
+) => void;
 
-type Services= {
-  geocoderService: any,
-  directionsService: any,
-  drawing?: any,
-  drawingManager?: any
-}
+type Services = {
+  geocoderService: any;
+  directionsService: any;
+  drawing?: any;
+  drawingManager?: any;
+};

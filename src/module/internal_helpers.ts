@@ -4,20 +4,23 @@
 //internally by the map.
 
 const DEFAULT_POLYLINE_OPTIONS = {
-  visible: true
+  visible: true,
 };
 const DEFAULT_POLYGON_OPTIONS = {
-  visible: true
+  visible: true,
 };
 const DEFAULT_MARKER_OPTIONS = {
-  visible: true
+  visible: true,
 };
 
-export function fromLatLngToPixel(map: google.maps.Map, latLng: LatLng) {
+export const fromLatLngToPixel = (
+  map: google.maps.Map,
+  latLng: LatLng
+): any => {
   if (!map) {
     throw new Error("Cannot call fromLatLngToPixel before init is finished.");
   }
-  let bounds = map.getBounds();
+  const bounds = map.getBounds();
   if (!bounds) {
     throw new Error("Map not mounted when calling fromLatLngToPixel");
   }
@@ -31,27 +34,26 @@ export function fromLatLngToPixel(map: google.maps.Map, latLng: LatLng) {
     (worldPoint.x - bottomLeft.x) * scale,
     (worldPoint.y - topRight.y) * scale
   );
-}
+};
 
-export function fitToBoundsOfArray(
+export const fitToBoundsOfArray = (
   map: google.maps.Map,
   arr_of_coords: [number, number][]
-) {
-  //Takes [[x, y], ...] array.
-  return new Promise((resolve, reject) => {
+): Promise<void> =>
+  new Promise((resolve, reject) => {
     if (Array.isArray(arr_of_coords) === false) {
       reject("Input not valid array.");
     } else if (arr_of_coords.length < 1) {
       reject("Array needs to countain at least one element.");
     }
-    let lat_lng_literal = {
+    const lat_lng_literal = {
       east: Number.MIN_SAFE_INTEGER,
       west: Number.MAX_SAFE_INTEGER,
       north: Number.MAX_SAFE_INTEGER,
-      south: Number.MIN_SAFE_INTEGER
+      south: Number.MIN_SAFE_INTEGER,
     };
 
-    arr_of_coords.forEach(point => {
+    arr_of_coords.forEach((point) => {
       lat_lng_literal.west =
         point[0] < lat_lng_literal.west ? point[0] : lat_lng_literal.west;
       lat_lng_literal.east =
@@ -67,12 +69,11 @@ export function fitToBoundsOfArray(
     }
     resolve();
   });
-}
 export const fitToBoundsLiteral = (
   bounds: LatLngBoundsLiteral,
   map?: google.maps.Map
-) =>
-  new Promise((resolve, reject) => {
+): Promise<void> =>
+  new Promise((resolve) => {
     if (map) {
       map.fitBounds(bounds);
     }
@@ -81,21 +82,21 @@ export const fitToBoundsLiteral = (
 export const fitToBoundsOfObjectArray = (
   arr_of_latlngliteral: LatLngLiteral[],
   map?: google.maps.Map
-) =>
+): Promise<void> =>
   new Promise((resolve, reject) => {
     if (Array.isArray(arr_of_latlngliteral) === false) {
       reject("Input not valid array.");
     } else if (arr_of_latlngliteral.length < 1) {
-      reject("Array needs to countain at least one element.");
+      reject("Array needs to contain at least one element.");
     }
-    let lat_lng_literal = {
+    const lat_lng_literal = {
       east: -Infinity,
       west: Infinity,
       north: Infinity,
-      south: -Infinity
+      south: -Infinity,
     };
 
-    arr_of_latlngliteral.forEach(point => {
+    arr_of_latlngliteral.forEach((point) => {
       lat_lng_literal.west =
         point.lng < lat_lng_literal.west ? point.lng : lat_lng_literal.west;
       lat_lng_literal.east =
@@ -113,7 +114,7 @@ export const fitToBoundsOfObjectArray = (
   });
 
 export const setPolyline = (
-  map: google.maps.Map ,
+  map: google.maps.Map,
   map_objects: MapObjects,
   cutting: CuttingState,
   id: string | number,
@@ -123,7 +124,7 @@ export const setPolyline = (
     WrappedPolyline
   >;
 export const setPolygon = (
-  map: google.maps.Map ,
+  map: google.maps.Map,
   map_objects: MapObjects,
   cutting: CuttingState,
   id: string | number,
@@ -163,11 +164,11 @@ export const setMapObject: setMapObject = (
   selected_options_id = "default"
 ) =>
   new Promise((resolve, reject) => {
-    if (map_objects[type].hasOwnProperty(id)) {
+    if (Object.prototype.hasOwnProperty.call(map_objects[type], id)) {
       //This ID has already been drawn.
-      let map_obj = map_objects[type][id];
+      const map_obj = map_objects[type][id];
       const visible = map_obj.gmaps_obj.getVisible();
-      let opts = Object.assign(
+      const opts = Object.assign(
         {},
         map_obj.options[selected_options_id],
         options[selected_options_id],
@@ -208,16 +209,16 @@ export const setMapObject: setMapObject = (
       selected_options_id: string;
     }
 
-    let map_obj_shell: MapObjShell = {
+    const map_obj_shell: MapObjShell = {
       _cbs: {},
       type: type,
-      selected_options_id: selected_options_id
+      selected_options_id: selected_options_id,
     };
     let events: AllMapObjEvents[] = [];
     let path_events: AllMapObjEvents[] = [];
     switch (type) {
       case "marker": {
-        let opts = Object.assign({}, DEFAULT_MARKER_OPTIONS, options.default);
+        const opts = Object.assign({}, DEFAULT_MARKER_OPTIONS, options.default);
         map_obj_shell.gmaps_obj = new window.google.maps.Marker(opts);
         map_obj_shell.options = options;
         events = [
@@ -230,12 +231,16 @@ export const setMapObject: setMapObject = (
           "drag",
           "dragend",
           "dblclick",
-          "rightclick"
+          "rightclick",
         ];
         break;
       }
       case "polygon": {
-        let opts = Object.assign({}, DEFAULT_POLYGON_OPTIONS, options.default);
+        const opts = Object.assign(
+          {},
+          DEFAULT_POLYGON_OPTIONS,
+          options.default
+        );
         map_obj_shell.gmaps_obj = new window.google.maps.Polygon(opts);
         map_obj_shell.options = options;
         events = [
@@ -249,13 +254,17 @@ export const setMapObject: setMapObject = (
           "mousedown",
           "mouseup",
           "mousemove",
-          "rightclick"
+          "rightclick",
         ];
         path_events = ["set_at", "remove_at", "insert_at"];
         break;
       }
       case "polyline": {
-        let opts = Object.assign({}, DEFAULT_POLYLINE_OPTIONS, options.default);
+        const opts = Object.assign(
+          {},
+          DEFAULT_POLYLINE_OPTIONS,
+          options.default
+        );
         map_obj_shell.gmaps_obj = new window.google.maps.Polyline(opts);
         map_obj_shell.options = options;
         events = [
@@ -269,7 +278,7 @@ export const setMapObject: setMapObject = (
           "mousedown",
           "mouseup",
           "mousemove",
-          "rightclick"
+          "rightclick",
         ];
         path_events = ["set_at", "remove_at", "insert_at"];
         break;
@@ -283,8 +292,10 @@ export const setMapObject: setMapObject = (
     map_obj_shell.registerEventCB = (event_type: string, cb) => {
       map_obj_shell._cbs[event_type] = cb;
     };
-    map_obj_shell.unregisterEventCB = event_type => {
-      if (map_obj_shell._cbs.hasOwnProperty(event_type)) {
+    map_obj_shell.unregisterEventCB = (event_type) => {
+      if (
+        Object.prototype.hasOwnProperty.call(map_obj_shell._cbs, event_type)
+      ) {
         delete map_obj_shell._cbs[event_type];
       }
     };
@@ -292,7 +303,7 @@ export const setMapObject: setMapObject = (
     map_obj_shell.remove = () => {
       return unsetMapObject(map_objects, cutting, type, id);
     };
-    map_obj_shell.setOptions = new_options => {
+    map_obj_shell.setOptions = (new_options) => {
       return setMapObject(
         map,
         map_objects,
@@ -303,8 +314,8 @@ export const setMapObject: setMapObject = (
         map_obj_shell.selected_options_id
       );
     };
-    map_obj_shell.applyOptions = options_id => {
-      if (!options.hasOwnProperty(options_id)) {
+    map_obj_shell.applyOptions = (options_id) => {
+      if (!Object.prototype.hasOwnProperty.call(options, options_id)) {
         throw new Error(
           "Tried to applyOptions(options_id) with '" +
             options_id +
@@ -316,7 +327,7 @@ export const setMapObject: setMapObject = (
       const opts_set = map_obj_shell.options;
       map_obj_shell.gmaps_obj.setOptions(
         Object.assign({}, opts_set.default, opts_set[options_id], {
-          visible: visible
+          visible: visible,
         })
       );
     };
@@ -338,13 +349,13 @@ export const setMapObject: setMapObject = (
         )
       );
     };
-    let map_obj = map_obj_shell as WrappedGmapObj;
-    events.forEach(event_type => {
+    const map_obj = map_obj_shell as WrappedGmapObj;
+    events.forEach((event_type) => {
       map_obj.gmaps_obj.addListener(event_type, (e: any) => {
         return mapObjectEventCB(cutting, map_obj, event_type, e);
       });
     });
-    path_events.forEach(event_type => {
+    path_events.forEach((event_type) => {
       map_obj.gmaps_obj.getPath().addListener(event_type, (e: any) => {
         return mapObjectEventCB(cutting, map_obj, event_type, e);
       });
@@ -393,14 +404,14 @@ export const setMapObject: setMapObject = (
     return;
   });
 
-export function unsetMapObject(
+export const unsetMapObject = (
   map_objects: MapObjects,
   cutting: CuttingState,
   type: MapObjectType,
   id: string | number
-) {
-  return new Promise<boolean>((resolve, reject) => {
-    if (map_objects[type].hasOwnProperty(id)) {
+): Promise<boolean> =>
+  new Promise<boolean>((resolve, reject) => {
+    if (Object.prototype.hasOwnProperty.call(map_objects[type], id)) {
       //This ID has been drawn.
 
       if (cutting.id && cutting.id !== id) {
@@ -420,19 +431,21 @@ export function unsetMapObject(
     }
     reject(new Error("MAP: MapObject does not exist."));
   });
-}
 export const mapObjectEventCB = (
   cutting: CuttingState,
   map_obj: WrappedGmapObj,
   event_type: AllMapObjEvents,
   e: any
-) => {
+): boolean => {
   if (cutting.enabled) {
     //When the map is in cutting mode no object event callbacks are allowed.
     return true;
   }
 
-  if (map_obj._cbs.hasOwnProperty(event_type) && map_obj._cbs[event_type]) {
+  if (
+    Object.prototype.hasOwnProperty.call(map_obj._cbs, event_type) &&
+    map_obj._cbs[event_type]
+  ) {
     map_obj._cbs[event_type](e);
   }
   return true;
@@ -441,12 +454,12 @@ export const mapObjectEventCB = (
 export const panZoomToObjectOrFeature = (
   map: google.maps.Map,
   obj: WrappedMarker | WrappedPolygon | WrappedPolyline | WrappedFeature,
-  zoom: boolean = true
-) => {
+  zoom = true
+): void => {
   if (!map) {
     return;
   }
-  if (obj.hasOwnProperty("gmaps_feature")) {
+  if (Object.prototype.hasOwnProperty.call(obj, "gmaps_feature")) {
     if (zoom) {
       map.fitBounds((obj as WrappedFeature)._bbox);
     } else {
@@ -458,7 +471,7 @@ export const panZoomToObjectOrFeature = (
   obj = obj as WrappedMarker | WrappedPolygon | WrappedPolyline; //Reset typing.
   switch (obj.type) {
     case "marker": {
-      let position = obj.gmaps_obj.getPosition();
+      const position = obj.gmaps_obj.getPosition();
       map.setCenter(position);
       if (zoom) {
         map.setZoom(14);
@@ -466,13 +479,13 @@ export const panZoomToObjectOrFeature = (
       break;
     }
     case "polyline": {
-      let bounds = {
+      const bounds = {
         north: -Infinity,
         south: Infinity,
         west: Infinity,
-        east: -Infinity
+        east: -Infinity,
       };
-      obj.gmaps_obj.getPath().forEach(point => {
+      obj.gmaps_obj.getPath().forEach((point) => {
         bounds.north = point.lat() > bounds.north ? point.lat() : bounds.north;
         bounds.south = point.lat() < bounds.south ? point.lat() : bounds.south;
         bounds.west = point.lng() < bounds.west ? point.lng() : bounds.west;
@@ -486,14 +499,14 @@ export const panZoomToObjectOrFeature = (
       break;
     }
     case "polygon": {
-      let bounds = {
+      const bounds = {
         north: -Infinity,
         south: Infinity,
         west: Infinity,
-        east: -Infinity
+        east: -Infinity,
       };
-      obj.gmaps_obj.getPaths().forEach(path => {
-        path.forEach(point => {
+      obj.gmaps_obj.getPaths().forEach((path) => {
+        path.forEach((point) => {
           bounds.north =
             point.lat() > bounds.north ? point.lat() : bounds.north;
           bounds.south =

@@ -17,7 +17,7 @@ export const convertFromArrayOfArray: convertFromArrayOfArrayType = (
   toProj,
   points
 ) => {
-  return points.map(point => proj4(fromProj, toProj, point));
+  return points.map((point) => proj4(fromProj, toProj, point));
 };
 
 export type arrayToLatLngObjectType = (
@@ -29,8 +29,8 @@ export const arrayToLatLngObject: arrayToLatLngObjectType = (
   invert = false
 ) =>
   invert
-    ? arr.map(point => ({ lat: point[1], lng: point[0] }))
-    : arr.map(point => ({ lat: point[0], lng: point[1] }));
+    ? arr.map((point) => ({ lat: point[1], lng: point[0] }))
+    : arr.map((point) => ({ lat: point[0], lng: point[1] }));
 
 export type latLngArrayToCoordArrayType = (
   latLngArray: LatLngLiteral[],
@@ -41,8 +41,8 @@ export const latLngArrayToCoordArray: latLngArrayToCoordArrayType = (
   invert
 ) =>
   invert
-    ? arr.map(point => [point.lng, point.lat] as [number, number])
-    : arr.map(point => [point.lat, point.lng] as [number, number]);
+    ? arr.map((point) => [point.lng, point.lat] as [number, number])
+    : arr.map((point) => [point.lat, point.lng] as [number, number]);
 
 export const makePointsAroundCircleRT90 = (
   point: number[],
@@ -51,13 +51,13 @@ export const makePointsAroundCircleRT90 = (
 ): [number, number][] => {
   //Returns numberOfPoints around circle at p with r radius.
 
-  let points = [];
+  const points = [];
   let i;
 
   for (i = 0; i < numberOfPoints; i += 1) {
     points.push([
       point[0] + r * Math.cos((2 * Math.PI * i) / numberOfPoints),
-      point[1] + r * Math.sin((2 * Math.PI * i) / numberOfPoints)
+      point[1] + r * Math.sin((2 * Math.PI * i) / numberOfPoints),
     ] as [number, number]);
   }
 
@@ -70,7 +70,7 @@ export type makeRectRT90Type = (
 ) => [number, number][];
 export const makeRectRT90: makeRectRT90Type = (p1, p2) => {
   //p1 and p2 should be opposite corners of the rectangle.
-  let points = [];
+  const points = [];
 
   points.push([p1[0], p1[1]], [p2[0], p1[1]], [p2[0], p2[1]], [p1[0], p2[1]]);
 
@@ -86,11 +86,11 @@ export const movePointsByCoord: movePointsByCoordType = (
   coord: number[]
 ) =>
   points_arr.map(
-    point => [point[0] + coord[0], point[1] + coord[1]] as [number, number]
+    (point) => [point[0] + coord[0], point[1] + coord[1]] as [number, number]
   );
 
 const squared = (x: number): number => x * x;
-const toRad = (x: number): number  =>  ((x * Math.PI) / 180);
+const toRad = (x: number): number => (x * Math.PI) / 180;
 export type haversineDistanceType = (
   a: LatLngLiteral,
   b: LatLngLiteral
@@ -116,11 +116,11 @@ export const haversineDistance: haversineDistanceType = (a, b) => {
 export type MVCArrayToObjArrayType = (
   MVCArr: google.maps.MVCArray<google.maps.LatLng>
 ) => LatLngLiteral[];
-export const MVCArrayToObjArray: MVCArrayToObjArrayType = MVCArr => {
-  return MVCArr.getArray().map(gmapsLatLng => {
+export const MVCArrayToObjArray: MVCArrayToObjArrayType = (MVCArr) => {
+  return MVCArr.getArray().map((gmapsLatLng) => {
     return {
       lat: gmapsLatLng.lat(),
-      lng: gmapsLatLng.lng()
+      lng: gmapsLatLng.lng(),
     };
   });
 };
@@ -128,18 +128,16 @@ export const MVCArrayToObjArray: MVCArrayToObjArrayType = MVCArr => {
 export type MVCArrayToCoordArrayType = (
   MVCArr: google.maps.MVCArray<google.maps.LatLng>
 ) => number[][];
-export const MVCArrayToCoordArray: MVCArrayToCoordArrayType = MVCArr => {
-  return MVCArr.getArray().map(gmapsLatLng => {
+export const MVCArrayToCoordArray: MVCArrayToCoordArrayType = (MVCArr) => {
+  return MVCArr.getArray().map((gmapsLatLng) => {
     return [gmapsLatLng.lat(), gmapsLatLng.lng()];
   });
 };
 
-export const arrayRT90ToWGS84 = (rt90arr: [number, number][]) => {
-  return convertFromArrayOfArray("RT90", "WGS84", rt90arr);
-};
-export const arrayRT90ToWGS84LatLngObj = (rt90arr: [number, number][]) => {
-  return arrayToLatLngObject(
-    convertFromArrayOfArray("RT90", "WGS84", rt90arr),
-    true
-  );
-};
+export const arrayRT90ToWGS84 = (
+  rt90arr: [number, number][]
+): [number, number][] => convertFromArrayOfArray("RT90", "WGS84", rt90arr);
+export const arrayRT90ToWGS84LatLngObj = (
+  rt90arr: [number, number][]
+): LatLngLiteral[] =>
+  arrayToLatLngObject(convertFromArrayOfArray("RT90", "WGS84", rt90arr), true);

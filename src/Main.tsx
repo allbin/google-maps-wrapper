@@ -7,60 +7,60 @@ const Map: FunctionComponent = () => {
   const onMapInitialized = (
     map: google.maps.Map,
     initial_funcs: ExportedFunctions
-  ) => {
-    let marker_opts: MarkerOptions = {
+  ): void => {
+    const marker_opts: MarkerOptions = {
       position: { lng: 14.40567, lat: 56.65918 },
-      draggable: true
+      draggable: true,
     };
     setFuncs(initial_funcs);
     initial_funcs
       .setMarker("marker1", { default: marker_opts })
-      .then(marker => {
+      .then((marker) => {
         setTimeout(() => {
           marker.panTo();
         }, 7000);
       });
 
-    let polyline_opts: PolylineOptions = {
+    const polyline_opts: PolylineOptions = {
       path: [
         { lng: 14.40567, lat: 56.65918 },
         { lng: 14.50567, lat: 56.65918 },
         { lng: 14.50567, lat: 56.55918 },
-        { lng: 14.40567, lat: 56.55918 }
+        { lng: 14.40567, lat: 56.55918 },
       ],
       strokeColor: "#FF0000",
-      strokeWeight: 3
+      strokeWeight: 3,
     };
-    let polyline_hover: PolylineOptions = {
+    const polyline_hover: PolylineOptions = {
       strokeWeight: 4,
-      strokeColor: "#CC0000"
+      strokeColor: "#CC0000",
     };
     initial_funcs.setPolyline("polyline1", {
       default: polyline_opts,
-      hover: polyline_hover
+      hover: polyline_hover,
     });
 
-    let polygon_opts: PolygonOptions = {
+    const polygon_opts: PolygonOptions = {
       paths: [
         { lng: 14.50567, lat: 56.75918 },
         { lng: 14.60567, lat: 56.75918 },
         { lng: 14.60567, lat: 56.65918 },
-        { lng: 14.50567, lat: 56.65918 }
+        { lng: 14.50567, lat: 56.65918 },
       ],
       strokeColor: "#FF0000",
       strokeWeight: 2,
       fillColor: "#FF0000",
-      fillOpacity: 0.2
+      fillOpacity: 0.2,
     };
-    let polygon_hover: PolygonOptions = {
+    const polygon_hover: PolygonOptions = {
       strokeWeight: 2,
       strokeColor: "#CC0000",
-      fillOpacity: 0.6
+      fillOpacity: 0.6,
     };
     initial_funcs
       .setPolygon(2, {
         default: polygon_opts,
-        hover: polygon_hover
+        hover: polygon_hover,
       })
       .then((polygon: any) => {
         polygon.registerEventCB("mouseover", () => {
@@ -79,7 +79,7 @@ const Map: FunctionComponent = () => {
 
     example_geo_json.features[0].geometry.coordinates = example_geo_json.features[0].geometry.coordinates.map(
       (x: number[][][]) => {
-        return x.map(y => {
+        return x.map((y) => {
           return arrayRT90ToWGS84(y as [number, number][]);
         });
       }
@@ -87,7 +87,7 @@ const Map: FunctionComponent = () => {
     initial_funcs
       .setGeoJSONCollection(example_geo_json, {
         default: { visible: true, fillColor: "#ff0000", fillOpacity: 0.3 },
-        hover: { fillOpacity: 0.6 }
+        hover: { fillOpacity: 0.6 },
       })
       .then((x: any) => {
         x.features.forEach((y: any) => {
@@ -116,7 +116,7 @@ const Map: FunctionComponent = () => {
             "polyline",
             {
               strokeColor: "#000000",
-              strokeWeight: 3
+              strokeWeight: 3,
             },
             (path: any) => {
               console.log("path: ", path);
