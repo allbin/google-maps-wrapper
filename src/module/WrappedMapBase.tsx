@@ -379,10 +379,8 @@ export const WrappedMapBase: React.FunctionComponent<MapBaseProps> = ({
     setFeaturesLayer(initial_features_layer);
     initial_features_layer.setMap(map);
     feature_helpers.setupLayerEvents(map_objects, initial_features_layer);
-
-    const CanvasProjectionOverlay = (): void => {
-      /** */
-    };
+    //eslint-disable-next-line
+    function CanvasProjectionOverlay() {}
     CanvasProjectionOverlay.prototype = new window.google.maps.OverlayView();
     CanvasProjectionOverlay.prototype.constructor = CanvasProjectionOverlay;
     CanvasProjectionOverlay.prototype.onAdd = () => {

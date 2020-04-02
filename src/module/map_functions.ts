@@ -5,10 +5,8 @@ import {
   Z_INDEX_SCISSORS,
   Z_INDEX_SCISSORS_HOVER,
 } from "./constants";
-// eslint-disable-next-line @typescript-eslint/no-var-requires
-const ScissorIcon = require("./img/marker_scissors.svg");
-// eslint-disable-next-line @typescript-eslint/no-var-requires
-const ScissorHoverIcon = require("./img/marker_scissors_hover.svg");
+import ScissorIcon from "./img/marker_scissors.svg";
+import ScissorHoverIcon from "./img/marker_scissors_hover.svg";
 
 export const getBoundsLiteral = (
   map: google.maps.Map | undefined
