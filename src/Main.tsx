@@ -2,6 +2,7 @@ import React, { FunctionComponent, useState } from "react";
 import MapBase, { arrayRT90ToWGS84 } from "./module";
 import example_geo_json from "./example_geo_json";
 import { ExportedFunctions } from "./module/WrappedMapBase";
+
 const Map: FunctionComponent = () => {
   const [funcs, setFuncs] = useState<ExportedFunctions>();
   const onMapInitialized = (
@@ -13,11 +14,13 @@ const Map: FunctionComponent = () => {
       draggable: true,
     };
     setFuncs(initial_funcs);
+    console.log("Adding draggable marker.");
     initial_funcs
       .setMarker("marker1", { default: marker_opts })
       .then((marker) => {
         setTimeout(() => {
           marker.panTo();
+          console.log("Issuing panTo command for draggable marker.");
         }, 7000);
       });
 
@@ -35,6 +38,7 @@ const Map: FunctionComponent = () => {
       strokeWeight: 4,
       strokeColor: "#CC0000",
     };
+    console.log("Setting polyline.");
     initial_funcs.setPolyline("polyline1", {
       default: polyline_opts,
       hover: polyline_hover,
@@ -62,17 +66,20 @@ const Map: FunctionComponent = () => {
         default: polygon_opts,
         hover: polygon_hover,
       })
-      .then((polygon: any) => {
+      .then((polygon) => {
         polygon.registerEventCB("mouseover", () => {
+          console.log("mouse over");
           polygon.applyOptions("hover");
         });
         polygon.registerEventCB("mouseout", () => {
+          console.log("mouse out");
           polygon.applyOptions("default");
         });
 
         polygon_opts.strokeOpacity = 0.4;
         polygon.setOptions({ default: polygon_opts, hover: polygon_hover });
         setTimeout(() => {
+          console.log("setTimeout");
           initial_funcs.zoomToObject(polygon);
         }, 2000);
       });
@@ -89,8 +96,8 @@ const Map: FunctionComponent = () => {
         default: { visible: true, fillColor: "#ff0000", fillOpacity: 0.3 },
         hover: { fillOpacity: 0.6 },
       })
-      .then((x: any) => {
-        x.features.forEach((y: any) => {
+      .then((x) => {
+        x.features.forEach((y) => {
           console.log(y);
           y.registerEventCB("mouseover", () => {
             y.applyOptions("hover");
@@ -101,6 +108,7 @@ const Map: FunctionComponent = () => {
         });
         setTimeout(() => {
           initial_funcs.panToObject(x.features[0]);
+          console.log("pan to object");
         }, 4000);
       });
   };
@@ -112,13 +120,14 @@ const Map: FunctionComponent = () => {
           if (!funcs) {
             return;
           }
+          console.log("Starting DrawingMode");
           funcs.setDrawingMode(
             "polyline",
             {
               strokeColor: "#000000",
               strokeWeight: 3,
             },
-            (path: any) => {
+            (path) => {
               console.log("path: ", path);
             }
           );
