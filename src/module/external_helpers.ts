@@ -82,6 +82,7 @@ export const movePointsByCoord = (
 
 const squared = (x: number): number => x * x;
 const toRad = (x: number): number => (x * Math.PI) / 180;
+/** Calculates Haversine distance between two points on a sphere.*/
 export const haversineDistance = (
   a: LatLngLiteral,
   b: LatLngLiteral
