@@ -24,7 +24,7 @@ export type arrayToLatLngObjectType = (
   invert: boolean
 ) => LatLngLiteral[];
 
-/** Convert coordinates to Google maps LatLngLiterals  */
+/** Convert coordinates to Google maps LatLngLiterals.  */
 export const arrayToLatLngObject: arrayToLatLngObjectType = (
   arr,
   invert = false
@@ -37,7 +37,7 @@ export type latLngArrayToCoordArrayType = (
   latLngArray: LatLngLiteral[],
   invert: boolean
 ) => [number, number][];
-/** Convert array of latlng to coordinates */
+/** Convert array of latlng to coordinates. */
 export const latLngArrayToCoordArray: latLngArrayToCoordArrayType = (
   arr,
   invert
@@ -61,7 +61,7 @@ export const makePointsAroundCircleRT90 = (
 
   return points;
 };
-/** Create an RT90 rectangle from two points  */
+/** Create an RT90 rectangle from two points. */
 export const makeRectRT90 = (
   p1: number[],
   p2: number[]
@@ -71,7 +71,7 @@ export const makeRectRT90 = (
   [p2[0], p2[1]],
   [p1[0], p2[1]],
 ];
-/** Move point by adding coordinates to point position  */
+/** Move point by adding coordinates to point position. */
 export const movePointsByCoord = (
   points_arr: [number, number][],
   coord: number[]
@@ -82,7 +82,7 @@ export const movePointsByCoord = (
 
 const squared = (x: number): number => x * x;
 const toRad = (x: number): number => (x * Math.PI) / 180;
-/** Calculates Haversine distance between two points on a sphere.*/
+/** Calculates Haversine distance between two points on earth. Result in meter.*/
 export const haversineDistance = (
   a: LatLngLiteral,
   b: LatLngLiteral
@@ -107,7 +107,7 @@ export const haversineDistance = (
 export type MVCArrayToObjArrayType = (
   MVCArr: google.maps.MVCArray<google.maps.LatLng>
 ) => LatLngLiteral[];
-/** Convert a google maps MVC Array to an array of LatLngLiterals */
+/** Convert a google maps MVC Array to an array of LatLngLiterals. */
 export const MVCArrayToObjArray: MVCArrayToObjArrayType = (MVCArr) => {
   return MVCArr.getArray().map((gmapsLatLng) => {
     return {
@@ -121,7 +121,7 @@ export type MVCArrayToCoordArrayType = (
   MVCArr: google.maps.MVCArray<google.maps.LatLng>
 ) => number[][];
 
-/** Convert a google maps MVC Array to an array of coordinates*/
+/** Convert a google maps MVC Array to an array of coordinates. */
 export const MVCArrayToCoordArray: MVCArrayToCoordArrayType = (MVCArr) => {
   return MVCArr.getArray().map((gmapsLatLng) => {
     return [gmapsLatLng.lat(), gmapsLatLng.lng()];
@@ -130,7 +130,7 @@ export const MVCArrayToCoordArray: MVCArrayToCoordArrayType = (MVCArr) => {
 export const arrayRT90ToWGS84 = (
   rt90arr: [number, number][]
 ): [number, number][] => convertFromArrayOfArray("RT90", "WGS84", rt90arr);
-/** Convert an array of rt90 coordinates to WGS84 */
+/** Convert an array of rt90 coordinates to WGS84. */
 export const arrayRT90ToWGS84LatLngObj = (
   rt90arr: [number, number][]
 ): LatLngLiteral[] =>
