@@ -7,7 +7,7 @@
  mourner.github.io/simplify-js
 */
 
-// square distance between 2 points
+/** square distance between 2 points */
 const getSqDist = (p1: [number, number], p2: [number, number]): number => {
   const dx = p1[0] - p2[0];
   const dy = p1[1] - p2[1];
@@ -15,7 +15,7 @@ const getSqDist = (p1: [number, number], p2: [number, number]): number => {
   return dx * dx + dy * dy;
 };
 
-// square distance from a point to a segment
+/** square distance from a point to a segment */
 const getSqSegDist = (
   p: [number, number],
   p1: [number, number],
@@ -46,7 +46,7 @@ const getSqSegDist = (
 
 // rest of the code doesn't care about point format
 
-// basic distance-based simplification
+/** basic distance-based simplification */
 const simplifyRadialDist = (
   points: [number, number][],
   sqTolerance: number
@@ -101,7 +101,7 @@ const simplifyDPStep = (
   }
 };
 
-// simplification using Ramer-Douglas-Peucker algorithm
+/** simplification using Ramer-Douglas-Peucker algorithm */
 const simplifyDouglasPeucker = (
   points: [number, number][],
   sqTolerance: number
