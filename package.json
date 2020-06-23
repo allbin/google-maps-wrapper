@@ -1,37 +1,58 @@
 {
-    "name": "google-maps-wrapper",
-    "version": "1.3.0",
-    "description": "",
-    "main": "dist/module/index.js",
-    "scripts": {
-        "start": "react-scripts-ts start",
-        "build": "gulp build",
-        "test": "react-scripts-ts test --env=jsdom",
-        "eject": "react-scripts-ts eject",
-        "release:patch": "gulp buildAndReleasePatch",
-        "release:minor": "gulp buildAndReleaseMinor",
-        "release:major": "gulp buildAndReleaseMajor"
-    },
-    "dependencies": {
-        "proj4": "2.5.0",
-        "@types/googlemaps": "3.30.19",
-        "@types/geojson": "7946.0.7"
-    },
-    "devDependencies": {
-        "react": "16.8.6",
-        "react-dom": "16.8.6",
-        "react-scripts-ts": "3.1.0",
-        "@types/jest": "24.0.11",
-        "@types/node": "10.12.18",
-        "@types/react": "16.8.10",
-        "@types/react-dom": "16.8.3",
-        "@types/react-router": "4.4.5",
-        "@types/react-router-dom": "4.3.1",
-        "gulp-bump": "3.1.3",
-        "gulp-typescript": "5.0.1",
-        "gulp-sourcemaps": "2.6.4",
-        "gulp": "4.0.2",
-        "tslint-eslint-rules": "5.4.0",
-        "typescript": "3.4.1"
-    }
+  "name": "google-maps-wrapper",
+  "version": "1.3.0",
+  "description": "",
+  "main": "dist/module/index.js",
+  "scripts": {
+    "start": "EXTEND_ESLINT=true react-scripts start",
+    "build": "gulp build",
+    "test": "react-scripts test --env=jsdom",
+    "eject": "react-scripts eject",
+    "release:patch": "gulp buildAndReleasePatch",
+    "release:minor": "gulp buildAndReleaseMinor",
+    "release:major": "gulp buildAndReleaseMajor",
+    "lint": "eslint --ext .ts --ext tsx src/**",
+    "lint:fix": "eslint --ext .ts --ext tsx --fix src/**"
+  },
+  "dependencies": {
+    "@types/geojson": "7946.0.7",
+    "@types/googlemaps": "3.30.19",
+    "proj4": "2.5.0"
+  },
+  "devDependencies": {
+    "react": "16.13.1",
+    "react-dom": "16.13.1",
+    "@allbin/eslint-config-react": "0.0.4",
+    "prettier": "2.0.2",
+    "eslint-plugin-prettier": "3.1.2",
+    "react-scripts": "3.4.1",
+    "@types/jest": "24.0.11",
+    "@types/node": "13.9.3",
+    "@types/react": "16.9.25",
+    "@types/react-dom": "16.9.5",
+    "@types/react-router": "5.1.4",
+    "@types/react-router-dom": "5.1.3",
+    "gulp-bump": "3.1.3",
+    "gulp-typescript": "5.0.1",
+    "gulp-sourcemaps": "2.6.4",
+    "gulp": "4.0.2",
+    "tslint-eslint-rules": "5.4.0",
+    "typescript": "3.8.3"
+  },
+  "peerDependencies": {
+    "react": "16.*",
+    "react-dom": "16.*"
+  },
+  "browserslist": {
+    "production": [
+      ">0.2%",
+      "not dead",
+      "not op_mini all"
+    ],
+    "development": [
+      "last 1 chrome version",
+      "last 1 firefox version",
+      "last 1 safari version"
+    ]
+  }
 }
