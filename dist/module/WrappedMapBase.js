@@ -1,5 +1,5 @@
-import * as React from "react";
-import { useEffect, useRef, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
+import MarkerClusterer from "@google/markerclustererplus";
 import ScriptCache from "./ScriptCache";
 import * as feature_helpers from "./feature_helpers";
 import * as map_funcs from "./map_functions";
@@ -8,6 +8,7 @@ export const WrappedMapBase = ({ googleapi_maps_uri, default_center, default_opt
     const [script_cache] = useState(ScriptCache({
         google: googleapi_maps_uri,
     }));
+    const [clusterers] = useState([]);
     const [map, setMap] = useState();
     const [do_after_init] = useState([]);
     const [do_on_drag_end] = useState([]);
@@ -157,7 +158,30 @@ export const WrappedMapBase = ({ googleapi_maps_uri, default_center, default_opt
                     do_on_drag_end.splice(index, 1);
                 }
             },
+            /** *Never use the MarkerClusterer.clearMarkers() function, use the maps unsetClusterer instead!*
+             *  NOTE: This will make marker.show() and marker.hide() not function properly, since visibility is controlled by the cluster.
+             */
+            setClusterer: (clusterer_options) => ic((map) => {
+                const clusterer = new MarkerClusterer(map, [], clusterer_options);
+                clusterers.push(clusterer);
+                return Promise.resolve(clusterer);
+            }),
+            /** *Never use the MarkerClusterer.clearMarkers() function, use the maps unsetClusterer instead!*
+             *  NOTE: This will make marker.show() and marker.hide() not function properly, since visibility is controlled by the cluster.
+             */
+            getClusterers: () => ic(() => Promise.resolve([...clusterers])),
+            unsetClusterer: (clusterer) => {
+                clusterer.removeMarkers(clusterer.getMarkers());
+                const index = clusterers.indexOf(clusterer);
+                if (index > -1) {
+                    clusterers.splice(index, 1);
+                }
+            },
+            createClustererStyle: (styling) => MarkerClusterer.withDefaultStyle(styling),
         });
+        //
+        //
+        //
         const initial_features_layer = new window.google.maps.Data();
         setFeaturesLayer(initial_features_layer);
         initial_features_layer.setMap(map);
@@ -200,7 +224,6 @@ export const WrappedMapBase = ({ googleapi_maps_uri, default_center, default_opt
             initializedCB(map, funcs);
         }
     };
-    //Is actually triggered by Idle, not DragEnd!
     const setupMapEvents = (map) => {
         map.addListener("center_changed", () => onCenterChanged && onCenterChanged());
         map.addListener("bounds_changed", () => onBoundsChanged && onBoundsChanged());

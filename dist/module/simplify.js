@@ -5,13 +5,13 @@
  Simplify.js, a high-performance JS polyline simplification library
  mourner.github.io/simplify-js
 */
-// square distance between 2 points
+/** square distance between 2 points. */
 const getSqDist = (p1, p2) => {
     const dx = p1[0] - p2[0];
     const dy = p1[1] - p2[1];
     return dx * dx + dy * dy;
 };
-// square distance from a point to a segment
+/** square distance from a point to a segment. */
 const getSqSegDist = (p, p1, p2) => {
     let x = p1[0];
     let y = p1[1];
@@ -33,7 +33,7 @@ const getSqSegDist = (p, p1, p2) => {
     return dx * dx + dy * dy;
 };
 // rest of the code doesn't care about point format
-// basic distance-based simplification
+/** basic distance-based simplification. */
 const simplifyRadialDist = (points, sqTolerance) => {
     let prevPoint = points[0];
     const newPoints = [prevPoint];
@@ -70,7 +70,7 @@ const simplifyDPStep = (points, first, last, sqTolerance, simplified) => {
         }
     }
 };
-// simplification using Ramer-Douglas-Peucker algorithm
+/** simplification using Ramer-Douglas-Peucker algorithm. */
 const simplifyDouglasPeucker = (points, sqTolerance) => {
     const last = points.length - 1;
     const simplified = [points[0]];
@@ -78,7 +78,7 @@ const simplifyDouglasPeucker = (points, sqTolerance) => {
     simplified.push(points[last]);
     return simplified;
 };
-// both algorithms combined for awesome performance
+/** both algorithms combined for awesome performance. */
 const simplify = (points, tolerance, highestQuality) => {
     if (points.length <= 2) {
         return points;
