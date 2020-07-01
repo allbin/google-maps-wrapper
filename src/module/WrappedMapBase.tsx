@@ -1,5 +1,8 @@
-import * as React from "react";
-import { useEffect, useRef, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
+import MarkerClusterer, {
+  MarkerClustererOptions,
+  ClusterIconStyle,
+} from "@google/markerclustererplus";
 import ScriptCache from "./ScriptCache";
 import * as feature_helpers from "./feature_helpers";
 import * as map_funcs from "./map_functions";
@@ -71,6 +74,12 @@ export type ExportedFunctions = {
   unregisterDragStartCB: (cb: () => void) => void;
   registerDragEndCB: (cb: () => void) => number;
   unregisterDragEndCB: (cb: () => void) => void;
+  getClusterers: () => Promise<MarkerClusterer[]>;
+  setClusterer: (
+    clusterer_options: MarkerClustererOptions
+  ) => Promise<MarkerClusterer>;
+  unsetClusterer: (clusterer: MarkerClusterer) => void;
+  createClustererStyle: typeof MarkerClusterer.withDefaultStyle;
 };
 
 export interface MapBaseProps {
@@ -134,6 +143,7 @@ export const WrappedMapBase: React.FunctionComponent<MapBaseProps> = ({
     })
   );
 
+  const [clusterers] = useState<MarkerClusterer[]>([]);
   const [map, setMap] = useState<google.maps.Map>();
   const [do_after_init] = useState<((map: google.maps.Map) => void)[]>([]);
   const [do_on_drag_end] = useState<(() => void)[]>([]);
@@ -374,7 +384,33 @@ export const WrappedMapBase: React.FunctionComponent<MapBaseProps> = ({
           do_on_drag_end.splice(index, 1);
         }
       },
+      /** *Never use the MarkerClusterer.clearMarkers() function, use the maps unsetClusterer instead!*
+       *  NOTE: This will make marker.show() and marker.hide() not function properly, since visibility is controlled by the cluster.
+       */
+      setClusterer: (clusterer_options) =>
+        ic((map) => {
+          const clusterer = new MarkerClusterer(map, [], clusterer_options);
+          clusterers.push(clusterer);
+          return Promise.resolve(clusterer);
+        }),
+      /** *Never use the MarkerClusterer.clearMarkers() function, use the maps unsetClusterer instead!*
+       *  NOTE: This will make marker.show() and marker.hide() not function properly, since visibility is controlled by the cluster.
+       */
+      getClusterers: () => ic(() => Promise.resolve([...clusterers])),
+      unsetClusterer: (clusterer) => {
+        clusterer.removeMarkers(clusterer.getMarkers());
+        const index = clusterers.indexOf(clusterer);
+        if (index > -1) {
+          clusterers.splice(index, 1);
+        }
+      },
+      createClustererStyle: (styling: ClusterIconStyle) =>
+        MarkerClusterer.withDefaultStyle(styling),
     });
+
+    //
+    //
+    //
     const initial_features_layer = new window.google.maps.Data();
     setFeaturesLayer(initial_features_layer);
     initial_features_layer.setMap(map);
@@ -424,7 +460,6 @@ export const WrappedMapBase: React.FunctionComponent<MapBaseProps> = ({
     }
   };
 
-  //Is actually triggered by Idle, not DragEnd!
   const setupMapEvents = (map: google.maps.Map): void => {
     map.addListener(
       "center_changed",

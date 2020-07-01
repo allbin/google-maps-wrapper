@@ -2,9 +2,11 @@ import React, { FunctionComponent, useState } from "react";
 import MapBase, { arrayRT90ToWGS84 } from "./module";
 import example_geo_json from "./example_geo_json";
 import { ExportedFunctions } from "./module/WrappedMapBase";
+import { MarkerClustererOptions } from "@google/markerclustererplus";
 
 const Map: FunctionComponent = () => {
   const [funcs, setFuncs] = useState<ExportedFunctions>();
+  const [cluster_markers, setClusterMarkers] = useState<WrappedMarker[]>([]);
   const onMapInitialized = (
     map: google.maps.Map,
     initial_funcs: ExportedFunctions
@@ -113,6 +115,78 @@ const Map: FunctionComponent = () => {
       });
   };
 
+  const rand = (min: number, max: number): number =>
+    Math.random() * (max - min) + min;
+
+  const addCluster = (
+    funcs: ExportedFunctions,
+    number_of_markers: number,
+    min_lat: number,
+    max_lat: number,
+    min_lng: number,
+    max_lng: number
+  ): Promise<WrappedMarker[]> => {
+    const promises = [] as Promise<WrappedMarker>[];
+    const cluster_options: MarkerClustererOptions = {
+      gridSize: 120,
+      styles: [
+        funcs.createClustererStyle({
+          url: "./cluster.png",
+          width: 53,
+          height: 52,
+          anchorIcon: [25, 22],
+          textSize: 11,
+          textColor: "#fff",
+        }),
+      ],
+    };
+
+    for (let i = 0; i < number_of_markers; i++) {
+      const marker_opts: MarkerOptions = {
+        position: { lng: rand(min_lng, max_lng), lat: rand(min_lat, max_lat) },
+        draggable: true,
+      };
+      promises.push(funcs.setMarker("cluster_" + i, { default: marker_opts }));
+    }
+    return Promise.all(promises).then((markers) => {
+      funcs.setClusterer(cluster_options).then((clusterer) => {
+        clusterer.addMarkers(markers.map((marker) => marker.gmaps_obj));
+      });
+      return Promise.resolve(markers);
+    });
+  };
+
+  const animateClusterMarkers = (step = 0): void => {
+    for (let i = 0; i < cluster_markers.length; i++) {
+      const marker = cluster_markers[i];
+      const val = step < 7 ? 0.001 : -0.001;
+      const opts = Object.assign({}, marker.options.default);
+      const pos = marker.gmaps_obj.getPosition();
+      if (i % 2 === 0) {
+        opts.position = {
+          lat: pos.lat() + val,
+          lng: pos.lng(),
+        };
+      } else if (i % 3 === 0) {
+        opts.position = {
+          lat: pos.lat() + val,
+          lng: pos.lng() + val,
+        };
+      } else {
+        opts.position = {
+          lat: pos.lat(),
+          lng: pos.lng() + val,
+        };
+      }
+      marker.setOptions({ default: opts });
+    }
+
+    setTimeout(() => animateClusterMarkers((step + 1) % 14), 1000);
+    funcs?.getClusterers().then((clusterers) => {
+      clusterers[0].repaint();
+    });
+  };
+
   return (
     <div>
       <button
@@ -135,6 +209,31 @@ const Map: FunctionComponent = () => {
       >
         Start Drawing
       </button>
+
+      <button
+        onClick={() => {
+          if (!funcs) {
+            return;
+          }
+          console.log("Adding markers with clustering.");
+          // lng: 14.50567, lat: 56.75918
+          addCluster(funcs, 1000, 56, 57, 14, 15).then((markers) => {
+            setClusterMarkers(markers);
+          });
+        }}
+      >
+        Add cluster markers
+      </button>
+
+      <button
+        onClick={() => {
+          console.log("Animating cluster markers.");
+          animateClusterMarkers();
+        }}
+      >
+        Animate cluster markers
+      </button>
+
       <div style={{ position: "absolute", width: "90%", height: "90%" }}>
         <MapBase
           googleapi_maps_uri="https://maps.googleapis.com/maps/api/js?v=3.exp&libraries=geometry,places,drawing&key=AIzaSyA0tp0r6ImLSnn9vy4zXjZWar1F3U5eOaY"

@@ -37,7 +37,8 @@
     "gulp-sourcemaps": "2.6.4",
     "gulp": "4.0.2",
     "tslint-eslint-rules": "5.4.0",
-    "typescript": "3.8.3"
+    "typescript": "3.8.3",
+    "@google/markerclustererplus": "5.0.4"
   },
   "peerDependencies": {
     "react": "16.*",
