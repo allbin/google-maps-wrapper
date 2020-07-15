@@ -66,4 +66,5 @@ export const MVCArrayToCoordArray = (MVCArr) => {
 export const arrayRT90ToWGS84 = (rt90arr) => convertFromArrayOfArray("RT90", "WGS84", rt90arr);
 /** Convert an array of rt90 coordinates to WGS84. */
 export const arrayRT90ToWGS84LatLngObj = (rt90arr) => arrayToLatLngObject(convertFromArrayOfArray("RT90", "WGS84", rt90arr), true);
+
 //# sourceMappingURL=external_helpers.js.map

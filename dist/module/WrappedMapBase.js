@@ -329,4 +329,5 @@ export const WrappedMapBase = ({ googleapi_maps_uri, default_center, default_opt
             } })));
 };
 export default WrappedMapBase;
+
 //# sourceMappingURL=WrappedMapBase.js.map
