@@ -17,15 +17,16 @@
   "dependencies": {
     "@types/geojson": "7946.0.7",
     "@types/googlemaps": "3.30.19",
-    "proj4": "2.5.0"
+    "proj4": "2.5.0",
+    "@google/markerclustererplus": "5.0.4"
   },
   "devDependencies": {
-    "react": "16.13.1",
-    "react-dom": "16.13.1",
+    "react": "16.8.6",
+    "react-dom": "16.8.6",
     "@allbin/eslint-config-react": "0.0.4",
     "prettier": "2.0.2",
     "eslint-plugin-prettier": "3.1.2",
-    "react-scripts": "3.4.1",
+    "react-scripts-ts": "3.1.0",
     "@types/jest": "24.0.11",
     "@types/node": "13.9.3",
     "@types/react": "16.9.25",
@@ -37,8 +38,7 @@
     "gulp-sourcemaps": "2.6.4",
     "gulp": "4.0.2",
     "tslint-eslint-rules": "5.4.0",
-    "typescript": "3.8.3",
-    "@google/markerclustererplus": "5.0.4"
+    "typescript": "3.4.1"
   },
   "peerDependencies": {
     "react": "16.*",
