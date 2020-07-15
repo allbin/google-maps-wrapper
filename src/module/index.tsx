@@ -14,6 +14,33 @@ export {
   arrayRT90ToWGS84,
   arrayRT90ToWGS84LatLngObj,
 } from "./external_helpers";
+
+export type {
+  ExportedFunctions as GMW_ExportedFunctions,
+  MapBaseProps as GMW_MapBaseProps,
+} from "./WrappedMapBase";
+
+export interface GMW_LatLngLiteral extends LatLngLiteral {}
+export interface GMW_LatLngBoundsLiteral extends LatLngBoundsLiteral {}
+export interface GMW_PolylineOptionsSet extends PolylineOptionsSet {}
+export type GMW_PolylineOptions = PolylineOptions;
+export interface GMW_MarkerOptionsSet extends MarkerOptionsSet {}
+export type GMW_MarkerOptions = MarkerOptions;
+export interface GMW_PolygonOptionsSet extends PolygonOptionsSet {}
+export type GMW_PolygonOptions = PolygonOptions;
+export interface GMW_FeatureOptionsSet extends FeatureOptionsSet {}
+export type GMW_FeatureOptions = FeatureOptions;
+export type GMW_MarkerEvents = MarkerEvents;
+export type GMW_PolylineEvents = PolylineEvents;
+export type GMW_PolygonEvents = PolygonEvents;
+export type GMW_FeatureEvents = FeatureEvents;
+export type GMW_DrawingCB = DrawingCB;
+
+export interface GMW_WrappedPolygon extends WrappedPolygon {}
+export interface GMW_WrappedPolyline extends WrappedPolyline {}
+export interface GMW_WrappedMarker extends WrappedMarker {}
+export interface GMW_WrappedFeature extends WrappedFeature {}
+
 declare global {
   interface Window {
     google: any;
