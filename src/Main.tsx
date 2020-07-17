@@ -1,17 +1,25 @@
 import React, { FunctionComponent, useState } from "react";
-import MapBase, { arrayRT90ToWGS84 } from "./module";
+import MapBase, {
+  arrayRT90ToWGS84,
+  GMW_MarkerOptions,
+  GMW_PolylineOptions,
+  GMW_PolygonOptions,
+  GMW_WrappedMarker,
+} from "./module";
 import example_geo_json from "./example_geo_json";
 import { ExportedFunctions } from "./module/WrappedMapBase";
 import { MarkerClustererOptions } from "@google/markerclustererplus";
 
 const Map: FunctionComponent = () => {
   const [funcs, setFuncs] = useState<ExportedFunctions>();
-  const [cluster_markers, setClusterMarkers] = useState<WrappedMarker[]>([]);
+  const [cluster_markers, setClusterMarkers] = useState<GMW_WrappedMarker[]>(
+    []
+  );
   const onMapInitialized = (
     map: google.maps.Map,
     initial_funcs: ExportedFunctions
   ): void => {
-    const marker_opts: MarkerOptions = {
+    const marker_opts: GMW_MarkerOptions = {
       position: { lng: 14.40567, lat: 56.65918 },
       draggable: true,
     };
@@ -26,7 +34,7 @@ const Map: FunctionComponent = () => {
         }, 7000);
       });
 
-    const polyline_opts: PolylineOptions = {
+    const polyline_opts: GMW_PolylineOptions = {
       path: [
         { lng: 14.40567, lat: 56.65918 },
         { lng: 14.50567, lat: 56.65918 },
@@ -36,7 +44,7 @@ const Map: FunctionComponent = () => {
       strokeColor: "#FF0000",
       strokeWeight: 3,
     };
-    const polyline_hover: PolylineOptions = {
+    const polyline_hover: GMW_PolylineOptions = {
       strokeWeight: 4,
       strokeColor: "#CC0000",
     };
@@ -46,7 +54,7 @@ const Map: FunctionComponent = () => {
       hover: polyline_hover,
     });
 
-    const polygon_opts: PolygonOptions = {
+    const polygon_opts: GMW_PolygonOptions = {
       paths: [
         { lng: 14.50567, lat: 56.75918 },
         { lng: 14.60567, lat: 56.75918 },
@@ -58,7 +66,7 @@ const Map: FunctionComponent = () => {
       fillColor: "#FF0000",
       fillOpacity: 0.2,
     };
-    const polygon_hover: PolygonOptions = {
+    const polygon_hover: GMW_PolygonOptions = {
       strokeWeight: 2,
       strokeColor: "#CC0000",
       fillOpacity: 0.6,
@@ -125,8 +133,8 @@ const Map: FunctionComponent = () => {
     max_lat: number,
     min_lng: number,
     max_lng: number
-  ): Promise<WrappedMarker[]> => {
-    const promises = [] as Promise<WrappedMarker>[];
+  ): Promise<GMW_WrappedMarker[]> => {
+    const promises = [] as Promise<GMW_WrappedMarker>[];
     const cluster_options: MarkerClustererOptions = {
       gridSize: 120,
       styles: [
@@ -142,7 +150,7 @@ const Map: FunctionComponent = () => {
     };
 
     for (let i = 0; i < number_of_markers; i++) {
-      const marker_opts: MarkerOptions = {
+      const marker_opts: GMW_MarkerOptions = {
         position: { lng: rand(min_lng, max_lng), lat: rand(min_lat, max_lat) },
         draggable: true,
       };
@@ -182,7 +190,7 @@ const Map: FunctionComponent = () => {
     }
 
     setTimeout(() => animateClusterMarkers((step + 1) % 14), 1000);
-    funcs?.getClusterers().then((clusterers) => {
+    funcs!.getClusterers().then((clusterers) => {
       clusterers[0].repaint();
     });
   };

@@ -1,5 +1,6 @@
 import proj4 from "proj4";
 import { EARTH_RADIUS } from "./constants";
+import { GMW_LatLngLiteral } from ".";
 
 type Projection = "GMAPS" | "RT90" | "SWEREF99" | "WGS84";
 
@@ -22,7 +23,7 @@ export const convertFromArrayOfArray: convertFromArrayOfArrayType = (
 export type arrayToLatLngObjectType = (
   coords: [number, number][],
   invert: boolean
-) => LatLngLiteral[];
+) => GMW_LatLngLiteral[];
 
 /** Convert coordinates to Google maps LatLngLiterals.  */
 export const arrayToLatLngObject: arrayToLatLngObjectType = (
@@ -34,7 +35,7 @@ export const arrayToLatLngObject: arrayToLatLngObjectType = (
     : arr.map((point) => ({ lat: point[0], lng: point[1] }));
 
 export type latLngArrayToCoordArrayType = (
-  latLngArray: LatLngLiteral[],
+  latLngArray: GMW_LatLngLiteral[],
   invert: boolean
 ) => [number, number][];
 /** Convert array of latlng to coordinates. */
@@ -84,8 +85,8 @@ const squared = (x: number): number => x * x;
 const toRad = (x: number): number => (x * Math.PI) / 180;
 /** Calculates Haversine distance between two points on earth. Result in meter.*/
 export const haversineDistance = (
-  a: LatLngLiteral,
-  b: LatLngLiteral
+  a: GMW_LatLngLiteral,
+  b: GMW_LatLngLiteral
 ): number => {
   const aLat = a.lat;
   const bLat = b.lat;
@@ -106,7 +107,7 @@ export const haversineDistance = (
 
 export type MVCArrayToObjArrayType = (
   MVCArr: google.maps.MVCArray<google.maps.LatLng>
-) => LatLngLiteral[];
+) => GMW_LatLngLiteral[];
 /** Convert a google maps MVC Array to an array of LatLngLiterals. */
 export const MVCArrayToObjArray: MVCArrayToObjArrayType = (MVCArr) => {
   return MVCArr.getArray().map((gmapsLatLng) => {
@@ -133,5 +134,5 @@ export const arrayRT90ToWGS84 = (
 /** Convert an array of rt90 coordinates to WGS84. */
 export const arrayRT90ToWGS84LatLngObj = (
   rt90arr: [number, number][]
-): LatLngLiteral[] =>
+): GMW_LatLngLiteral[] =>
   arrayToLatLngObject(convertFromArrayOfArray("RT90", "WGS84", rt90arr), true);

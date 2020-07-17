@@ -3,6 +3,24 @@
 //These functions are not exported to enduser, only used
 //internally by the map.
 
+import {
+  GMW_LatLng,
+  GMW_LatLngBoundsLiteral,
+  GMW_LatLngLiteral,
+  GMW_PolylineOptionsSet,
+  GMW_PolygonOptionsSet,
+  GMW_MarkerOptionsSet,
+  GMW_PolylineOptions,
+  GMW_PolygonOptions,
+  GMW_MarkerOptions,
+  GMW_WrappedPolyline,
+  GMW_WrappedPolygon,
+  GMW_WrappedMarker,
+  GMW_WrappedFeature,
+  MapObjectType,
+  GMW_WrappedGmapObj,
+} from ".";
+
 const DEFAULT_POLYLINE_OPTIONS = {
   visible: true,
 };
@@ -15,7 +33,7 @@ const DEFAULT_MARKER_OPTIONS = {
 
 export const fromLatLngToPixel = (
   map: google.maps.Map,
-  latLng: LatLng
+  latLng: GMW_LatLng
 ): any => {
   if (!map) {
     throw new Error("Cannot call fromLatLngToPixel before init is finished.");
@@ -70,7 +88,7 @@ export const fitToBoundsOfArray = (
     resolve();
   });
 export const fitToBoundsLiteral = (
-  bounds: LatLngBoundsLiteral,
+  bounds: GMW_LatLngBoundsLiteral,
   map?: google.maps.Map
 ): Promise<void> =>
   new Promise((resolve) => {
@@ -80,7 +98,7 @@ export const fitToBoundsLiteral = (
     resolve();
   });
 export const fitToBoundsOfObjectArray = (
-  arr_of_latlngliteral: LatLngLiteral[],
+  arr_of_latlngliteral: GMW_LatLngLiteral[],
   map?: google.maps.Map
 ): Promise<void> =>
   new Promise((resolve, reject) => {
@@ -118,30 +136,30 @@ export const setPolyline = (
   map_objects: MapObjects,
   cutting: CuttingState,
   id: string | number,
-  options: PolylineOptionsSet
-): Promise<WrappedPolyline> =>
+  options: GMW_PolylineOptionsSet
+): Promise<GMW_WrappedPolyline> =>
   setMapObject(map, map_objects, cutting, "polyline", id, options) as Promise<
-    WrappedPolyline
+    GMW_WrappedPolyline
   >;
 export const setPolygon = (
   map: google.maps.Map,
   map_objects: MapObjects,
   cutting: CuttingState,
   id: string | number,
-  options: PolygonOptionsSet
-): Promise<WrappedPolygon> =>
+  options: GMW_PolygonOptionsSet
+): Promise<GMW_WrappedPolygon> =>
   setMapObject(map, map_objects, cutting, "polygon", id, options) as Promise<
-    WrappedPolygon
+    GMW_WrappedPolygon
   >;
 export const setMarker = (
   map: google.maps.Map,
   map_objects: MapObjects,
   cutting: CuttingState,
   id: string | number,
-  options: MarkerOptionsSet
-): Promise<WrappedMarker> =>
+  options: GMW_MarkerOptionsSet
+): Promise<GMW_WrappedMarker> =>
   setMapObject(map, map_objects, cutting, "marker", id, options) as Promise<
-    WrappedMarker
+    GMW_WrappedMarker
   >;
 
 type setMapObject = (
@@ -152,7 +170,7 @@ type setMapObject = (
   id: string | number,
   options: AnyObjectOptionsSet,
   current_options_id?: string
-) => Promise<WrappedPolyline | WrappedPolygon | WrappedMarker>;
+) => Promise<GMW_WrappedPolyline | GMW_WrappedPolygon | GMW_WrappedMarker>;
 
 export const setMapObject: setMapObject = (
   map,
@@ -177,18 +195,18 @@ export const setMapObject: setMapObject = (
       map_obj.selected_options_id = selected_options_id;
       switch (map_obj.type) {
         case "polyline": {
-          map_obj.gmaps_obj.setOptions(opts as PolylineOptions);
-          map_obj.options = options as PolylineOptionsSet;
+          map_obj.gmaps_obj.setOptions(opts as GMW_PolylineOptions);
+          map_obj.options = options as GMW_PolylineOptionsSet;
           break;
         }
         case "polygon": {
-          map_obj.gmaps_obj.setOptions(opts as PolygonOptions);
-          map_obj.options = options as PolygonOptionsSet;
+          map_obj.gmaps_obj.setOptions(opts as GMW_PolygonOptions);
+          map_obj.options = options as GMW_PolygonOptionsSet;
           break;
         }
         case "marker": {
-          map_obj.gmaps_obj.setOptions(opts as MarkerOptions);
-          map_obj.options = options as MarkerOptionsSet;
+          map_obj.gmaps_obj.setOptions(opts as GMW_MarkerOptions);
+          map_obj.options = options as GMW_MarkerOptionsSet;
           break;
         }
         default: {
@@ -201,7 +219,7 @@ export const setMapObject: setMapObject = (
 
     //This extra interface exists so that _cbs can be created at different points in the following code.
     //Otherwise ungainly "hasOwnProperty"-like checks are required.
-    interface MapObjShell extends Partial<WrappedGmapObj> {
+    interface MapObjShell extends Partial<GMW_WrappedGmapObj> {
       _cbs: {
         [key: string]: (e?: any) => void;
       };
@@ -349,7 +367,7 @@ export const setMapObject: setMapObject = (
         )
       );
     };
-    const map_obj = map_obj_shell as WrappedGmapObj;
+    const map_obj = map_obj_shell as GMW_WrappedGmapObj;
     events.forEach((event_type) => {
       map_obj.gmaps_obj.addListener(event_type, (e: any) => {
         return mapObjectEventCB(cutting, map_obj, event_type, e);
@@ -366,35 +384,35 @@ export const setMapObject: setMapObject = (
     switch (map_obj.type) {
       case "polyline": {
         map_obj.zoomTo = () => {
-          panZoomToObjectOrFeature(map, map_obj as WrappedPolyline, true);
+          panZoomToObjectOrFeature(map, map_obj as GMW_WrappedPolyline, true);
         };
         map_obj.panTo = () => {
-          panZoomToObjectOrFeature(map, map_obj as WrappedPolyline, false);
+          panZoomToObjectOrFeature(map, map_obj as GMW_WrappedPolyline, false);
         };
-        map_objects[type][id] = map_obj as WrappedPolyline;
-        resolve(map_obj as WrappedPolyline);
+        map_objects[type][id] = map_obj as GMW_WrappedPolyline;
+        resolve(map_obj as GMW_WrappedPolyline);
         break;
       }
       case "polygon": {
         map_obj.zoomTo = () => {
-          panZoomToObjectOrFeature(map, map_obj as WrappedPolygon, true);
+          panZoomToObjectOrFeature(map, map_obj as GMW_WrappedPolygon, true);
         };
         map_obj.panTo = () => {
-          panZoomToObjectOrFeature(map, map_obj as WrappedPolygon, false);
+          panZoomToObjectOrFeature(map, map_obj as GMW_WrappedPolygon, false);
         };
-        map_objects[type][id] = map_obj as WrappedPolygon;
-        resolve(map_obj as WrappedPolygon);
+        map_objects[type][id] = map_obj as GMW_WrappedPolygon;
+        resolve(map_obj as GMW_WrappedPolygon);
         break;
       }
       case "marker": {
         map_obj.zoomTo = () => {
-          panZoomToObjectOrFeature(map, map_obj as WrappedMarker, true);
+          panZoomToObjectOrFeature(map, map_obj as GMW_WrappedMarker, true);
         };
         map_obj.panTo = () => {
-          panZoomToObjectOrFeature(map, map_obj as WrappedMarker, false);
+          panZoomToObjectOrFeature(map, map_obj as GMW_WrappedMarker, false);
         };
-        map_objects[type][id] = map_obj as WrappedMarker;
-        resolve(map_obj as WrappedMarker);
+        map_objects[type][id] = map_obj as GMW_WrappedMarker;
+        resolve(map_obj as GMW_WrappedMarker);
         break;
       }
       default: {
@@ -433,7 +451,7 @@ export const unsetMapObject = (
   });
 export const mapObjectEventCB = (
   cutting: CuttingState,
-  map_obj: WrappedGmapObj,
+  map_obj: GMW_WrappedGmapObj,
   event_type: AllMapObjEvents,
   e: any
 ): boolean => {
@@ -453,7 +471,11 @@ export const mapObjectEventCB = (
 
 export const panZoomToObjectOrFeature = (
   map: google.maps.Map,
-  obj: WrappedMarker | WrappedPolygon | WrappedPolyline | WrappedFeature,
+  obj:
+    | GMW_WrappedMarker
+    | GMW_WrappedPolygon
+    | GMW_WrappedPolyline
+    | GMW_WrappedFeature,
   zoom = true
 ): void => {
   if (!map) {
@@ -461,14 +483,14 @@ export const panZoomToObjectOrFeature = (
   }
   if (Object.prototype.hasOwnProperty.call(obj, "gmaps_feature")) {
     if (zoom) {
-      map.fitBounds((obj as WrappedFeature)._bbox);
+      map.fitBounds((obj as GMW_WrappedFeature)._bbox);
     } else {
-      map.panToBounds((obj as WrappedFeature)._bbox);
+      map.panToBounds((obj as GMW_WrappedFeature)._bbox);
     }
     return;
   }
 
-  obj = obj as WrappedMarker | WrappedPolygon | WrappedPolyline; //Reset typing.
+  obj = obj as GMW_WrappedMarker | GMW_WrappedPolygon | GMW_WrappedPolyline; //Reset typing.
   switch (obj.type) {
     case "marker": {
       const position = obj.gmaps_obj.getPosition();

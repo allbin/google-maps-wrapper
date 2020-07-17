@@ -7,6 +7,18 @@ import {
 } from "./constants";
 import ScissorIcon from "./img/marker_scissors.svg";
 import ScissorHoverIcon from "./img/marker_scissors_hover.svg";
+import {
+  GMW_LatLngLiteral,
+  GMW_LatLng,
+  GMW_MarkerOptionsSet,
+  GMW_PolylineOptions,
+  GMW_PolygonOptions,
+  GMW_Polygon,
+  GMW_Polyline,
+  GMW_Marker,
+  GMW_WrappedMarker,
+  GMW_DrawingCB,
+} from ".";
 
 export const getBoundsLiteral = (
   map: google.maps.Map | undefined
@@ -31,7 +43,7 @@ export const getBoundsLiteral = (
 /*** Takes a coordinate and center it on the map  */
 export const setCenter = (
   map: google.maps.Map | undefined,
-  lat_lng: LatLngLiteral | LatLng
+  lat_lng: GMW_LatLngLiteral | GMW_LatLng
 ): Promise<void> => {
   return new Promise((resolve) => {
     if (map) {
@@ -43,7 +55,7 @@ export const setCenter = (
 };
 
 export const toPixel = (
-  lat_lng_input: LatLng | LatLngLiteral,
+  lat_lng_input: GMW_LatLng | GMW_LatLngLiteral,
   html_element: any,
   overlay: google.maps.OverlayView | undefined
 ): [number, number] => {
@@ -51,7 +63,7 @@ export const toPixel = (
     throw new Error("Overlay not loaded when calling toPixel.");
   }
   const node_rect = html_element.getBoundingClientRect();
-  let lat_lng: LatLng;
+  let lat_lng: GMW_LatLng;
   if (lat_lng_input instanceof google.maps.LatLng) {
     lat_lng = lat_lng_input;
   } else {
@@ -99,8 +111,8 @@ export const setMarker = (
   map_objects: MapObjects,
   cutting: CuttingState,
   id: string | number,
-  options: MarkerOptionsSet
-): Promise<WrappedMarker> =>
+  options: GMW_MarkerOptionsSet
+): Promise<GMW_WrappedMarker> =>
   internal_helpers.setMarker(map, map_objects, cutting, id, options);
 export const clearMarkers = (
   map_objects: MapObjects,
@@ -128,8 +140,8 @@ export const clearFeatureCollections = (
 export const setDrawingMode = (
   services: Services,
   type: "polyline" | "polygon",
-  opts: PolylineOptions | PolygonOptions,
-  cb: DrawingCB,
+  opts: GMW_PolylineOptions | GMW_PolygonOptions,
+  cb: GMW_DrawingCB,
   cancel_drawing: boolean,
   setDrawingCompletedListener: (
     listener: google.maps.MapsEventListener
@@ -174,13 +186,13 @@ export const setDrawingMode = (
           return;
         }
         if (type === "polyline" || type === "polygon") {
-          const overlay = e.overlay as Polygon | Polyline;
+          const overlay = e.overlay as GMW_Polygon | GMW_Polyline;
           const path = MVCArrayToCoordArray(overlay.getPath());
           if (cb) {
             cb(path as [number, number][], overlay);
           }
         } else if (type === "marker") {
-          const overlay = e.overlay as Marker;
+          const overlay = e.overlay as GMW_Marker;
           const pos = overlay.getPosition();
           cb([pos.lat(), pos.lng()], overlay);
         } else {
@@ -222,7 +234,7 @@ export const setCuttingMode = (
   map_objects: MapObjects,
   cutting: CuttingState,
   cutting_objects: CuttingObjects,
-  default_center: LatLngLiteral,
+  default_center: GMW_LatLngLiteral,
   cancel_drawing: boolean,
   drawing_completed_listener: google.maps.MapsEventListener,
   polyline_id: string | number,
