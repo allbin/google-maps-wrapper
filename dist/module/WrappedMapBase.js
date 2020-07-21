@@ -178,6 +178,9 @@ export const WrappedMapBase = ({ googleapi_maps_uri, default_center, default_opt
                 }
             },
             createClustererStyle: (styling) => MarkerClusterer.withDefaultStyle(styling),
+            getServices: () => {
+                return services;
+            },
         });
         //
         //

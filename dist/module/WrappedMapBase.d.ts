@@ -39,6 +39,8 @@ export declare type ExportedFunctions = {
     setClusterer: (clusterer_options: MarkerClustererOptions) => Promise<MarkerClusterer>;
     unsetClusterer: (clusterer: MarkerClusterer) => void;
     createClustererStyle: typeof MarkerClusterer.withDefaultStyle;
+    /** Ensure to only use after map initialization. */
+    getServices: () => Services;
 };
 export interface MapBaseProps {
     initializedCB?: (map: google.maps.Map, funcs: ExportedFunctions) => void;
