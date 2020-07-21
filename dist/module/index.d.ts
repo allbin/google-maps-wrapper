@@ -139,6 +139,12 @@ export interface GMW_WrappedFeature {
     panTo: () => void;
 }
 export declare type MapObjectType = "polyline" | "polygon" | "marker";
+export declare type GMW_Services = {
+    geocoderService: any;
+    directionsService: any;
+    drawing?: any;
+    drawingManager?: any;
+};
 declare global {
     interface Window {
         google: any;

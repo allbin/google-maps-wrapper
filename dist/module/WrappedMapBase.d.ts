@@ -1,7 +1,7 @@
 /// <reference types="googlemaps" />
 import React from "react";
 import MarkerClusterer, { MarkerClustererOptions } from "@google/markerclustererplus";
-import { GMW_LatLngBoundsLiteral, GMW_LatLngLiteral, GMW_LatLng, GMW_PolylineOptionsSet, GMW_PolygonOptionsSet, GMW_MarkerOptionsSet, GMW_PolylineOptions, GMW_PolygonOptions, GMW_WrappedPolyline, GMW_WrappedPolygon, GMW_WrappedMarker, GMW_FeatureOptionsSet, GMW_WrappedFeature, GMW_DrawingCB } from ".";
+import { GMW_LatLngBoundsLiteral, GMW_LatLngLiteral, GMW_LatLng, GMW_PolylineOptionsSet, GMW_PolygonOptionsSet, GMW_MarkerOptionsSet, GMW_PolylineOptions, GMW_PolygonOptions, GMW_WrappedPolyline, GMW_WrappedPolygon, GMW_WrappedMarker, GMW_FeatureOptionsSet, GMW_WrappedFeature, GMW_DrawingCB, GMW_Services } from ".";
 export declare type ExportedFunctions = {
     getBoundsLiteral: () => GMW_LatLngBoundsLiteral | undefined;
     setCenter: (lat_lng: GMW_LatLngLiteral | GMW_LatLng) => Promise<void>;
@@ -40,7 +40,7 @@ export declare type ExportedFunctions = {
     unsetClusterer: (clusterer: MarkerClusterer) => void;
     createClustererStyle: typeof MarkerClusterer.withDefaultStyle;
     /** Ensure to only use after map initialization. */
-    getServices: () => Services;
+    getServices: () => GMW_Services;
 };
 export interface MapBaseProps {
     initializedCB?: (map: google.maps.Map, funcs: ExportedFunctions) => void;
