@@ -18,6 +18,7 @@ import {
   GMW_Marker,
   GMW_WrappedMarker,
   GMW_DrawingCB,
+  GMW_Services,
 } from ".";
 
 export const getBoundsLiteral = (
@@ -138,7 +139,7 @@ export const clearFeatureCollections = (
 };
 
 export const setDrawingMode = (
-  services: Services,
+  services: GMW_Services,
   type: "polyline" | "polygon",
   opts: GMW_PolylineOptions | GMW_PolygonOptions,
   cb: GMW_DrawingCB,
@@ -203,7 +204,7 @@ export const setDrawingMode = (
   );
 };
 export const completeDrawingMode = (
-  services: Services,
+  services: GMW_Services,
   drawing_completed_listener: google.maps.MapsEventListener
 ): void => {
   if (services.drawing) {
@@ -214,7 +215,7 @@ export const completeDrawingMode = (
   }
 };
 export const cancelDrawingMode = (
-  services: Services,
+  services: GMW_Services,
   cancel_drawing: boolean,
   drawing_completed_listener: google.maps.MapsEventListener,
   debug_src?: string
@@ -229,7 +230,7 @@ export const cancelDrawingMode = (
 };
 
 export const setCuttingMode = (
-  services: Services,
+  services: GMW_Services,
   map: google.maps.Map,
   map_objects: MapObjects,
   cutting: CuttingState,
