@@ -243,6 +243,13 @@ export interface GMW_WrappedFeature {
 
 export type MapObjectType = "polyline" | "polygon" | "marker";
 
+export type GMW_Services = {
+  geocoderService: any;
+  directionsService: any;
+  drawing?: any;
+  drawingManager?: any;
+};
+
 declare global {
   interface Window {
     google: any;

@@ -56,10 +56,3 @@ interface CuttingObjects {
   [key: string]: any;
   hover_scissors?: any;
 }
-
-type Services = {
-  geocoderService: any;
-  directionsService: any;
-  drawing?: any;
-  drawingManager?: any;
-};

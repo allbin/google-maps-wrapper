@@ -28,6 +28,7 @@ import {
   GMW_FeatureOptionsSet,
   GMW_WrappedFeature,
   GMW_DrawingCB,
+  GMW_Services,
 } from ".";
 
 export type ExportedFunctions = {
@@ -105,7 +106,7 @@ export type ExportedFunctions = {
   unsetClusterer: (clusterer: MarkerClusterer) => void;
   createClustererStyle: typeof MarkerClusterer.withDefaultStyle;
   /** Ensure to only use after map initialization. */
-  getServices: () => Services;
+  getServices: () => GMW_Services;
 };
 
 export interface MapBaseProps {
@@ -197,7 +198,7 @@ export const WrappedMapBase: React.FunctionComponent<MapBaseProps> = ({
     (segments: [number, number][][] | null) => void
   >();
   const [cancel_drawing] = useState<boolean>(false);
-  const [services, setServices] = useState<Services>();
+  const [services, setServices] = useState<GMW_Services>();
   const html_element_ref = useRef(null);
   const ic = <T extends any>(
     fn: (map: google.maps.Map) => Promise<T>
@@ -256,7 +257,7 @@ export const WrappedMapBase: React.FunctionComponent<MapBaseProps> = ({
     if (!map) {
       return;
     }
-    const initial_services: Services = {
+    const initial_services: GMW_Services = {
       geocoderService: new window.google.maps.Geocoder(),
       directionsService: new window.google.maps.DirectionsService(),
     };
