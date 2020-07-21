@@ -104,6 +104,8 @@ export type ExportedFunctions = {
   ) => Promise<MarkerClusterer>;
   unsetClusterer: (clusterer: MarkerClusterer) => void;
   createClustererStyle: typeof MarkerClusterer.withDefaultStyle;
+  /** Ensure to only use after map initialization. */
+  getServices: () => Services;
 };
 
 export interface MapBaseProps {
@@ -430,6 +432,9 @@ export const WrappedMapBase: React.FunctionComponent<MapBaseProps> = ({
       },
       createClustererStyle: (styling: ClusterIconStyle) =>
         MarkerClusterer.withDefaultStyle(styling),
+      getServices: () => {
+        return services;
+      },
     });
 
     //
