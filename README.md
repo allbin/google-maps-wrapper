@@ -1,8 +1,14 @@
 # Google Maps Wrapper
 
-## Changelog 1.3.1
+## Changelog 2.1.0
+
+Added `getServices()` to exported funcs.
+
+## Changelog 2.0.0
 
 Added `getClusterers()`, `setClasturer()`, `unsetClusterer()` and `CreateClustererStyle()` functions. These functions are the basis for clustering. Use setClusterer to create and register a clusterer with the map, unsetClusterer to remove it. These funcs are primarily a way to interact with the [gmaps clusterer](https://github.com/googlemaps/v3-utility-library/tree/master/packages/markerclustererplus).
+
+Also removed all class components. This required breaking api changes. See TypeScript definitions for updated api.
 
 ## Changelog 1.3.0
 
