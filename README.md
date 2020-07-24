@@ -1,5 +1,11 @@
 # Google Maps Wrapper
 
+## Changelog 2.2.0
+
+Added `getBounds()` to exported funcs, returns google latlng bounds.  
+Added `setBounds()` to exported funcs, takes latlng bounds or latlng bounds literal.  
+Fixed types for `getServices()`.
+
 ## Changelog 2.1.0
 
 Added `getServices()` to exported funcs.
