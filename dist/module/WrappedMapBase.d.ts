@@ -1,10 +1,12 @@
 /// <reference types="googlemaps" />
 import React from "react";
 import MarkerClusterer, { MarkerClustererOptions } from "@google/markerclustererplus";
-import { GMW_LatLngBoundsLiteral, GMW_LatLngLiteral, GMW_LatLng, GMW_PolylineOptionsSet, GMW_PolygonOptionsSet, GMW_MarkerOptionsSet, GMW_PolylineOptions, GMW_PolygonOptions, GMW_WrappedPolyline, GMW_WrappedPolygon, GMW_WrappedMarker, GMW_FeatureOptionsSet, GMW_WrappedFeature, GMW_DrawingCB, GMW_Services } from ".";
+import { GMW_LatLngBoundsLiteral, GMW_LatLngLiteral, GMW_LatLng, GMW_PolylineOptionsSet, GMW_PolygonOptionsSet, GMW_MarkerOptionsSet, GMW_PolylineOptions, GMW_PolygonOptions, GMW_WrappedPolyline, GMW_WrappedPolygon, GMW_WrappedMarker, GMW_FeatureOptionsSet, GMW_WrappedFeature, GMW_DrawingCB, GMW_Services, GMW_LatLngBounds } from ".";
 export declare type ExportedFunctions = {
     getBoundsLiteral: () => GMW_LatLngBoundsLiteral | undefined;
+    getBounds: () => GMW_LatLngBounds | undefined;
     setCenter: (lat_lng: GMW_LatLngLiteral | GMW_LatLng) => Promise<void>;
+    setBounds: (lat_lng_bounds: GMW_LatLngBoundsLiteral | GMW_LatLngBounds) => Promise<void>;
     toPixel: (lat_lng_pixel: GMW_LatLng | GMW_LatLngLiteral) => [number, number];
     setZoom: (zoom_level: number) => Promise<void>;
     setPolyline: (id: string | number, options: GMW_PolylineOptionsSet) => Promise<GMW_WrappedPolyline>;

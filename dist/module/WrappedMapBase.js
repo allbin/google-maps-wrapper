@@ -104,7 +104,9 @@ export const WrappedMapBase = ({ googleapi_maps_uri, default_center, default_opt
         }
         setFuncs({
             getBoundsLiteral: () => map_funcs.getBoundsLiteral(map),
+            getBounds: () => map_funcs.getBounds(map),
             setCenter: (lat_lng) => ic((map) => map_funcs.setCenter(map, lat_lng)),
+            setBounds: (lat_lng) => ic((map) => map_funcs.setBounds(map, lat_lng)),
             toPixel: (lat_lng_pixel) => map_funcs.toPixel(lat_lng_pixel, html_element_ref, overlay),
             setZoom: (zoom_level) => ic((map) => map_funcs.setZoom(zoom_level, map)),
             setPolyline: (id, options) => ic((map) => setPolyline(map, map_objects, cutting, id, options)),

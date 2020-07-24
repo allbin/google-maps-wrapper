@@ -20,7 +20,17 @@ export const getBoundsLiteral = (map) => {
         west: sw.lng(),
     };
 };
-/*** Takes a coordinate and center it on the map  */
+export const getBounds = (map) => {
+    if (!map) {
+        return undefined;
+    }
+    const bounds = map.getBounds();
+    if (!bounds) {
+        return undefined;
+    }
+    return bounds;
+};
+/** Takes a coordinate and center it on the map  */
 export const setCenter = (map, lat_lng) => {
     return new Promise((resolve) => {
         if (map) {
@@ -28,6 +38,14 @@ export const setCenter = (map, lat_lng) => {
         }
         resolve();
         return;
+    });
+};
+export const setBounds = (map, bounds) => {
+    return new Promise((resolve) => {
+        if (map) {
+            map.fitBounds(bounds);
+        }
+        return resolve();
     });
 };
 export const toPixel = (lat_lng_input, html_element, overlay) => {

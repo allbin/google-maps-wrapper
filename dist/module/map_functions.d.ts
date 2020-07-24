@@ -1,13 +1,15 @@
 /// <reference types="googlemaps" />
-import { GMW_LatLngLiteral, GMW_MarkerOptionsSet, GMW_WrappedMarker, GMW_DrawingCB, GMW_Services } from ".";
+import { GMW_LatLngLiteral, GMW_MarkerOptionsSet, GMW_WrappedMarker, GMW_DrawingCB, GMW_Services, GMW_LatLngBoundsLiteral } from ".";
 export declare const getBoundsLiteral: (map: google.maps.Map | undefined) => {
     north: number;
     east: number;
     south: number;
     west: number;
 } | undefined;
-/*** Takes a coordinate and center it on the map  */
+export declare const getBounds: (map: google.maps.Map | undefined) => google.maps.LatLngBounds | undefined;
+/** Takes a coordinate and center it on the map  */
 export declare const setCenter: (map: google.maps.Map | undefined, lat_lng: GMW_LatLngLiteral | google.maps.LatLng) => Promise<void>;
+export declare const setBounds: (map: google.maps.Map | undefined, bounds: google.maps.LatLngBounds | GMW_LatLngBoundsLiteral) => Promise<void>;
 export declare const toPixel: (lat_lng_input: GMW_LatLngLiteral | google.maps.LatLng, html_element: any, overlay: google.maps.OverlayView | undefined) => [number, number];
 export declare const setZoom: (zoom_level: number, map: google.maps.Map | undefined) => Promise<void>;
 export declare const clearPolylines: (map_objects: MapObjects, cutting: CuttingState) => Promise<boolean[]>;

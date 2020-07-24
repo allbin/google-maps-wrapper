@@ -4,6 +4,7 @@ export default WrappedMapBase;
 export { GMW_ExportedFunctions, GMW_MapBaseProps };
 export { convertFromArrayOfArray, haversineDistance, latLngArrayToCoordArray, makeRectRT90, movePointsByCoord, MVCArrayToCoordArray, MVCArrayToObjArray, arrayRT90ToWGS84, arrayRT90ToWGS84LatLngObj, } from "./external_helpers";
 export declare type GMW_LatLng = google.maps.LatLng;
+export declare type GMW_LatLngBounds = google.maps.LatLngBounds;
 export declare type GMW_MouseEvent = google.maps.MouseEvent;
 export interface GMW_LatLngLiteral {
     lat: number;
@@ -140,8 +141,8 @@ export interface GMW_WrappedFeature {
 }
 export declare type MapObjectType = "polyline" | "polygon" | "marker";
 export declare type GMW_Services = {
-    geocoderService: any;
-    directionsService: any;
+    geocoderService: google.maps.Geocoder;
+    directionsService: google.maps.DirectionsService;
     drawing?: any;
     drawingManager?: any;
 };
