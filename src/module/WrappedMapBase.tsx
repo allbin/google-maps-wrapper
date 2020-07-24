@@ -29,11 +29,16 @@ import {
   GMW_WrappedFeature,
   GMW_DrawingCB,
   GMW_Services,
+  GMW_LatLngBounds,
 } from ".";
 
 export type ExportedFunctions = {
   getBoundsLiteral: () => GMW_LatLngBoundsLiteral | undefined;
+  getBounds: () => GMW_LatLngBounds | undefined;
   setCenter: (lat_lng: GMW_LatLngLiteral | GMW_LatLng) => Promise<void>;
+  setBounds: (
+    lat_lng_bounds: GMW_LatLngBoundsLiteral | GMW_LatLngBounds
+  ) => Promise<void>;
   toPixel: (lat_lng_pixel: GMW_LatLng | GMW_LatLngLiteral) => [number, number];
   setZoom: (zoom_level: number) => Promise<void>;
   setPolyline: (
@@ -283,8 +288,11 @@ export const WrappedMapBase: React.FunctionComponent<MapBaseProps> = ({
     }
     setFuncs({
       getBoundsLiteral: () => map_funcs.getBoundsLiteral(map),
+      getBounds: () => map_funcs.getBounds(map),
       setCenter: (lat_lng) =>
         ic<void>((map) => map_funcs.setCenter(map, lat_lng)),
+      setBounds: (lat_lng) =>
+        ic<void>((map) => map_funcs.setBounds(map, lat_lng)),
       toPixel: (lat_lng_pixel) =>
         map_funcs.toPixel(lat_lng_pixel, html_element_ref, overlay),
       setZoom: (zoom_level) => ic((map) => map_funcs.setZoom(zoom_level, map)),

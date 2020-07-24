@@ -19,6 +19,7 @@ export {
 } from "./external_helpers";
 
 export type GMW_LatLng = google.maps.LatLng;
+export type GMW_LatLngBounds = google.maps.LatLngBounds;
 
 export type GMW_MouseEvent = google.maps.MouseEvent;
 
@@ -244,8 +245,8 @@ export interface GMW_WrappedFeature {
 export type MapObjectType = "polyline" | "polygon" | "marker";
 
 export type GMW_Services = {
-  geocoderService: any;
-  directionsService: any;
+  geocoderService: google.maps.Geocoder;
+  directionsService: google.maps.DirectionsService;
   drawing?: any;
   drawingManager?: any;
 };

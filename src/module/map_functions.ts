@@ -19,6 +19,8 @@ import {
   GMW_WrappedMarker,
   GMW_DrawingCB,
   GMW_Services,
+  GMW_LatLngBoundsLiteral,
+  GMW_LatLngBounds,
 } from ".";
 
 export const getBoundsLiteral = (
@@ -40,8 +42,20 @@ export const getBoundsLiteral = (
     west: sw.lng(),
   };
 };
+export const getBounds = (
+  map: google.maps.Map | undefined
+): undefined | GMW_LatLngBounds => {
+  if (!map) {
+    return undefined;
+  }
+  const bounds = map.getBounds();
+  if (!bounds) {
+    return undefined;
+  }
+  return bounds;
+};
 
-/*** Takes a coordinate and center it on the map  */
+/** Takes a coordinate and center it on the map  */
 export const setCenter = (
   map: google.maps.Map | undefined,
   lat_lng: GMW_LatLngLiteral | GMW_LatLng
@@ -52,6 +66,18 @@ export const setCenter = (
     }
     resolve();
     return;
+  });
+};
+
+export const setBounds = (
+  map: google.maps.Map | undefined,
+  bounds: GMW_LatLngBoundsLiteral | GMW_LatLngBounds
+): Promise<void> => {
+  return new Promise((resolve) => {
+    if (map) {
+      map.fitBounds(bounds);
+    }
+    return resolve();
   });
 };
 
