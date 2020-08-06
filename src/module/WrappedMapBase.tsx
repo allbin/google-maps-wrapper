@@ -169,6 +169,7 @@ const setupMapEvents = (
   onTiltChanged?: () => void,
   onZoomChanged?: () => void
 ): void => {
+  google.maps.event.clearInstanceListeners(map);
   map.addListener("center_changed", () => onCenterChanged && onCenterChanged());
   map.addListener("bounds_changed", () => onBoundsChanged && onBoundsChanged());
   map.addListener("click", (mouse_event) => {
