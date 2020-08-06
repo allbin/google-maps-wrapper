@@ -217,6 +217,32 @@ export const WrappedMapBase = ({ googleapi_maps_uri, default_center, default_opt
         setupMapEvents(map);
         window.google.maps.event.addListenerOnce(map, "idle", () => doAfterInit(map));
     }, [funcs, features_layer]);
+    useEffect(() => {
+        if (!funcs || !map || !features_layer || !services) {
+            return;
+        }
+        setupMapEvents(map);
+    }, [
+        onDoubleClick,
+        onBoundsChanged,
+        onCenterChanged,
+        onClick,
+        onDrag,
+        onDragEnd,
+        onDragStart,
+        onHeadingChanged,
+        onIdle,
+        onMapTypeIdChanged,
+        onMouseMove,
+        onMouseOut,
+        onMouseOver,
+        onProjectionChanged,
+        onResize,
+        onRightClick,
+        onTilesLoaded,
+        onTiltChanged,
+        onZoomChanged,
+    ]);
     const doAfterInit = (map) => {
         do_after_init.forEach((cb) => {
             cb(map);
