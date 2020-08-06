@@ -621,7 +621,7 @@ export const WrappedMapBase: React.FunctionComponent<MapBaseProps> = (
       "onZoomChanged",
     ];
     cb_names.forEach((cb_name) => {
-      event_callbacks[cb_name] = props[cb_name];
+      (event_callbacks[cb_name] as any) = props[cb_name] as any;
     });
   }, [
     onDoubleClick,
