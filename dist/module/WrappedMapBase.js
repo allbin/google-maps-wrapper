@@ -5,6 +5,7 @@ import * as feature_helpers from "./feature_helpers";
 import * as map_funcs from "./map_functions";
 import { panZoomToObjectOrFeature, setMarker, setPolygon, setPolyline, unsetMapObject, } from "./internal_helpers";
 const setupMapEvents = (map, funcs, cutting, do_on_drag_start, do_on_drag_end, onBoundsChanged, onCenterChanged, onClick, onDoubleClick, onDrag, onDragEnd, onDragStart, onHeadingChanged, onIdle, onMapTypeIdChanged, onMouseMove, onMouseOut, onMouseOver, onProjectionChanged, onResize, onRightClick, onTilesLoaded, onTiltChanged, onZoomChanged) => {
+    google.maps.event.clearInstanceListeners(map);
     map.addListener("center_changed", () => onCenterChanged && onCenterChanged());
     map.addListener("bounds_changed", () => onBoundsChanged && onBoundsChanged());
     map.addListener("click", (mouse_event) => {
