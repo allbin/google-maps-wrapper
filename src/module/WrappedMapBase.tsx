@@ -484,6 +484,33 @@ export const WrappedMapBase: React.FunctionComponent<MapBaseProps> = ({
     );
   }, [funcs, features_layer]);
 
+  useEffect(() => {
+    if (!funcs || !map || !features_layer || !services) {
+      return;
+    }
+    setupMapEvents(map);
+  }, [
+    onDoubleClick,
+    onBoundsChanged,
+    onCenterChanged,
+    onClick,
+    onDrag,
+    onDragEnd,
+    onDragStart,
+    onHeadingChanged,
+    onIdle,
+    onMapTypeIdChanged,
+    onMouseMove,
+    onMouseOut,
+    onMouseOver,
+    onProjectionChanged,
+    onResize,
+    onRightClick,
+    onTilesLoaded,
+    onTiltChanged,
+    onZoomChanged,
+  ]);
+
   const doAfterInit = (map: google.maps.Map): void => {
     do_after_init.forEach((cb) => {
       cb(map);
