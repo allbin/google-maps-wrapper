@@ -1,10 +1,10 @@
 {
   "name": "google-maps-wrapper",
-  "version": "2.2.3",
+  "version": "2.2.0",
   "description": "",
   "main": "dist/module/index.js",
   "scripts": {
-    "start": "EXTEND_ESLINT=true react-scripts start",
+    "start": "react-scripts start",
     "build": "gulp build",
     "test": "react-scripts test --env=jsdom",
     "eject": "react-scripts eject",
@@ -26,7 +26,7 @@
     "@allbin/eslint-config-react": "0.0.4",
     "prettier": "2.0.2",
     "eslint-plugin-prettier": "3.1.2",
-    "react-scripts-ts": "3.1.0",
+    "react-scripts": "3.4.1",
     "@types/jest": "24.0.11",
     "@types/node": "13.9.3",
     "@types/react": "16.9.25",

@@ -2,20 +2,14 @@
   "compilerOptions": {
     "incremental": true,
     "tsBuildInfoFile": "./buildcache/build_info",
-    "paths": {
-      "*": ["types/*"]
-    },
     "baseUrl": ".",
     "outDir": "dist",
     "module": "esnext",
     "target": "es6",
     "lib": ["es7", "dom"],
     "sourceMap": true,
-    "declaration": true,
     "newLine": "LF",
-    "declarationDir": "dist",
     "allowJs": false,
-    "jsx": "react",
     "moduleResolution": "node",
     "rootDir": "src",
     "forceConsistentCasingInFileNames": true,
@@ -29,7 +23,12 @@
     "downlevelIteration": true,
     "skipLibCheck": true,
     "strict": true,
-    "types": []
+    "types": [],
+    "esModuleInterop": true,
+    "resolveJsonModule": true,
+    "isolatedModules": true,
+    "noEmit": true,
+    "jsx": "react"
   },
   "exclude": [
     "node_modules",
@@ -41,5 +40,6 @@
     "jest",
     "src/setupTests.ts",
     "Gulpfile.js"
-  ]
+  ],
+  "include": ["src"]
 }

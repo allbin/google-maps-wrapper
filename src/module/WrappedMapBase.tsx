@@ -114,191 +114,114 @@ export type ExportedFunctions = {
   getServices: () => GMW_Services;
 };
 
-export interface MapBaseProps {
-  initializedCB?: (map: google.maps.Map, funcs: ExportedFunctions) => void;
-  googleapi_maps_uri: string;
-  id?: string;
-  default_center: GMW_LatLngLiteral;
-  default_zoom: number;
-  default_options?: object;
+interface EventCallbacks {
   onCenterChanged?: () => void;
   onBoundsChanged?: () => void;
-  onClick?: (e: any) => void;
-  onDoubleClick?: (e: any) => void;
+  onClick?: (e: google.maps.MouseEvent) => void;
+  onDoubleClick?: (e: google.maps.MouseEvent) => void;
   onDrag?: () => void;
   onDragEnd?: () => void;
   onDragStart?: () => void;
   onHeadingChanged?: () => void;
   onIdle?: () => void;
   onMapTypeIdChanged?: () => void;
-  onMouseMove?: (e: any) => void;
-  onMouseOut?: (e: any) => void;
-  onMouseOver?: (e: any) => void;
+  onMouseMove?: (e: google.maps.MouseEvent) => void;
+  onMouseOut?: (e: google.maps.MouseEvent) => void;
+  onMouseOver?: (e: google.maps.MouseEvent) => void;
   onProjectionChanged?: () => void;
   onResize?: () => void;
-  onRightClick?: (e: any) => void;
+  onRightClick?: (e: google.maps.MouseEvent) => void;
   onTilesLoaded?: () => void;
   onTiltChanged?: () => void;
   onZoomChanged?: () => void;
+}
+type CallbackName = keyof EventCallbacks;
+
+export interface MapBaseProps extends EventCallbacks {
+  initializedCB?: (map: google.maps.Map, funcs: ExportedFunctions) => void;
+  googleapi_maps_uri: string;
+  id?: string;
+  default_center: GMW_LatLngLiteral;
+  default_zoom: number;
+  default_options?: object;
   styles?: object;
 }
 
-const setupMapEvents = (
-  map: google.maps.Map,
-  funcs: ExportedFunctions,
-  cutting: CuttingState,
-  do_on_drag_start: (() => void)[],
-  do_on_drag_end: (() => void)[],
-  onBoundsChanged?: () => void,
-  onCenterChanged?: () => void,
-  onClick?: (e: any) => void,
-  onDoubleClick?: (e: any) => void,
-  onDrag?: () => void,
-  onDragEnd?: () => void,
-  onDragStart?: () => void,
-  onHeadingChanged?: () => void,
-  onIdle?: () => void,
-  onMapTypeIdChanged?: () => void,
-  onMouseMove?: (e: any) => void,
-  onMouseOut?: (e: any) => void,
-  onMouseOver?: (e: any) => void,
-  onProjectionChanged?: () => void,
-  onResize?: () => void,
-  onRightClick?: (e: any) => void,
-  onTilesLoaded?: () => void,
-  onTiltChanged?: () => void,
-  onZoomChanged?: () => void
-): void => {
-  google.maps.event.clearInstanceListeners(map);
-  map.addListener("center_changed", () => onCenterChanged && onCenterChanged());
-  map.addListener("bounds_changed", () => onBoundsChanged && onBoundsChanged());
-  map.addListener("click", (mouse_event) => {
-    if (!funcs) {
-      throw new Error("funcs is undefined");
-    }
-    cutting.enabled && funcs.cuttingClick(mouse_event);
-    onClick && !cutting.enabled && onClick(mouse_event);
-  });
-  map.addListener(
-    "dblclick",
-    (mouse_event) =>
-      onDoubleClick && !cutting.enabled && onDoubleClick(mouse_event)
-  );
-  map.addListener("drag", () => onDrag && !cutting.enabled && onDrag());
-  map.addListener(
-    "dragend",
-    () => onDragEnd && !cutting.enabled && onDragEnd()
-  );
-  map.addListener("dragstart", () => {
-    do_on_drag_start.forEach((cb) => {
-      if (!cutting.enabled) {
-        cb();
-      }
-    });
-    if (onDragStart && !cutting.enabled) {
-      onDragStart();
-    }
-  });
-  map.addListener("heading_changed", () => {
-    if (onHeadingChanged) {
-      onHeadingChanged();
-    }
-  });
-  map.addListener("idle", () => {
-    do_on_drag_end.forEach((cb) => {
-      if (!cutting.enabled) {
-        cb();
-      }
-    });
-    if (onIdle && !cutting.enabled) {
-      onIdle();
-    }
-  });
-  map.addListener("maptypeid_changed", () => {
-    if (onMapTypeIdChanged) {
-      onMapTypeIdChanged();
-    }
-  });
-  map.addListener("mousemove", (mouse_event: google.maps.MouseEvent) => {
-    if (cutting.enabled) {
-      if (!funcs) {
-        throw new Error("funcs is undefined");
-      }
-      funcs.cuttingPositionUpdate(mouse_event);
-    }
-    if (onMouseMove) {
-      onMouseMove(mouse_event);
-    }
-  });
-  map.addListener("mouseout", (mouse_event: MouseEvent) => {
-    if (onMouseOut) {
-      onMouseOut(mouse_event);
-    }
-  });
-  map.addListener("mouseover", (mouse_event: MouseEvent) => {
-    if (onMouseOver) {
-      onMouseOver(mouse_event);
-    }
-  });
-  map.addListener("projection_changed", () => {
-    if (onProjectionChanged) {
-      onProjectionChanged();
-    }
-  });
-  map.addListener("reize", () => {
-    if (onResize) {
-      onResize();
-    }
-  });
-  map.addListener("rightclick", (mouse_event: MouseEvent) => {
-    if (onRightClick && !cutting.enabled) {
-      onRightClick(mouse_event);
-    }
-  });
-  map.addListener("tilesloaded", () => {
-    if (onTilesLoaded) {
-      onTilesLoaded();
-    }
-  });
-  map.addListener("tilt_changed", () => {
-    if (onTiltChanged) {
-      onTiltChanged();
-    }
-  });
-  map.addListener("zoom_changed", () => {
-    if (onZoomChanged) {
-      onZoomChanged();
-    }
-  });
+const basic_event_names = [
+  "center_changed",
+  "heading_changed",
+  "maptypeid_changed",
+  "projection_changed",
+  "resize",
+  "tilesloaded",
+  "tilt_changed",
+  "zoom_changed",
+  "mouseout",
+  "mouseover",
+];
+
+const event_name_to_callback_name: {
+  [key: string]: CallbackName;
+} = {
+  center_changed: "onCenterChanged",
+  heading_changed: "onHeadingChanged",
+  maptypeid_changed: "onMapTypeIdChanged",
+  projection_changed: "onProjectionChanged",
+  resize: "onResize",
+  tilesloaded: "onTilesLoaded",
+  tilt_changed: "onTiltChanged",
+  zoom_changed: "onZoomChanged",
+  mouseout: "onMouseOut",
+  mousemove: "onMouseMove",
+  mouseover: "onMouseOver",
+  rightclick: "onRightClick",
+  idle: "onIdle",
+  drag: "onDrag",
+  dragstart: "onDragStart",
+  dragend: "onDragEnd",
+  click: "onClick",
 };
 
-export const WrappedMapBase: React.FunctionComponent<MapBaseProps> = ({
-  googleapi_maps_uri,
-  default_center,
-  default_options,
-  default_zoom,
-  onDoubleClick,
-  onBoundsChanged,
-  onCenterChanged,
-  onClick,
-  onDrag,
-  onDragEnd,
-  onDragStart,
-  onHeadingChanged,
-  onIdle,
-  onMapTypeIdChanged,
-  onMouseMove,
-  onMouseOut,
-  onMouseOver,
-  onProjectionChanged,
-  onResize,
-  onRightClick,
-  onTilesLoaded,
-  onTiltChanged,
-  onZoomChanged,
-  styles,
-  initializedCB,
-}) => {
+const onMapEvent = (
+  event_callbacks: EventCallbacks,
+  event_name: CallbackName,
+  e?: any
+): void => {
+  const cb = event_callbacks[event_name];
+  cb && cb(e);
+};
+
+export const WrappedMapBase: React.FunctionComponent<MapBaseProps> = (
+  props
+) => {
+  const {
+    googleapi_maps_uri,
+    default_center,
+    default_options,
+    default_zoom,
+    onDoubleClick,
+    onBoundsChanged,
+    onCenterChanged,
+    onClick,
+    onDrag,
+    onDragEnd,
+    onDragStart,
+    onHeadingChanged,
+    onIdle,
+    onMapTypeIdChanged,
+    onMouseMove,
+    onMouseOut,
+    onMouseOver,
+    onProjectionChanged,
+    onResize,
+    onRightClick,
+    onTilesLoaded,
+    onTiltChanged,
+    onZoomChanged,
+    styles,
+    initializedCB,
+  } = props;
+
   const [script_cache] = useState<any>(
     ScriptCache({
       google: googleapi_maps_uri,
@@ -335,6 +258,9 @@ export const WrappedMapBase: React.FunctionComponent<MapBaseProps> = ({
   const [cancel_drawing] = useState<boolean>(false);
   const [services, setServices] = useState<GMW_Services>();
   const html_element_ref = useRef(null);
+  const [funcs, setFuncs] = useState<ExportedFunctions>();
+  const [event_callbacks] = useState<EventCallbacks>({});
+
   const ic = <T extends any>(
     fn: (map: google.maps.Map) => Promise<T>
   ): Promise<T> =>
@@ -347,8 +273,6 @@ export const WrappedMapBase: React.FunctionComponent<MapBaseProps> = ({
         fn(map).then(resolve);
       }
     });
-
-  const [funcs, setFuncs] = useState<ExportedFunctions>();
 
   useEffect(() => {
     if (!html_element_ref.current) {
@@ -607,32 +531,64 @@ export const WrappedMapBase: React.FunctionComponent<MapBaseProps> = ({
     if (!funcs || !map || !features_layer || !services) {
       return;
     }
-    setupMapEvents(
-      map,
-      funcs,
-      cutting,
-      do_on_drag_start,
-      do_on_drag_end,
-      onBoundsChanged,
-      onCenterChanged,
-      onClick,
-      onDoubleClick,
-      onDrag,
-      onDragEnd,
-      onDragStart,
-      onHeadingChanged,
-      onIdle,
-      onMapTypeIdChanged,
-      onMouseMove,
-      onMouseOut,
-      onMouseOver,
-      onProjectionChanged,
-      onResize,
-      onRightClick,
-      onTilesLoaded,
-      onTiltChanged,
-      onZoomChanged
+    basic_event_names.forEach((event_name) => {
+      map.addListener(event_name, (e) =>
+        onMapEvent(event_callbacks, event_name_to_callback_name[event_name], e)
+      );
+    });
+
+    map.addListener("click", (mouse_event) => {
+      if (!funcs) {
+        throw new Error("funcs is undefined");
+      }
+      cutting.enabled && funcs.cuttingClick(mouse_event);
+      !cutting.enabled && onMapEvent(event_callbacks, "onClick", mouse_event);
+    });
+    map.addListener(
+      "dblclick",
+      (mouse_event) =>
+        !cutting.enabled &&
+        onMapEvent(event_callbacks, "onDoubleClick", mouse_event)
     );
+    map.addListener(
+      "drag",
+      () => !cutting.enabled && onMapEvent(event_callbacks, "onDrag")
+    );
+    map.addListener(
+      "dragend",
+      () => !cutting.enabled && onMapEvent(event_callbacks, "onDragEnd")
+    );
+    map.addListener("dragstart", () => {
+      do_on_drag_start.forEach((cb) => {
+        if (!cutting.enabled) {
+          cb();
+        }
+      });
+      !cutting.enabled && onMapEvent(event_callbacks, "onDragStart");
+    });
+
+    map.addListener("idle", () => {
+      do_on_drag_end.forEach((cb) => {
+        if (!cutting.enabled) {
+          cb();
+        }
+      });
+      !cutting.enabled && onMapEvent(event_callbacks, "onIdle");
+    });
+    map.addListener("mousemove", (mouse_event: google.maps.MouseEvent) => {
+      if (cutting.enabled) {
+        if (!funcs) {
+          throw new Error("funcs is undefined");
+        }
+        funcs.cuttingPositionUpdate(mouse_event);
+      }
+      onMapEvent(event_callbacks, "onMouseMove", mouse_event);
+    });
+
+    map.addListener("rightclick", (mouse_event: google.maps.MouseEvent) => {
+      !cutting.enabled &&
+        onMapEvent(event_callbacks, "onRightClick", mouse_event);
+    });
 
     window.google.maps.event.addListenerOnce(map, "idle", () =>
       doAfterInit(map)
@@ -643,38 +599,31 @@ export const WrappedMapBase: React.FunctionComponent<MapBaseProps> = ({
     if (!funcs || !map || !features_layer || !services) {
       return;
     }
-    setupMapEvents(
-      map,
-      funcs,
-      cutting,
-      do_on_drag_start,
-      do_on_drag_end,
-      onBoundsChanged,
-      onCenterChanged,
-      onClick,
-      onDoubleClick,
-      onDrag,
-      onDragEnd,
-      onDragStart,
-      onHeadingChanged,
-      onIdle,
-      onMapTypeIdChanged,
-      onMouseMove,
-      onMouseOut,
-      onMouseOver,
-      onProjectionChanged,
-      onResize,
-      onRightClick,
-      onTilesLoaded,
-      onTiltChanged,
-      onZoomChanged
-    );
+    const cb_names: CallbackName[] = [
+      "onDoubleClick",
+      "onBoundsChanged",
+      "onCenterChanged",
+      "onClick",
+      "onDrag",
+      "onDragEnd",
+      "onDragStart",
+      "onHeadingChanged",
+      "onIdle",
+      "onMapTypeIdChanged",
+      "onMouseMove",
+      "onMouseOut",
+      "onMouseOver",
+      "onProjectionChanged",
+      "onResize",
+      "onRightClick",
+      "onTilesLoaded",
+      "onTiltChanged",
+      "onZoomChanged",
+    ];
+    cb_names.forEach((cb_name) => {
+      event_callbacks[cb_name] = props[cb_name];
+    });
   }, [
-    map,
-    funcs,
-    cutting,
-    do_on_drag_start,
-    do_on_drag_end,
     onDoubleClick,
     onBoundsChanged,
     onCenterChanged,

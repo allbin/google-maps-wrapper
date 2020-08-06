@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/class-name-casing */
 import WrappedMapBase, {
   ExportedFunctions as GMW_ExportedFunctions,
   MapBaseProps as GMW_MapBaseProps,
@@ -5,7 +6,8 @@ import WrappedMapBase, {
 import proj4 from "proj4";
 
 export default WrappedMapBase;
-export { GMW_ExportedFunctions, GMW_MapBaseProps };
+export type GMW_ExportedFunctions = GMW_ExportedFunctions;
+export type GMW_MapBaseProps = GMW_MapBaseProps;
 export {
   convertFromArrayOfArray,
   haversineDistance,
