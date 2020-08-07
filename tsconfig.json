@@ -10,11 +10,12 @@
     "module": "esnext",
     "moduleResolution": "node",
     "resolveJsonModule": true,
-    "isolatedModules": true,
     "noEmit": false,
     "jsx": "react",
     "sourceMap": true,
-    "rootDirs": ["src"]
+    "rootDirs": ["src"],
+    "declaration": true,
+    "outDir": "dist"
   },
   "exclude": [
     "node_modules",
