@@ -367,4 +367,5 @@ export const WrappedMapBase = (props) => {
             } })));
 };
 export default WrappedMapBase;
+
 //# sourceMappingURL=WrappedMapBase.js.map
