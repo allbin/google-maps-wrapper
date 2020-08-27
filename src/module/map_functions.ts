@@ -111,43 +111,66 @@ export const setZoom = (
   });
 
 export const clearPolylines = (
+  verbose: boolean,
   map_objects: MapObjects,
   cutting: CuttingState
 ): Promise<boolean[]> => {
   const promise_arr: Promise<boolean>[] = [];
   Object.keys(map_objects.polyline).forEach((id) => {
     promise_arr.push(
-      internal_helpers.unsetMapObject(map_objects, cutting, "polyline", id)
+      internal_helpers.unsetMapObject(
+        verbose,
+        map_objects,
+        cutting,
+        "polyline",
+        id
+      )
     );
   });
   return Promise.all(promise_arr);
 };
 
 export const clearPolygons = (
+  verbose: boolean,
   map_objects: MapObjects,
   cutting: CuttingState
 ): Promise<boolean[]> =>
   Promise.all(
     Object.keys(map_objects.polygon).map((id) =>
-      internal_helpers.unsetMapObject(map_objects, cutting, "polygon", id)
+      internal_helpers.unsetMapObject(
+        verbose,
+        map_objects,
+        cutting,
+        "polygon",
+        id
+      )
     )
   );
 
 export const setMarker = (
+  verbose: boolean,
   map: google.maps.Map,
   map_objects: MapObjects,
   cutting: CuttingState,
   id: string | number,
   options: GMW_MarkerOptionsSet
 ): Promise<GMW_WrappedMarker> =>
-  internal_helpers.setMarker(map, map_objects, cutting, id, options);
+  internal_helpers.setMarker(verbose, map, map_objects, cutting, id, options);
+
 export const clearMarkers = (
+  verbose: boolean,
   map_objects: MapObjects,
   cutting: CuttingState
 ): Promise<boolean[]> =>
   Promise.all(
     Object.keys(map_objects.marker).map((id) =>
-      internal_helpers.unsetMapObject(map_objects, cutting, "marker", id)
+      internal_helpers.unsetMapObject(
+        verbose,
+        map_objects,
+        cutting,
+        "marker",
+        id
+      )
     )
   );
 export const clearFeatureCollections = (

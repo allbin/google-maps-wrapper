@@ -132,37 +132,59 @@ export const fitToBoundsOfObjectArray = (
   });
 
 export const setPolyline = (
+  verbose: boolean,
   map: google.maps.Map,
   map_objects: MapObjects,
   cutting: CuttingState,
   id: string | number,
   options: GMW_PolylineOptionsSet
 ): Promise<GMW_WrappedPolyline> =>
-  setMapObject(map, map_objects, cutting, "polyline", id, options) as Promise<
-    GMW_WrappedPolyline
-  >;
+  setMapObject(
+    verbose,
+    map,
+    map_objects,
+    cutting,
+    "polyline",
+    id,
+    options
+  ) as Promise<GMW_WrappedPolyline>;
 export const setPolygon = (
+  verbose: boolean,
   map: google.maps.Map,
   map_objects: MapObjects,
   cutting: CuttingState,
   id: string | number,
   options: GMW_PolygonOptionsSet
 ): Promise<GMW_WrappedPolygon> =>
-  setMapObject(map, map_objects, cutting, "polygon", id, options) as Promise<
-    GMW_WrappedPolygon
-  >;
+  setMapObject(
+    verbose,
+    map,
+    map_objects,
+    cutting,
+    "polygon",
+    id,
+    options
+  ) as Promise<GMW_WrappedPolygon>;
 export const setMarker = (
+  verbose: boolean,
   map: google.maps.Map,
   map_objects: MapObjects,
   cutting: CuttingState,
   id: string | number,
   options: GMW_MarkerOptionsSet
 ): Promise<GMW_WrappedMarker> =>
-  setMapObject(map, map_objects, cutting, "marker", id, options) as Promise<
-    GMW_WrappedMarker
-  >;
+  setMapObject(
+    verbose,
+    map,
+    map_objects,
+    cutting,
+    "marker",
+    id,
+    options
+  ) as Promise<GMW_WrappedMarker>;
 
 type setMapObject = (
+  verbose: boolean,
   map: google.maps.Map,
   map_objects: MapObjects,
   cutting: CuttingState,
@@ -173,6 +195,7 @@ type setMapObject = (
 ) => Promise<GMW_WrappedPolyline | GMW_WrappedPolygon | GMW_WrappedMarker>;
 
 export const setMapObject: setMapObject = (
+  verbose,
   map,
   map_objects,
   cutting,
@@ -319,10 +342,11 @@ export const setMapObject: setMapObject = (
     };
 
     map_obj_shell.remove = () => {
-      return unsetMapObject(map_objects, cutting, type, id);
+      return unsetMapObject(verbose, map_objects, cutting, type, id);
     };
     map_obj_shell.setOptions = (new_options) => {
       return setMapObject(
+        verbose,
         map,
         map_objects,
         cutting,
@@ -423,6 +447,7 @@ export const setMapObject: setMapObject = (
   });
 
 export const unsetMapObject = (
+  verbose: boolean,
   map_objects: MapObjects,
   cutting: CuttingState,
   type: MapObjectType,
@@ -447,7 +472,10 @@ export const unsetMapObject = (
       resolve(true);
       return;
     }
-    reject(new Error("MAP: MapObject does not exist."));
+    if (verbose) {
+      return reject(new Error("MAP: MapObject does not exist."));
+    }
+    return resolve(true);
   });
 export const mapObjectEventCB = (
   cutting: CuttingState,
