@@ -68,16 +68,16 @@ export const setZoom = (zoom_level, map) => new Promise((resolve) => {
     resolve();
     return;
 });
-export const clearPolylines = (map_objects, cutting) => {
+export const clearPolylines = (verbose, map_objects, cutting) => {
     const promise_arr = [];
     Object.keys(map_objects.polyline).forEach((id) => {
-        promise_arr.push(internal_helpers.unsetMapObject(map_objects, cutting, "polyline", id));
+        promise_arr.push(internal_helpers.unsetMapObject(verbose, map_objects, cutting, "polyline", id));
     });
     return Promise.all(promise_arr);
 };
-export const clearPolygons = (map_objects, cutting) => Promise.all(Object.keys(map_objects.polygon).map((id) => internal_helpers.unsetMapObject(map_objects, cutting, "polygon", id)));
-export const setMarker = (map, map_objects, cutting, id, options) => internal_helpers.setMarker(map, map_objects, cutting, id, options);
-export const clearMarkers = (map_objects, cutting) => Promise.all(Object.keys(map_objects.marker).map((id) => internal_helpers.unsetMapObject(map_objects, cutting, "marker", id)));
+export const clearPolygons = (verbose, map_objects, cutting) => Promise.all(Object.keys(map_objects.polygon).map((id) => internal_helpers.unsetMapObject(verbose, map_objects, cutting, "polygon", id)));
+export const setMarker = (verbose, map, map_objects, cutting, id, options) => internal_helpers.setMarker(verbose, map, map_objects, cutting, id, options);
+export const clearMarkers = (verbose, map_objects, cutting) => Promise.all(Object.keys(map_objects.marker).map((id) => internal_helpers.unsetMapObject(verbose, map_objects, cutting, "marker", id)));
 export const clearFeatureCollections = (map_objects, features_layer, feature_layers) => {
     feature_layers.forEach((x) => x.setMap(null));
     // feature_layers = [];

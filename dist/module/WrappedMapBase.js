@@ -44,6 +44,7 @@ export const WrappedMapBase = (props) => {
     const [script_cache] = useState(ScriptCache({
         google: googleapi_maps_uri,
     }));
+    const verbose = props.verbose || false;
     const [clusterers] = useState([]);
     const [map, setMap] = useState();
     const [do_after_init] = useState([]);
@@ -146,15 +147,15 @@ export const WrappedMapBase = (props) => {
             setBounds: (lat_lng) => ic((map) => map_funcs.setBounds(map, lat_lng)),
             toPixel: (lat_lng_pixel) => map_funcs.toPixel(lat_lng_pixel, html_element_ref, overlay),
             setZoom: (zoom_level) => ic((map) => map_funcs.setZoom(zoom_level, map)),
-            setPolyline: (id, options) => ic((map) => setPolyline(map, map_objects, cutting, id, options)),
-            setPolygon: (id, options) => ic((map) => setPolygon(map, map_objects, cutting, id, options)),
-            unsetPolyline: (id) => unsetMapObject(map_objects, cutting, "polyline", id),
-            unsetPolygon: (id) => unsetMapObject(map_objects, cutting, "polygon", id),
-            clearPolylines: () => map_funcs.clearPolylines(map_objects, cutting),
-            clearPolygons: () => map_funcs.clearPolygons(map_objects, cutting),
-            setMarker: (id, options) => ic((map) => setMarker(map, map_objects, cutting, id, options)),
-            unsetMarker: (id) => unsetMapObject(map_objects, cutting, "marker", id),
-            clearMarkers: () => map_funcs.clearMarkers(map_objects, cutting),
+            setPolyline: (id, options) => ic((map) => setPolyline(verbose, map, map_objects, cutting, id, options)),
+            setPolygon: (id, options) => ic((map) => setPolygon(verbose, map, map_objects, cutting, id, options)),
+            unsetPolyline: (id) => unsetMapObject(verbose, map_objects, cutting, "polyline", id),
+            unsetPolygon: (id) => unsetMapObject(verbose, map_objects, cutting, "polygon", id),
+            clearPolylines: () => map_funcs.clearPolylines(verbose, map_objects, cutting),
+            clearPolygons: () => map_funcs.clearPolygons(verbose, map_objects, cutting),
+            setMarker: (id, options) => ic((map) => setMarker(verbose, map, map_objects, cutting, id, options)),
+            unsetMarker: (id) => unsetMapObject(verbose, map_objects, cutting, "marker", id),
+            clearMarkers: () => map_funcs.clearMarkers(verbose, map_objects, cutting),
             setGeoJSONCollection: (collection, options) => ic((map) => feature_helpers.setGeoJSONCollection(map, map_objects, collection, options)),
             setGeoJSONFeature: (feature, options) => ic((map) => {
                 if (!features_layer) {

@@ -89,10 +89,10 @@ export const fitToBoundsOfObjectArray = (arr_of_latlngliteral, map) => new Promi
     }
     resolve();
 });
-export const setPolyline = (map, map_objects, cutting, id, options) => setMapObject(map, map_objects, cutting, "polyline", id, options);
-export const setPolygon = (map, map_objects, cutting, id, options) => setMapObject(map, map_objects, cutting, "polygon", id, options);
-export const setMarker = (map, map_objects, cutting, id, options) => setMapObject(map, map_objects, cutting, "marker", id, options);
-export const setMapObject = (map, map_objects, cutting, type, id, options, selected_options_id = "default") => new Promise((resolve, reject) => {
+export const setPolyline = (verbose, map, map_objects, cutting, id, options) => setMapObject(verbose, map, map_objects, cutting, "polyline", id, options);
+export const setPolygon = (verbose, map, map_objects, cutting, id, options) => setMapObject(verbose, map, map_objects, cutting, "polygon", id, options);
+export const setMarker = (verbose, map, map_objects, cutting, id, options) => setMapObject(verbose, map, map_objects, cutting, "marker", id, options);
+export const setMapObject = (verbose, map, map_objects, cutting, type, id, options, selected_options_id = "default") => new Promise((resolve, reject) => {
     if (Object.prototype.hasOwnProperty.call(map_objects[type], id)) {
         //This ID has already been drawn.
         const map_obj = map_objects[type][id];
@@ -202,10 +202,10 @@ export const setMapObject = (map, map_objects, cutting, type, id, options, selec
         }
     };
     map_obj_shell.remove = () => {
-        return unsetMapObject(map_objects, cutting, type, id);
+        return unsetMapObject(verbose, map_objects, cutting, type, id);
     };
     map_obj_shell.setOptions = (new_options) => {
-        return setMapObject(map, map_objects, cutting, type, id, new_options, map_obj_shell.selected_options_id);
+        return setMapObject(verbose, map, map_objects, cutting, type, id, new_options, map_obj_shell.selected_options_id);
     };
     map_obj_shell.applyOptions = (options_id) => {
         if (!Object.prototype.hasOwnProperty.call(options, options_id)) {
@@ -278,7 +278,7 @@ export const setMapObject = (map, map_objects, cutting, type, id, options, selec
     }
     return;
 });
-export const unsetMapObject = (map_objects, cutting, type, id) => new Promise((resolve, reject) => {
+export const unsetMapObject = (verbose, map_objects, cutting, type, id) => new Promise((resolve, reject) => {
     if (Object.prototype.hasOwnProperty.call(map_objects[type], id)) {
         //This ID has been drawn.
         if (cutting.id && cutting.id !== id) {
@@ -291,7 +291,10 @@ export const unsetMapObject = (map_objects, cutting, type, id) => new Promise((r
         resolve(true);
         return;
     }
-    reject(new Error("MAP: MapObject does not exist."));
+    if (verbose) {
+        return reject(new Error("MAP: MapObject does not exist."));
+    }
+    return resolve(true);
 });
 export const mapObjectEventCB = (cutting, map_obj, event_type, e) => {
     if (cutting.enabled) {

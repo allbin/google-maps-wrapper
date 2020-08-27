@@ -73,6 +73,7 @@ export interface MapBaseProps extends EventCallbacks {
     default_zoom: number;
     default_options?: object;
     styles?: object;
+    verbose?: true;
 }
 export declare const WrappedMapBase: React.FunctionComponent<MapBaseProps>;
 export default WrappedMapBase;
