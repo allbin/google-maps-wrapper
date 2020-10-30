@@ -122,7 +122,8 @@ export const WrappedMapBase = (props) => {
         const initial_services = {
             geocoderService: new window.google.maps.Geocoder(),
             directionsService: new window.google.maps.DirectionsService(),
-            places: window.google.maps.places,
+            places: window.google.maps.places &&
+                new window.google.maps.places.PlacesService(map),
         };
         if (window.google.maps.drawing) {
             initial_services.drawing = window.google.maps.drawing;
