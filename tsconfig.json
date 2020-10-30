@@ -1,7 +1,12 @@
 {
   "compilerOptions": {
     "target": "es6",
-    "lib": ["dom", "dom.iterable", "es7", "es2019"],
+    "lib": [
+      "dom",
+      "dom.iterable",
+      "es7",
+      "es2019"
+    ],
     "skipLibCheck": true,
     "esModuleInterop": true,
     "allowSyntheticDefaultImports": true,
@@ -10,12 +15,16 @@
     "module": "esnext",
     "moduleResolution": "node",
     "resolveJsonModule": true,
-    "noEmit": false,
+    "noEmit": true,
     "jsx": "react",
     "sourceMap": true,
-    "rootDirs": ["src"],
+    "rootDirs": [
+      "src"
+    ],
     "declaration": true,
-    "outDir": "dist"
+    "outDir": "dist",
+    "allowJs": true,
+    "isolatedModules": true
   },
   "exclude": [
     "node_modules",
@@ -28,5 +37,7 @@
     "src/setupTests.ts",
     "Gulpfile.js"
   ],
-  "include": ["src"]
+  "include": [
+    "src"
+  ]
 }
