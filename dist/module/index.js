@@ -11,4 +11,5 @@ const PROJECTIONS = {
 proj4.defs("GMAPS", PROJECTIONS.gmaps);
 proj4.defs("RT90", PROJECTIONS.rt90);
 proj4.defs("SWEREF99", PROJECTIONS.sweref99);
+
 //# sourceMappingURL=index.js.map
