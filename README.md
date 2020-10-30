@@ -1,5 +1,9 @@
 # Google Maps Wrapper
 
+## Changelog 2.4.0
+
+Added `places` to services.
+
 ## Changelog 2.3.0
 
 Added `verbose` property to WrappedMapBase, defaults to false. It silences some non-critical errors such as deleting non-existing map objects.

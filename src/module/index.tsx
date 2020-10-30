@@ -251,6 +251,7 @@ export type GMW_Services = {
   directionsService: google.maps.DirectionsService;
   drawing?: any;
   drawingManager?: any;
+  places: google.maps.places.PlacesService;
 };
 
 declare global {
