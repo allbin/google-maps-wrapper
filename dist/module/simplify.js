@@ -89,5 +89,4 @@ const simplify = (points, tolerance, highestQuality) => {
     return points;
 };
 export default simplify;
-
 //# sourceMappingURL=simplify.js.map

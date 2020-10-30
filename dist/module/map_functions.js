@@ -378,5 +378,4 @@ export const cancelCuttingMode = (map_objects, cutting, cutting_objects) => {
         polyline.gmaps_obj.setOptions(opts);
     }
 };
-
 //# sourceMappingURL=map_functions.js.map

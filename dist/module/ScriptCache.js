@@ -90,5 +90,4 @@ export const ScriptCache = (function (global) {
     };
 })(window);
 export default ScriptCache;
-
 //# sourceMappingURL=ScriptCache.js.map

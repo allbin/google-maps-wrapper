@@ -107,5 +107,4 @@ export const setGeoJSONCollection = (map, map_objects, collection, options) => n
         features: features,
     });
 });
-
 //# sourceMappingURL=feature_helpers.js.map
