@@ -1,5 +1,9 @@
 # Google Maps Wrapper
 
+## Changelog 2.5.2
+
+Exporting `GMW_AllMapObjEvents` type.
+
 ## Changelog 2.5.1
 
 Exporting `GMW_GeoJSONFeature` and `GMW_GeoJSONFeatureCollection` types.

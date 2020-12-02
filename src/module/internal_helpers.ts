@@ -17,11 +17,9 @@ import {
   GMW_WrappedPolygon,
   GMW_WrappedMarker,
   GMW_WrappedFeature,
-  MapObjectType,
+  GMW_MapObjectType,
   GMW_WrappedGmapObj,
-  GMW_MarkerEvents,
-  GMW_PolylineEvents,
-  GMW_PolygonEvents,
+  GMW_AllMapObjEvents,
 } from ".";
 import { MapObjects, CuttingState } from "./WrappedMapBase";
 
@@ -29,11 +27,6 @@ type AnyObjectOptionsSet =
   | GMW_MarkerOptionsSet
   | GMW_PolylineOptionsSet
   | GMW_PolygonOptionsSet;
-
-type AllMapObjEvents =
-  | GMW_MarkerEvents
-  | GMW_PolylineEvents
-  | GMW_PolygonEvents;
 
 const DEFAULT_POLYLINE_OPTIONS = {
   visible: true,
@@ -202,7 +195,7 @@ type setMapObject = (
   map: google.maps.Map,
   map_objects: MapObjects,
   cutting: CuttingState,
-  type: MapObjectType,
+  type: GMW_MapObjectType,
   id: string | number,
   options: AnyObjectOptionsSet,
   current_options_id?: string
@@ -260,7 +253,7 @@ export const setMapObject: setMapObject = (
       _cbs: {
         [key: string]: (e?: any) => void;
       };
-      type: MapObjectType;
+      type: GMW_MapObjectType;
       selected_options_id: string;
     }
 
@@ -269,8 +262,8 @@ export const setMapObject: setMapObject = (
       type: type,
       selected_options_id: selected_options_id,
     };
-    let events: AllMapObjEvents[] = [];
-    let path_events: AllMapObjEvents[] = [];
+    let events: GMW_AllMapObjEvents[] = [];
+    let path_events: GMW_AllMapObjEvents[] = [];
     switch (type) {
       case "marker": {
         const opts = Object.assign({}, DEFAULT_MARKER_OPTIONS, options.default);
@@ -464,7 +457,7 @@ export const unsetMapObject = (
   verbose: boolean,
   map_objects: MapObjects,
   cutting: CuttingState,
-  type: MapObjectType,
+  type: GMW_MapObjectType,
   id: string | number
 ): Promise<boolean> =>
   new Promise<boolean>((resolve, reject) => {
@@ -494,7 +487,7 @@ export const unsetMapObject = (
 export const mapObjectEventCB = (
   cutting: CuttingState,
   map_obj: GMW_WrappedGmapObj,
-  event_type: AllMapObjEvents,
+  event_type: GMW_AllMapObjEvents,
   e: any
 ): boolean => {
   if (cutting.enabled) {

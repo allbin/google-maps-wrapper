@@ -113,6 +113,11 @@ export interface GMW_GeoJSONFeatureCollection<
 
 ////
 
+export type GMW_AllMapObjEvents =
+  | GMW_MarkerEvents
+  | GMW_PolylineEvents
+  | GMW_PolygonEvents;
+
 export type GMW_MarkerEvents =
   | "click"
   | "mouseover"
@@ -168,7 +173,7 @@ export type GMW_DrawingCB = (
 
 export interface GMW_WrappedGmapObj {
   gmaps_obj?: any;
-  type: MapObjectType;
+  type: GMW_MapObjectType;
   show: () => void;
   hide: () => void;
   remove: () => void;
@@ -260,7 +265,7 @@ export interface GMW_WrappedFeature {
   panTo: () => void;
 }
 
-export type MapObjectType = "polyline" | "polygon" | "marker";
+export type GMW_MapObjectType = "polyline" | "polygon" | "marker";
 
 export type GMW_Services = {
   geocoderService: google.maps.Geocoder;
