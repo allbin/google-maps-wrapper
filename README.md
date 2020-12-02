@@ -1,5 +1,13 @@
 # Google Maps Wrapper
 
+## Changelog 2.5.1
+
+Exporting `GMW_GeoJSONFeature` and `GMW_GeoJSONFeatureCollection` types.
+
+## Changelog 2.5.0
+
+???
+
 ## Changelog 2.4.0
 
 Added `places` to services.

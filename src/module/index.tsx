@@ -97,6 +97,11 @@ export interface GMW_FeatureOptionsSet {
 
 ////
 
+export type GMW_GeoJSONFeature = GeoJSONFeature;
+export type GMW_GeoJSONFeatureCollection = GeoJSONFeatureCollection;
+
+////
+
 export type GMW_MarkerEvents =
   | "click"
   | "mouseover"

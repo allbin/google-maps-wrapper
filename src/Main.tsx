@@ -5,19 +5,19 @@ import MapBase, {
   GMW_PolylineOptions,
   GMW_PolygonOptions,
   GMW_WrappedMarker,
+  GMW_ExportedFunctions,
 } from "./module";
 import example_geo_json from "./example_geo_json";
-import { ExportedFunctions } from "./module/WrappedMapBase";
 import { MarkerClustererOptions } from "@google/markerclustererplus";
 
 const Map: FunctionComponent = () => {
-  const [funcs, setFuncs] = useState<ExportedFunctions>();
+  const [funcs, setFuncs] = useState<GMW_ExportedFunctions>();
   const [cluster_markers, setClusterMarkers] = useState<GMW_WrappedMarker[]>(
     []
   );
   const onMapInitialized = (
     map: google.maps.Map,
-    initial_funcs: ExportedFunctions
+    initial_funcs: GMW_ExportedFunctions
   ): void => {
     const marker_opts: GMW_MarkerOptions = {
       position: { lng: 14.40567, lat: 56.65918 },
@@ -127,7 +127,7 @@ const Map: FunctionComponent = () => {
     Math.random() * (max - min) + min;
 
   const addCluster = (
-    funcs: ExportedFunctions,
+    funcs: GMW_ExportedFunctions,
     number_of_markers: number,
     min_lat: number,
     max_lat: number,
