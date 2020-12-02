@@ -1,5 +1,8 @@
 /// <reference types="googlemaps" />
-import { GMW_LatLng, GMW_LatLngBoundsLiteral, GMW_LatLngLiteral, GMW_PolylineOptionsSet, GMW_PolygonOptionsSet, GMW_MarkerOptionsSet, GMW_WrappedPolyline, GMW_WrappedPolygon, GMW_WrappedMarker, GMW_WrappedFeature, MapObjectType, GMW_WrappedGmapObj } from ".";
+import { GMW_LatLng, GMW_LatLngBoundsLiteral, GMW_LatLngLiteral, GMW_PolylineOptionsSet, GMW_PolygonOptionsSet, GMW_MarkerOptionsSet, GMW_WrappedPolyline, GMW_WrappedPolygon, GMW_WrappedMarker, GMW_WrappedFeature, MapObjectType, GMW_WrappedGmapObj, GMW_MarkerEvents, GMW_PolylineEvents, GMW_PolygonEvents } from ".";
+import { MapObjects, CuttingState } from "./WrappedMapBase";
+declare type AnyObjectOptionsSet = GMW_MarkerOptionsSet | GMW_PolylineOptionsSet | GMW_PolygonOptionsSet;
+declare type AllMapObjEvents = GMW_MarkerEvents | GMW_PolylineEvents | GMW_PolygonEvents;
 export declare const fromLatLngToPixel: (map: google.maps.Map, latLng: GMW_LatLng) => any;
 export declare const fitToBoundsOfArray: (map: google.maps.Map, arr_of_coords: [number, number][]) => Promise<void>;
 export declare const fitToBoundsLiteral: (bounds: GMW_LatLngBoundsLiteral, map?: google.maps.Map | undefined) => Promise<void>;

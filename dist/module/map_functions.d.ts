@@ -1,5 +1,6 @@
 /// <reference types="googlemaps" />
 import { GMW_LatLngLiteral, GMW_LatLng, GMW_MarkerOptionsSet, GMW_PolylineOptions, GMW_PolygonOptions, GMW_WrappedMarker, GMW_DrawingCB, GMW_Services, GMW_LatLngBoundsLiteral, GMW_LatLngBounds } from ".";
+import { MapObjects, CuttingState, CuttingObjects } from "./WrappedMapBase";
 export declare const getBoundsLiteral: (map: google.maps.Map | undefined) => undefined | {
     north: number;
     east: number;

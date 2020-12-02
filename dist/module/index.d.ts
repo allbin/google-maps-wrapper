@@ -61,6 +61,13 @@ export interface GMW_FeatureOptionsSet {
     default: GMW_FeatureOptions;
     [id: string]: GMW_FeatureOptions;
 }
+export interface GMW_GeoJSONFeature<G extends GeoJSON.Geometry | null = GeoJSON.Geometry, P extends GeoJSON.GeoJsonProperties = null> extends GeoJSON.Feature<G, P> {
+    id: string | number;
+}
+export interface GMW_GeoJSONFeatureCollection<G extends GeoJSON.Geometry | null = GeoJSON.Geometry, P = GeoJSON.GeoJsonProperties> extends GeoJSON.GeoJsonObject {
+    type: "FeatureCollection";
+    features: Array<GMW_GeoJSONFeature<G, P>>;
+}
 export declare type GMW_MarkerEvents = "click" | "mouseover" | "mouseout" | "mousedown" | "mouseup" | "dragstart" | "drag" | "dragend" | "dblclick" | "rightclick";
 export declare type GMW_PolylineEvents = "click" | "dblclick" | "dragstart" | "drag" | "dragend" | "mouseover" | "mouseout" | "mousedown" | "mouseup" | "mousemove" | "rightclick" | "set_at" | "remove_at" | "insert_at";
 export declare type GMW_PolygonEvents = "click" | "dblclick" | "dragstart" | "drag" | "dragend" | "mouseover" | "mouseout" | "mousedown" | "mouseup" | "mousemove" | "rightclick" | "set_at" | "remove_at" | "insert_at";
