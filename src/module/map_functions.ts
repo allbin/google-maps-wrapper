@@ -22,6 +22,7 @@ import {
   GMW_LatLngBoundsLiteral,
   GMW_LatLngBounds,
 } from ".";
+import { MapObjects, CuttingState, CuttingObjects } from "./WrappedMapBase";
 
 export const getBoundsLiteral = (
   map: google.maps.Map | undefined

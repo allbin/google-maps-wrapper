@@ -1,6 +1,7 @@
 import { MultiPolygon } from "geojson";
+import { GMW_GeoJSONFeature, GMW_GeoJSONFeatureCollection } from "./module";
 
-const test_rt_90: GeoJSONFeature<MultiPolygon> = {
+const test_rt_90: GMW_GeoJSONFeature<MultiPolygon> = {
   id: "my_id",
   properties: null,
   type: "Feature",
@@ -2496,7 +2497,7 @@ const test_rt_90: GeoJSONFeature<MultiPolygon> = {
   },
 };
 
-const x: GeoJSONFeatureCollection<MultiPolygon> = {
+const x: GMW_GeoJSONFeatureCollection<MultiPolygon> = {
   type: "FeatureCollection",
   features: [test_rt_90],
 };

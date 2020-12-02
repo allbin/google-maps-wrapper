@@ -3,7 +3,10 @@ import {
   GMW_FeatureEvents,
   GMW_FeatureOptionsSet,
   GMW_WrappedFeature,
+  GMW_GeoJSONFeatureCollection,
+  GMW_GeoJSONFeature,
 } from ".";
+import { MapObjects } from "./WrappedMapBase";
 
 const feature_events: GMW_FeatureEvents[] = [
   "click",
@@ -118,7 +121,7 @@ export const setGeoJSONFeature = (
   map: google.maps.Map,
   map_objects: MapObjects,
   features_layer: google.maps.Data,
-  feature: GeoJSONFeature,
+  feature: GMW_GeoJSONFeature,
   options: GMW_FeatureOptionsSet,
   layer?: google.maps.Data
 ): Promise<GMW_WrappedFeature> =>
@@ -153,7 +156,7 @@ export const setGeoJSONFeature = (
 export const setGeoJSONCollection = (
   map: google.maps.Map,
   map_objects: MapObjects,
-  collection: GeoJSONFeatureCollection,
+  collection: GMW_GeoJSONFeatureCollection,
   options: GMW_FeatureOptionsSet
 ): Promise<{
   layer: google.maps.Data;

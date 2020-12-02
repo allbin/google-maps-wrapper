@@ -19,7 +19,21 @@ import {
   GMW_WrappedFeature,
   MapObjectType,
   GMW_WrappedGmapObj,
+  GMW_MarkerEvents,
+  GMW_PolylineEvents,
+  GMW_PolygonEvents,
 } from ".";
+import { MapObjects, CuttingState } from "./WrappedMapBase";
+
+type AnyObjectOptionsSet =
+  | GMW_MarkerOptionsSet
+  | GMW_PolylineOptionsSet
+  | GMW_PolygonOptionsSet;
+
+type AllMapObjEvents =
+  | GMW_MarkerEvents
+  | GMW_PolylineEvents
+  | GMW_PolygonEvents;
 
 const DEFAULT_POLYLINE_OPTIONS = {
   visible: true,

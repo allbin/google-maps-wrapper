@@ -30,7 +30,44 @@ import {
   GMW_DrawingCB,
   GMW_Services,
   GMW_LatLngBounds,
+  GMW_GeoJSONFeatureCollection,
+  GMW_GeoJSONFeature,
 } from ".";
+
+// type AnyObjectOptions =
+//   | GMW_MarkerOptions
+//   | GMW_PolylineOptions
+//   | GMW_PolygonOptions;
+
+export interface MapObjects {
+  marker: {
+    [id: string]: GMW_WrappedMarker;
+    [id: number]: GMW_WrappedMarker;
+  };
+  polygon: {
+    [id: string]: GMW_WrappedPolygon;
+    [id: number]: GMW_WrappedPolygon;
+  };
+  polyline: {
+    [id: string]: GMW_WrappedPolyline;
+    [id: number]: GMW_WrappedPolyline;
+  };
+  features: {
+    [id: string]: GMW_WrappedFeature;
+    [id: number]: GMW_WrappedFeature;
+  };
+}
+
+export interface CuttingState {
+  enabled: boolean;
+  id: string | number | null;
+  indexes: number[] | null;
+  arr?: [number, number][];
+}
+export interface CuttingObjects {
+  [key: string]: any;
+  hover_scissors?: any;
+}
 
 export type ExportedFunctions = {
   getBoundsLiteral: () => GMW_LatLngBoundsLiteral | undefined;
@@ -65,14 +102,14 @@ export type ExportedFunctions = {
   ) => Promise<GMW_WrappedMarker>;
   clearMarkers: () => Promise<boolean[]>;
   setGeoJSONCollection: (
-    collection: GeoJSONFeatureCollection,
+    collection: GMW_GeoJSONFeatureCollection,
     options: GMW_FeatureOptionsSet
   ) => Promise<{
     layer: google.maps.Data;
     features: GMW_WrappedFeature[];
   }>;
   setGeoJSONFeature: (
-    feature: GeoJSONFeature,
+    feature: GMW_GeoJSONFeature,
     options: GMW_FeatureOptionsSet
   ) => Promise<GMW_WrappedFeature>;
   zoomToObject: (

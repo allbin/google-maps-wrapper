@@ -96,9 +96,20 @@ export interface GMW_FeatureOptionsSet {
 }
 
 ////
+export interface GMW_GeoJSONFeature<
+  G extends GeoJSON.Geometry | null = GeoJSON.Geometry,
+  P extends GeoJSON.GeoJsonProperties = null
+> extends GeoJSON.Feature<G, P> {
+  id: string | number;
+}
 
-export type GMW_GeoJSONFeature = GeoJSONFeature;
-export type GMW_GeoJSONFeatureCollection = GeoJSONFeatureCollection;
+export interface GMW_GeoJSONFeatureCollection<
+  G extends GeoJSON.Geometry | null = GeoJSON.Geometry,
+  P = GeoJSON.GeoJsonProperties
+> extends GeoJSON.GeoJsonObject {
+  type: "FeatureCollection";
+  features: Array<GMW_GeoJSONFeature<G, P>>;
+}
 
 ////
 
