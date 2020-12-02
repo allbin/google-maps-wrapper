@@ -68,6 +68,7 @@ export interface GMW_GeoJSONFeatureCollection<G extends GeoJSON.Geometry | null 
     type: "FeatureCollection";
     features: Array<GMW_GeoJSONFeature<G, P>>;
 }
+export declare type GMW_AllMapObjEvents = GMW_MarkerEvents | GMW_PolylineEvents | GMW_PolygonEvents;
 export declare type GMW_MarkerEvents = "click" | "mouseover" | "mouseout" | "mousedown" | "mouseup" | "dragstart" | "drag" | "dragend" | "dblclick" | "rightclick";
 export declare type GMW_PolylineEvents = "click" | "dblclick" | "dragstart" | "drag" | "dragend" | "mouseover" | "mouseout" | "mousedown" | "mouseup" | "mousemove" | "rightclick" | "set_at" | "remove_at" | "insert_at";
 export declare type GMW_PolygonEvents = "click" | "dblclick" | "dragstart" | "drag" | "dragend" | "mouseover" | "mouseout" | "mousedown" | "mouseup" | "mousemove" | "rightclick" | "set_at" | "remove_at" | "insert_at";
@@ -75,7 +76,7 @@ export declare type GMW_FeatureEvents = "click" | "mouseover" | "mouseout" | "mo
 export declare type GMW_DrawingCB = (path: [number, number][] | [number, number] | null, overlay: GMW_Polygon | GMW_Polyline | GMW_Marker) => void;
 export interface GMW_WrappedGmapObj {
     gmaps_obj?: any;
-    type: MapObjectType;
+    type: GMW_MapObjectType;
     show: () => void;
     hide: () => void;
     remove: () => void;
@@ -147,7 +148,7 @@ export interface GMW_WrappedFeature {
     zoomTo: () => void;
     panTo: () => void;
 }
-export declare type MapObjectType = "polyline" | "polygon" | "marker";
+export declare type GMW_MapObjectType = "polyline" | "polygon" | "marker";
 export declare type GMW_Services = {
     geocoderService: google.maps.Geocoder;
     directionsService: google.maps.DirectionsService;
