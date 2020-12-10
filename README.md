@@ -1,5 +1,9 @@
 # Google Maps Wrapper
 
+## Changelog 2.5.3
+
+Exporting `simplify` functionality.
+
 ## Changelog 2.5.2
 
 Exporting `GMW_AllMapObjEvents` type.
