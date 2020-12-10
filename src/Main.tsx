@@ -15,6 +15,7 @@ const Map: FunctionComponent = () => {
   const [cluster_markers, setClusterMarkers] = useState<GMW_WrappedMarker[]>(
     []
   );
+
   const onMapInitialized = (
     map: google.maps.Map,
     initial_funcs: GMW_ExportedFunctions

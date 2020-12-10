@@ -19,6 +19,8 @@ export {
   arrayRT90ToWGS84,
   arrayRT90ToWGS84LatLngObj,
 } from "./external_helpers";
+import simplify from "./simplify";
+export { simplify };
 
 export type GMW_LatLng = google.maps.LatLng;
 export type GMW_LatLngBounds = google.maps.LatLngBounds;

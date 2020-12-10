@@ -327,9 +327,7 @@ export const setCuttingMode = (
     indexes: [],
     arr: path as any,
   };
-  if (
-    !Object.prototype.hasOwnProperty.call(cutting_objects, "hover_scissors")
-  ) {
+  if (!Object.hasOwnProperty.call(cutting_objects, "hover_scissors")) {
     const opts = {
       position: default_center,
       icon: {
