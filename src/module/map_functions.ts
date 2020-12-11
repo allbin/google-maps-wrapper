@@ -482,14 +482,14 @@ export const completeCuttingMode = (
   cutting: CuttingState,
   cutting_objects: CuttingObjects,
   cutting_completed_listener: (segments: [number, number][][] | null) => void
-): void => {
+): [number, number][][] => {
   if (!cutting || cutting.id === null) {
-    return;
+    return [];
   }
   const indexes = cutting.indexes;
   const polyline = map_objects.polyline[cutting.id];
   if (!polyline) {
-    return;
+    return [];
   }
   // TODO do not reassign inside function
   cutting = {
@@ -513,7 +513,7 @@ export const completeCuttingMode = (
     if (cutting_completed_listener) {
       cutting_completed_listener(null);
     }
-    return;
+    return [];
   }
 
   const path = (polyline.options.path as unknown) as [number, number][];
@@ -532,6 +532,7 @@ export const completeCuttingMode = (
   if (cutting_completed_listener) {
     cutting_completed_listener(resulting_segments);
   }
+  return resulting_segments;
 };
 export const cancelCuttingMode = (
   map_objects: MapObjects,
