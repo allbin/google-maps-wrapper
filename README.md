@@ -1,5 +1,9 @@
 # Google Maps Wrapper
 
+## Changelog 2.6.0
+
+`completeCuttingMode` function now returns the cut shapes.
+
 ## Changelog 2.5.3
 
 Exporting `simplify` functionality.
