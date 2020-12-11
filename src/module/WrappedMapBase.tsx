@@ -135,7 +135,7 @@ export type ExportedFunctions = {
   setCuttingMode: (polyline_id: string | number, cb?: () => any) => void;
   cuttingPositionUpdate: (mouse_event: google.maps.MouseEvent) => void;
   cuttingClick: (mouse_event: google.maps.MouseEvent) => void;
-  completeCuttingMode: () => void;
+  completeCuttingMode: () => [number, number][][];
   cancelCuttingMode: () => void;
   registerDragStartCB: (cb: () => void) => number;
   unregisterDragStartCB: (cb: () => void) => void;
@@ -499,13 +499,14 @@ export const WrappedMapBase: React.FunctionComponent<MapBaseProps> = (
           cutting_objects
         ),
       completeCuttingMode: () =>
-        cutting_completed_listener &&
-        map_funcs.completeCuttingMode(
-          map_objects,
-          cutting,
-          cutting_objects,
-          cutting_completed_listener
-        ),
+        (cutting_completed_listener &&
+          map_funcs.completeCuttingMode(
+            map_objects,
+            cutting,
+            cutting_objects,
+            cutting_completed_listener
+          )) ||
+        [],
       cancelCuttingMode: () =>
         map_funcs.cancelCuttingMode(map_objects, cutting, cutting_objects),
       registerDragStartCB: (cb) => do_on_drag_end.push(cb),

@@ -183,8 +183,9 @@ export const WrappedMapBase = (props) => {
                 map_funcs.setCuttingMode(services, map, map_objects, cutting, cutting_objects, default_center, cancel_drawing, drawing_completed_listener, polyline_id, cutting_completed_listener, cb),
             cuttingPositionUpdate: (mouse_event) => map_funcs.cuttingPositionUpdate(mouse_event, map_objects, cutting, cutting_objects),
             cuttingClick: (mouse_event) => map_funcs.cuttingClick(mouse_event, map, map_objects, cutting, cutting_objects),
-            completeCuttingMode: () => cutting_completed_listener &&
-                map_funcs.completeCuttingMode(map_objects, cutting, cutting_objects, cutting_completed_listener),
+            completeCuttingMode: () => (cutting_completed_listener &&
+                map_funcs.completeCuttingMode(map_objects, cutting, cutting_objects, cutting_completed_listener)) ||
+                [],
             cancelCuttingMode: () => map_funcs.cancelCuttingMode(map_objects, cutting, cutting_objects),
             registerDragStartCB: (cb) => do_on_drag_end.push(cb),
             unregisterDragStartCB: (cb) => {

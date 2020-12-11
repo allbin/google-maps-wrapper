@@ -306,12 +306,12 @@ export const cuttingClick = (mouse_event, map, map_objects, cutting, cutting_obj
 };
 export const completeCuttingMode = (map_objects, cutting, cutting_objects, cutting_completed_listener) => {
     if (!cutting || cutting.id === null) {
-        return;
+        return [];
     }
     const indexes = cutting.indexes;
     const polyline = map_objects.polyline[cutting.id];
     if (!polyline) {
-        return;
+        return [];
     }
     // TODO do not reassign inside function
     cutting = {
@@ -334,7 +334,7 @@ export const completeCuttingMode = (map_objects, cutting, cutting_objects, cutti
         if (cutting_completed_listener) {
             cutting_completed_listener(null);
         }
-        return;
+        return [];
     }
     const path = polyline.options.path;
     indexes.sort();
@@ -352,6 +352,7 @@ export const completeCuttingMode = (map_objects, cutting, cutting_objects, cutti
     if (cutting_completed_listener) {
         cutting_completed_listener(resulting_segments);
     }
+    return resulting_segments;
 };
 export const cancelCuttingMode = (map_objects, cutting, cutting_objects) => {
     //TODO no reassign of prameter

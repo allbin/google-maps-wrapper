@@ -59,7 +59,7 @@ export declare type ExportedFunctions = {
     setCuttingMode: (polyline_id: string | number, cb?: () => any) => void;
     cuttingPositionUpdate: (mouse_event: google.maps.MouseEvent) => void;
     cuttingClick: (mouse_event: google.maps.MouseEvent) => void;
-    completeCuttingMode: () => void;
+    completeCuttingMode: () => [number, number][][];
     cancelCuttingMode: () => void;
     registerDragStartCB: (cb: () => void) => number;
     unregisterDragStartCB: (cb: () => void) => void;
