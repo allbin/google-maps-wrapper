@@ -4,6 +4,7 @@ import WrappedMapBase, {
   MapBaseProps,
 } from "./WrappedMapBase";
 import proj4 from "proj4";
+import simplify from "./simplify";
 
 export default WrappedMapBase;
 export type GMW_ExportedFunctions = ExportedFunctions;
@@ -19,7 +20,6 @@ export {
   arrayRT90ToWGS84,
   arrayRT90ToWGS84LatLngObj,
 } from "./external_helpers";
-import simplify from "./simplify";
 export { simplify };
 
 export type GMW_LatLng = google.maps.LatLng;

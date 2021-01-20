@@ -57,7 +57,6 @@ export interface MapObjects {
     [id: number]: GMW_WrappedFeature;
   };
 }
-
 export interface CuttingState {
   enabled: boolean;
   id: string | number | null;
@@ -131,7 +130,7 @@ export type ExportedFunctions = {
     opts: GMW_PolylineOptions | GMW_PolygonOptions,
     cb: GMW_DrawingCB
   ) => void;
-  cancelDrawingMode: (cancel_drawing: boolean, debug_src?: string) => void;
+  cancelDrawingMode: (debug_src?: string) => void;
   setCuttingMode: (polyline_id: string | number, cb?: () => any) => void;
   cuttingPositionUpdate: (mouse_event: google.maps.MouseEvent) => void;
   cuttingClick: (mouse_event: google.maps.MouseEvent) => void;
@@ -151,6 +150,10 @@ export type ExportedFunctions = {
   getServices: () => GMW_Services;
 };
 
+interface DrawingListenerObject {
+  listener?: google.maps.MapsEventListener;
+  cancel: boolean;
+}
 interface EventCallbacks {
   onCenterChanged?: () => void;
   onBoundsChanged?: () => void;
@@ -273,9 +276,9 @@ export const WrappedMapBase: React.FunctionComponent<MapBaseProps> = (
   const [do_after_init] = useState<((map: google.maps.Map) => void)[]>([]);
   const [do_on_drag_end] = useState<(() => void)[]>([]);
   const [do_on_drag_start] = useState<(() => void)[]>([]);
-  const [drawing_completed_listener, setDrawingCompletedListener] = useState<
-    google.maps.MapsEventListener
-  >();
+  const [drawing_completed_listener] = useState<DrawingListenerObject>({
+    cancel: false,
+  });
   const [features_layer, setFeaturesLayer] = useState<google.maps.Data>();
   const [feature_layers] = useState<google.maps.Data[]>();
   const [map_objects] = useState<MapObjects>({
@@ -295,7 +298,6 @@ export const WrappedMapBase: React.FunctionComponent<MapBaseProps> = (
   const [cutting_completed_listener] = useState<
     (segments: [number, number][][] | null) => void
   >();
-  const [cancel_drawing] = useState<boolean>(false);
   const [services, setServices] = useState<GMW_Services>();
   const html_element_ref = useRef(null);
   const [funcs, setFuncs] = useState<ExportedFunctions>();
@@ -454,19 +456,27 @@ export const WrappedMapBase: React.FunctionComponent<MapBaseProps> = (
           type,
           opts,
           cb,
-          cancel_drawing,
-          setDrawingCompletedListener,
           drawing_completed_listener
         );
       },
-      cancelDrawingMode: (cancel_drawing, debug_src) =>
-        drawing_completed_listener &&
-        map_funcs.cancelDrawingMode(
+      cancelDrawingMode: (debug_src) => {
+        if (!drawing_completed_listener.listener) {
+          if (debug_src) {
+            console.log(
+              "Cancel drawing before listener was attached, call from: " +
+                debug_src
+            );
+          }
+          return;
+        }
+
+        map_funcs.endDrawingMode(
           services,
-          cancel_drawing,
           drawing_completed_listener,
+          true,
           debug_src
-        ),
+        );
+      },
       setCuttingMode: (polyline_id, cb) =>
         drawing_completed_listener &&
         cutting_completed_listener &&
@@ -477,7 +487,6 @@ export const WrappedMapBase: React.FunctionComponent<MapBaseProps> = (
           cutting,
           cutting_objects,
           default_center,
-          cancel_drawing,
           drawing_completed_listener,
           polyline_id,
           cutting_completed_listener,

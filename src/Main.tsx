@@ -218,6 +218,16 @@ const Map: FunctionComponent = () => {
       >
         Start Drawing
       </button>
+      <button
+        onClick={() => {
+          if (!funcs) {
+            return;
+          }
+          funcs.cancelDrawingMode("Manual cancel drawing");
+        }}
+      >
+        Cancel Drawing
+      </button>
 
       <button
         onClick={() => {

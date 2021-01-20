@@ -24,6 +24,11 @@ import {
 } from ".";
 import { MapObjects, CuttingState, CuttingObjects } from "./WrappedMapBase";
 
+interface DrawingListenerObject {
+  listener?: google.maps.MapsEventListener;
+  cancel: boolean;
+}
+
 export const getBoundsLiteral = (
   map: google.maps.Map | undefined
 ): undefined | { north: number; east: number; south: number; west: number } => {
@@ -193,11 +198,7 @@ export const setDrawingMode = (
   type: "polyline" | "polygon",
   opts: GMW_PolylineOptions | GMW_PolygonOptions,
   cb: GMW_DrawingCB,
-  cancel_drawing: boolean,
-  setDrawingCompletedListener: (
-    listener: google.maps.MapsEventListener
-  ) => void,
-  drawing_completed_listener?: google.maps.MapsEventListener
+  drawing_completed_listener: DrawingListenerObject
 ): void => {
   let mode = null;
   if (!services.drawing) {
@@ -219,63 +220,56 @@ export const setDrawingMode = (
   const drawing_opts = Object.assign({}, opts, { drawingMode: mode });
   services.drawingManager.setOptions(drawing_opts);
   console.log("MAP: Drawing mode started for:", type + ".");
-  cancel_drawing = false;
 
-  if (drawing_completed_listener) {
-    drawing_completed_listener.remove();
+  if (drawing_completed_listener.listener) {
+    drawing_completed_listener.listener.remove();
   }
-  setDrawingCompletedListener(
-    google.maps.event.addListenerOnce(
-      services.drawingManager,
-      "overlaycomplete",
-      (e: google.maps.drawing.OverlayCompleteEvent) => {
-        // console.log("overlay complete", cb, cancel_drawing);
-        e.overlay.setMap(null);
-        drawing_opts.drawingMode = null;
-        services.drawingManager.setOptions(drawing_opts);
-        if (!cb || cancel_drawing) {
-          return;
-        }
-        if (type === "polyline" || type === "polygon") {
-          const overlay = e.overlay as GMW_Polygon | GMW_Polyline;
-          const path = MVCArrayToCoordArray(overlay.getPath());
-          if (cb) {
-            cb(path as [number, number][], overlay);
-          }
-        } else if (type === "marker") {
-          const overlay = e.overlay as GMW_Marker;
-          const pos = overlay.getPosition();
-          cb([pos.lat(), pos.lng()], overlay);
-        } else {
-          cb(null, e.overlay as any);
-        }
+  console.log("setDrawingListener");
+  drawing_completed_listener.listener = google.maps.event.addListenerOnce(
+    services.drawingManager,
+    "overlaycomplete",
+    (e: google.maps.drawing.OverlayCompleteEvent) => {
+      // console.log("overlay complete", cb, cancel_drawing);
+      e.overlay.setMap(null);
+      drawing_opts.drawingMode = null;
+      services.drawingManager.setOptions(drawing_opts);
+      if (!cb || drawing_completed_listener.cancel) {
+        drawing_completed_listener.cancel = false;
+        return;
       }
-    )
+      if (type === "polyline" || type === "polygon") {
+        const overlay = e.overlay as GMW_Polygon | GMW_Polyline;
+        const path = MVCArrayToCoordArray(overlay.getPath());
+        if (cb) {
+          cb(path as [number, number][], overlay);
+        }
+      } else if (type === "marker") {
+        const overlay = e.overlay as GMW_Marker;
+        const pos = overlay.getPosition();
+        cb([pos.lat(), pos.lng()], overlay);
+      } else {
+        cb(null, e.overlay as any);
+      }
+    }
   );
 };
-export const completeDrawingMode = (
+
+export const endDrawingMode = (
   services: GMW_Services,
-  drawing_completed_listener: google.maps.MapsEventListener
-): void => {
-  if (services.drawing) {
-    services.drawingManager.setOptions({ drawingMode: null });
-  }
-  if (drawing_completed_listener) {
-    drawing_completed_listener.remove();
-  }
-};
-export const cancelDrawingMode = (
-  services: GMW_Services,
-  cancel_drawing: boolean,
-  drawing_completed_listener: google.maps.MapsEventListener,
+  drawing_completed_listener: DrawingListenerObject,
+  cancel: boolean,
   debug_src?: string
 ): void => {
   if (debug_src) {
-    console.log("cancel drawing mode:", debug_src);
+    console.log("endDrawingMode debug src:", debug_src);
   }
-  if (services.drawing && drawing_completed_listener) {
-    cancel_drawing = true;
+  drawing_completed_listener.cancel = cancel;
+  if (services.drawing) {
     services.drawingManager.setOptions({ drawingMode: null });
+  }
+  if (drawing_completed_listener.listener) {
+    drawing_completed_listener.listener.remove();
+    delete drawing_completed_listener.listener;
   }
 };
 
@@ -286,8 +280,7 @@ export const setCuttingMode = (
   cutting: CuttingState,
   cutting_objects: CuttingObjects,
   default_center: GMW_LatLngLiteral,
-  cancel_drawing: boolean,
-  drawing_completed_listener: google.maps.MapsEventListener,
+  drawing_completed_listener: DrawingListenerObject,
   polyline_id: string | number,
   cutting_completed_listener: (segments: [number, number][][] | null) => void,
   cb?: () => any
@@ -307,12 +300,7 @@ export const setCuttingMode = (
     );
     return;
   }
-  cancelDrawingMode(
-    services,
-    cancel_drawing,
-    drawing_completed_listener,
-    "setCuttingMode"
-  );
+  endDrawingMode(services, drawing_completed_listener, true, "setCuttingMode");
   const polyline = map_objects.polyline[polyline_id];
   const opts = {
     clickable: false,
