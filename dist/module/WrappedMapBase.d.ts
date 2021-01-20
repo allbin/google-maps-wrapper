@@ -55,7 +55,7 @@ export declare type ExportedFunctions = {
     zoomToObject: (item: GMW_WrappedMarker | GMW_WrappedPolygon | GMW_WrappedPolyline | GMW_WrappedFeature) => void;
     panToObject: (item: GMW_WrappedMarker | GMW_WrappedPolygon | GMW_WrappedPolyline | GMW_WrappedFeature) => void;
     setDrawingMode: (type: "polyline" | "polygon", opts: GMW_PolylineOptions | GMW_PolygonOptions, cb: GMW_DrawingCB) => void;
-    cancelDrawingMode: (cancel_drawing: boolean, debug_src?: string) => void;
+    cancelDrawingMode: (debug_src?: string) => void;
     setCuttingMode: (polyline_id: string | number, cb?: () => any) => void;
     cuttingPositionUpdate: (mouse_event: google.maps.MouseEvent) => void;
     cuttingClick: (mouse_event: google.maps.MouseEvent) => void;

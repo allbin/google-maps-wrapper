@@ -1,10 +1,10 @@
 /// <reference types="googlemaps" />
 import WrappedMapBase, { ExportedFunctions, MapBaseProps } from "./WrappedMapBase";
+import simplify from "./simplify";
 export default WrappedMapBase;
 export declare type GMW_ExportedFunctions = ExportedFunctions;
 export declare type GMW_MapBaseProps = MapBaseProps;
 export { convertFromArrayOfArray, haversineDistance, latLngArrayToCoordArray, makeRectRT90, movePointsByCoord, MVCArrayToCoordArray, MVCArrayToObjArray, arrayRT90ToWGS84, arrayRT90ToWGS84LatLngObj, } from "./external_helpers";
-import simplify from "./simplify";
 export { simplify };
 export declare type GMW_LatLng = google.maps.LatLng;
 export declare type GMW_LatLngBounds = google.maps.LatLngBounds;

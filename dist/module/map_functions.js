@@ -87,7 +87,7 @@ export const clearFeatureCollections = (map_objects, features_layer, feature_lay
         });
     }
 };
-export const setDrawingMode = (services, type, opts, cb, cancel_drawing, setDrawingCompletedListener, drawing_completed_listener) => {
+export const setDrawingMode = (services, type, opts, cb, drawing_completed_listener) => {
     let mode = null;
     if (!services.drawing) {
         console.error("MAP: Drawing library not available! Add it to google maps api request url.");
@@ -102,16 +102,17 @@ export const setDrawingMode = (services, type, opts, cb, cancel_drawing, setDraw
     const drawing_opts = Object.assign({}, opts, { drawingMode: mode });
     services.drawingManager.setOptions(drawing_opts);
     console.log("MAP: Drawing mode started for:", type + ".");
-    cancel_drawing = false;
-    if (drawing_completed_listener) {
-        drawing_completed_listener.remove();
+    if (drawing_completed_listener.listener) {
+        drawing_completed_listener.listener.remove();
     }
-    setDrawingCompletedListener(google.maps.event.addListenerOnce(services.drawingManager, "overlaycomplete", (e) => {
+    console.log("setDrawingListener");
+    drawing_completed_listener.listener = google.maps.event.addListenerOnce(services.drawingManager, "overlaycomplete", (e) => {
         // console.log("overlay complete", cb, cancel_drawing);
         e.overlay.setMap(null);
         drawing_opts.drawingMode = null;
         services.drawingManager.setOptions(drawing_opts);
-        if (!cb || cancel_drawing) {
+        if (!cb || drawing_completed_listener.cancel) {
+            drawing_completed_listener.cancel = false;
             return;
         }
         if (type === "polyline" || type === "polygon") {
@@ -129,26 +130,22 @@ export const setDrawingMode = (services, type, opts, cb, cancel_drawing, setDraw
         else {
             cb(null, e.overlay);
         }
-    }));
+    });
 };
-export const completeDrawingMode = (services, drawing_completed_listener) => {
+export const endDrawingMode = (services, drawing_completed_listener, cancel, debug_src) => {
+    if (debug_src) {
+        console.log("endDrawingMode debug src:", debug_src);
+    }
+    drawing_completed_listener.cancel = cancel;
     if (services.drawing) {
         services.drawingManager.setOptions({ drawingMode: null });
     }
-    if (drawing_completed_listener) {
-        drawing_completed_listener.remove();
+    if (drawing_completed_listener.listener) {
+        drawing_completed_listener.listener.remove();
+        delete drawing_completed_listener.listener;
     }
 };
-export const cancelDrawingMode = (services, cancel_drawing, drawing_completed_listener, debug_src) => {
-    if (debug_src) {
-        console.log("cancel drawing mode:", debug_src);
-    }
-    if (services.drawing && drawing_completed_listener) {
-        cancel_drawing = true;
-        services.drawingManager.setOptions({ drawingMode: null });
-    }
-};
-export const setCuttingMode = (services, map, map_objects, cutting, cutting_objects, default_center, cancel_drawing, drawing_completed_listener, polyline_id, cutting_completed_listener, cb) => {
+export const setCuttingMode = (services, map, map_objects, cutting, cutting_objects, default_center, drawing_completed_listener, polyline_id, cutting_completed_listener, cb) => {
     if (!Object.prototype.hasOwnProperty.call(map_objects.polyline, polyline_id)) {
         console.error("MAP: Cannot set cutting mode, provided object id not on map: ", polyline_id);
         return;
@@ -157,7 +154,7 @@ export const setCuttingMode = (services, map, map_objects, cutting, cutting_obje
         console.error("MAP: Cannot setCuttingMode without supplying completed callback.");
         return;
     }
-    cancelDrawingMode(services, cancel_drawing, drawing_completed_listener, "setCuttingMode");
+    endDrawingMode(services, drawing_completed_listener, true, "setCuttingMode");
     const polyline = map_objects.polyline[polyline_id];
     const opts = {
         clickable: false,

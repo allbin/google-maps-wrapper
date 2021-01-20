@@ -50,7 +50,9 @@ export const WrappedMapBase = (props) => {
     const [do_after_init] = useState([]);
     const [do_on_drag_end] = useState([]);
     const [do_on_drag_start] = useState([]);
-    const [drawing_completed_listener, setDrawingCompletedListener] = useState();
+    const [drawing_completed_listener] = useState({
+        cancel: false,
+    });
     const [features_layer, setFeaturesLayer] = useState();
     const [feature_layers] = useState();
     const [map_objects] = useState({
@@ -67,7 +69,6 @@ export const WrappedMapBase = (props) => {
         indexes: null,
     });
     const [cutting_completed_listener] = useState();
-    const [cancel_drawing] = useState(false);
     const [services, setServices] = useState();
     const html_element_ref = useRef(null);
     const [funcs, setFuncs] = useState();
@@ -174,13 +175,21 @@ export const WrappedMapBase = (props) => {
             zoomToObject: (item) => map && panZoomToObjectOrFeature(map, item, true),
             panToObject: (item) => map && panZoomToObjectOrFeature(map, item, false),
             setDrawingMode: (type, opts, cb) => {
-                map_funcs.setDrawingMode(services, type, opts, cb, cancel_drawing, setDrawingCompletedListener, drawing_completed_listener);
+                map_funcs.setDrawingMode(services, type, opts, cb, drawing_completed_listener);
             },
-            cancelDrawingMode: (cancel_drawing, debug_src) => drawing_completed_listener &&
-                map_funcs.cancelDrawingMode(services, cancel_drawing, drawing_completed_listener, debug_src),
+            cancelDrawingMode: (debug_src) => {
+                if (!drawing_completed_listener.listener) {
+                    if (debug_src) {
+                        console.log("Cancel drawing before listener was attached, call from: " +
+                            debug_src);
+                    }
+                    return;
+                }
+                map_funcs.endDrawingMode(services, drawing_completed_listener, true, debug_src);
+            },
             setCuttingMode: (polyline_id, cb) => drawing_completed_listener &&
                 cutting_completed_listener &&
-                map_funcs.setCuttingMode(services, map, map_objects, cutting, cutting_objects, default_center, cancel_drawing, drawing_completed_listener, polyline_id, cutting_completed_listener, cb),
+                map_funcs.setCuttingMode(services, map, map_objects, cutting, cutting_objects, default_center, drawing_completed_listener, polyline_id, cutting_completed_listener, cb),
             cuttingPositionUpdate: (mouse_event) => map_funcs.cuttingPositionUpdate(mouse_event, map_objects, cutting, cutting_objects),
             cuttingClick: (mouse_event) => map_funcs.cuttingClick(mouse_event, map, map_objects, cutting, cutting_objects),
             completeCuttingMode: () => (cutting_completed_listener &&

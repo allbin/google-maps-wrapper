@@ -1,6 +1,10 @@
 /// <reference types="googlemaps" />
 import { GMW_LatLngLiteral, GMW_LatLng, GMW_MarkerOptionsSet, GMW_PolylineOptions, GMW_PolygonOptions, GMW_WrappedMarker, GMW_DrawingCB, GMW_Services, GMW_LatLngBoundsLiteral, GMW_LatLngBounds } from ".";
 import { MapObjects, CuttingState, CuttingObjects } from "./WrappedMapBase";
+interface DrawingListenerObject {
+    listener?: google.maps.MapsEventListener;
+    cancel: boolean;
+}
 export declare const getBoundsLiteral: (map: google.maps.Map | undefined) => undefined | {
     north: number;
     east: number;
@@ -18,11 +22,11 @@ export declare const clearPolygons: (verbose: boolean, map_objects: MapObjects, 
 export declare const setMarker: (verbose: boolean, map: google.maps.Map, map_objects: MapObjects, cutting: CuttingState, id: string | number, options: GMW_MarkerOptionsSet) => Promise<GMW_WrappedMarker>;
 export declare const clearMarkers: (verbose: boolean, map_objects: MapObjects, cutting: CuttingState) => Promise<boolean[]>;
 export declare const clearFeatureCollections: (map_objects: MapObjects, features_layer: google.maps.Data, feature_layers: google.maps.Data[]) => void;
-export declare const setDrawingMode: (services: GMW_Services, type: "polyline" | "polygon", opts: GMW_PolylineOptions | GMW_PolygonOptions, cb: GMW_DrawingCB, cancel_drawing: boolean, setDrawingCompletedListener: (listener: google.maps.MapsEventListener) => void, drawing_completed_listener?: google.maps.MapsEventListener | undefined) => void;
-export declare const completeDrawingMode: (services: GMW_Services, drawing_completed_listener: google.maps.MapsEventListener) => void;
-export declare const cancelDrawingMode: (services: GMW_Services, cancel_drawing: boolean, drawing_completed_listener: google.maps.MapsEventListener, debug_src?: string | undefined) => void;
-export declare const setCuttingMode: (services: GMW_Services, map: google.maps.Map, map_objects: MapObjects, cutting: CuttingState, cutting_objects: CuttingObjects, default_center: GMW_LatLngLiteral, cancel_drawing: boolean, drawing_completed_listener: google.maps.MapsEventListener, polyline_id: string | number, cutting_completed_listener: (segments: [number, number][][] | null) => void, cb?: (() => any) | undefined) => void;
+export declare const setDrawingMode: (services: GMW_Services, type: "polyline" | "polygon", opts: GMW_PolylineOptions | GMW_PolygonOptions, cb: GMW_DrawingCB, drawing_completed_listener: DrawingListenerObject) => void;
+export declare const endDrawingMode: (services: GMW_Services, drawing_completed_listener: DrawingListenerObject, cancel: boolean, debug_src?: string | undefined) => void;
+export declare const setCuttingMode: (services: GMW_Services, map: google.maps.Map, map_objects: MapObjects, cutting: CuttingState, cutting_objects: CuttingObjects, default_center: GMW_LatLngLiteral, drawing_completed_listener: DrawingListenerObject, polyline_id: string | number, cutting_completed_listener: (segments: [number, number][][] | null) => void, cb?: (() => any) | undefined) => void;
 export declare const cuttingPositionUpdate: (mouse_event: google.maps.MouseEvent, map_objects: MapObjects, cutting: CuttingState, cutting_objects: CuttingObjects) => void;
 export declare const cuttingClick: (mouse_event: google.maps.MouseEvent, map: google.maps.Map, map_objects: MapObjects, cutting: CuttingState, cutting_objects: CuttingObjects) => void;
 export declare const completeCuttingMode: (map_objects: MapObjects, cutting: CuttingState, cutting_objects: CuttingObjects, cutting_completed_listener: (segments: [number, number][][] | null) => void) => [number, number][][];
 export declare const cancelCuttingMode: (map_objects: MapObjects, cutting: CuttingState, cutting_objects: CuttingObjects) => void;
+export {};
