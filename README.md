@@ -1,6 +1,6 @@
 # Google Maps Wrapper
 
-## Changelog 2.6.1
+## Changelog 2.6.2
 
 Fixed `cancelCuttingMode` so it cancels the drawing and also removes the drawn shape.
 
