@@ -217,7 +217,10 @@ export const setDrawingMode = (
   } else {
     throw new Error("MAP: Invalid drawing mode type:" + type);
   }
-  const drawing_opts = Object.assign({}, opts, { drawingMode: mode });
+  const drawing_opts = Object.assign(
+    {},
+    { drawingMode: mode, polylineOptions: opts, polygonOptions: opts }
+  );
   services.drawingManager.setOptions(drawing_opts);
   console.log("MAP: Drawing mode started for:", type + ".");
 
