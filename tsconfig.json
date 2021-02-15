@@ -15,7 +15,7 @@
     "module": "esnext",
     "moduleResolution": "node",
     "resolveJsonModule": true,
-    "noEmit": false,
+    "noEmit": true,
     "jsx": "react",
     "sourceMap": true,
     "rootDirs": [
@@ -24,6 +24,7 @@
     "declaration": true,
     "outDir": "dist",
     "allowJs": true,
+    "isolatedModules": true
   },
   "exclude": [
     "node_modules",
