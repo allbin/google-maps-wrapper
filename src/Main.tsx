@@ -203,12 +203,37 @@ const Map: FunctionComponent = () => {
           if (!funcs) {
             return;
           }
+          console.log("Starting Editing");
+          funcs.setPolygon(2, {
+            default: {
+              paths: [
+                { lng: 14.50567, lat: 56.75918 },
+                { lng: 14.60567, lat: 56.75918 },
+                { lng: 14.60567, lat: 56.65918 },
+                { lng: 14.50567, lat: 56.65918 },
+              ],
+              strokeColor: "#FF0000",
+              strokeWeight: 2,
+              fillColor: "#FF0000",
+              fillOpacity: 0.2,
+              editable: true,
+            },
+          });
+        }}
+      >
+        Edit Shape
+      </button>
+      <button
+        onClick={() => {
+          if (!funcs) {
+            return;
+          }
           console.log("Starting DrawingMode");
           funcs.setDrawingMode(
             "polyline",
             {
-              strokeColor: "#000000",
-              strokeWeight: 3,
+              strokeColor: "#ff0000",
+              strokeWeight: 10,
             },
             (path) => {
               console.log("path: ", path);
@@ -227,6 +252,40 @@ const Map: FunctionComponent = () => {
         }}
       >
         Cancel Drawing
+      </button>
+      <button
+        onClick={() => {
+          if (!funcs) {
+            return;
+          }
+          funcs.setCuttingMode("polyline1", (segs) => {
+            console.log("cutting callback:", segs);
+          });
+        }}
+      >
+        Start Cutting
+      </button>
+      <button
+        onClick={() => {
+          if (!funcs) {
+            return;
+          }
+          const segs = funcs.completeCuttingMode();
+          console.log("Completed cutting manually:", segs);
+        }}
+      >
+        Complete Cutting
+      </button>
+      <button
+        onClick={() => {
+          if (!funcs) {
+            return;
+          }
+          const segs = funcs.cancelCuttingMode();
+          console.log("Cancel cutting manually:", segs);
+        }}
+      >
+        Cancel Cutting
       </button>
 
       <button

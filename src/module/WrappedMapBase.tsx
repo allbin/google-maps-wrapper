@@ -61,7 +61,7 @@ export interface CuttingState {
   enabled: boolean;
   id: string | number | null;
   indexes: number[] | null;
-  arr?: [number, number][];
+  arr: [number, number][];
 }
 export interface CuttingObjects {
   [key: string]: any;
@@ -131,7 +131,10 @@ export type ExportedFunctions = {
     cb: GMW_DrawingCB
   ) => void;
   cancelDrawingMode: (debug_src?: string) => void;
-  setCuttingMode: (polyline_id: string | number, cb?: () => any) => void;
+  setCuttingMode: (
+    polyline_id: string | number,
+    cb?: (segments: [number, number][][] | null) => void
+  ) => void;
   cuttingPositionUpdate: (mouse_event: google.maps.MouseEvent) => void;
   cuttingClick: (mouse_event: google.maps.MouseEvent) => void;
   completeCuttingMode: () => [number, number][][];
@@ -152,6 +155,10 @@ export type ExportedFunctions = {
 
 interface DrawingListenerObject {
   listener?: google.maps.MapsEventListener;
+  cancel: boolean;
+}
+interface CuttingListenerObject {
+  listener?: (segments: [number, number][][] | null) => void;
   cancel: boolean;
 }
 interface EventCallbacks {
@@ -294,10 +301,11 @@ export const WrappedMapBase: React.FunctionComponent<MapBaseProps> = (
     enabled: false,
     id: null,
     indexes: null,
+    arr: [],
   });
-  const [cutting_completed_listener] = useState<
-    (segments: [number, number][][] | null) => void
-  >();
+  const [cutting_completed_listener] = useState<CuttingListenerObject>({
+    cancel: false,
+  });
   const [services, setServices] = useState<GMW_Services>();
   const html_element_ref = useRef(null);
   const [funcs, setFuncs] = useState<ExportedFunctions>();
@@ -477,21 +485,23 @@ export const WrappedMapBase: React.FunctionComponent<MapBaseProps> = (
           debug_src
         );
       },
-      setCuttingMode: (polyline_id, cb) =>
+      setCuttingMode: (polyline_id, cb) => {
+        console.log("polyline_id:", polyline_id);
         drawing_completed_listener &&
-        cutting_completed_listener &&
-        map_funcs.setCuttingMode(
-          services,
-          map,
-          map_objects,
-          cutting,
-          cutting_objects,
-          default_center,
-          drawing_completed_listener,
-          polyline_id,
-          cutting_completed_listener,
-          cb
-        ),
+          cutting_completed_listener &&
+          map_funcs.setCuttingMode(
+            services,
+            map,
+            map_objects,
+            cutting,
+            cutting_objects,
+            default_center,
+            drawing_completed_listener,
+            polyline_id,
+            cutting_completed_listener,
+            cb
+          );
+      },
       cuttingPositionUpdate: (mouse_event) =>
         map_funcs.cuttingPositionUpdate(
           mouse_event,
