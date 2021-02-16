@@ -99,13 +99,12 @@ export const setDrawingMode = (services, type, opts, cb, drawing_completed_liste
     else {
         throw new Error("MAP: Invalid drawing mode type:" + type);
     }
-    const drawing_opts = Object.assign({}, opts, { drawingMode: mode });
+    const drawing_opts = Object.assign({}, { drawingMode: mode, polylineOptions: opts, polygonOptions: opts });
     services.drawingManager.setOptions(drawing_opts);
     console.log("MAP: Drawing mode started for:", type + ".");
     if (drawing_completed_listener.listener) {
         drawing_completed_listener.listener.remove();
     }
-    console.log("setDrawingListener");
     drawing_completed_listener.listener = google.maps.event.addListenerOnce(services.drawingManager, "overlaycomplete", (e) => {
         // console.log("overlay complete", cb, cancel_drawing);
         e.overlay.setMap(null);
@@ -150,10 +149,12 @@ export const setCuttingMode = (services, map, map_objects, cutting, cutting_obje
         console.error("MAP: Cannot set cutting mode, provided object id not on map: ", polyline_id);
         return;
     }
-    if (!cb) {
-        console.error("MAP: Cannot setCuttingMode without supplying completed callback.");
-        return;
-    }
+    // if (!cb) {
+    //   console.error(
+    //     "MAP: Cannot setCuttingMode without supplying completed callback."
+    //   );
+    //   return;
+    // }
     endDrawingMode(services, drawing_completed_listener, true, "setCuttingMode");
     const polyline = map_objects.polyline[polyline_id];
     const opts = {
@@ -161,13 +162,11 @@ export const setCuttingMode = (services, map, map_objects, cutting, cutting_obje
         editable: false,
     };
     polyline.gmaps_obj.setOptions(opts);
-    const path = polyline.options.path;
-    cutting = {
-        enabled: true,
-        id: polyline_id,
-        indexes: [],
-        arr: path,
-    };
+    const path = polyline.options.default.path;
+    cutting.enabled = true;
+    cutting.id = polyline_id;
+    cutting.indexes = [];
+    cutting.arr = path;
     if (!Object.hasOwnProperty.call(cutting_objects, "hover_scissors")) {
         const opts = {
             position: default_center,
@@ -188,12 +187,9 @@ export const setCuttingMode = (services, map, map_objects, cutting, cutting_obje
         cutting_objects.hover_scissors = hover_scissors;
     }
     console.log("MAP: Cutting mode started for id: " + polyline_id);
-    cutting_completed_listener = (value) => {
+    cutting_completed_listener.listener = (value) => {
         if (cb) {
             cb(value);
-        }
-        else {
-            throw new Error("Callback for cutting completed not defined.");
         }
     };
 };
@@ -247,15 +243,19 @@ export const cuttingClick = (mouse_event, map, map_objects, cutting, cutting_obj
         console.error("cutting.indexes not defined when clicking for cut.");
         return;
     }
-    const polyline = map_objects.polyline[cutting.id];
-    const path = polyline.options.path;
+    if (!cutting.arr || cutting.arr.length < 2) {
+        console.error("cutting.path not defined when clicking for cut. Cutting:", cutting);
+        return;
+    }
+    // const polyline = map_objects.polyline[cutting.id];
+    // const path = polyline.options.path as any;
     const mouse_coord = {
         lat: mouse_event.latLng.lat(),
         lng: mouse_event.latLng.lng(),
     };
     let closest_index = 0;
     let closest_dist = Infinity;
-    path.forEach((point, i) => {
+    cutting.arr.forEach((point, i) => {
         const dist = haversineDistance(mouse_coord, point);
         if (dist < closest_dist) {
             closest_index = i;
@@ -266,7 +266,7 @@ export const cuttingClick = (mouse_event, map, map_objects, cutting, cutting_obj
         //Pointer is too far away from any point, ignore.
         return;
     }
-    if (closest_index === 0 || closest_index === path.length - 1) {
+    if (closest_index === 0 || closest_index === cutting.arr.length - 1) {
         //We are never interested in first or last point.
         return;
     }
@@ -283,7 +283,7 @@ export const cuttingClick = (mouse_event, map, map_objects, cutting, cutting_obj
     else {
         cutting.indexes.push(closest_index);
         const opts = {
-            position: path[closest_index],
+            position: cutting.arr[closest_index],
             icon: {
                 url: ScissorIcon,
             },
@@ -310,30 +310,22 @@ export const completeCuttingMode = (map_objects, cutting, cutting_objects, cutti
     if (!polyline) {
         return [];
     }
-    // TODO do not reassign inside function
-    cutting = {
-        enabled: false,
-        id: null,
-        indexes: null,
-    };
+    cutting.enabled = false;
+    cutting.id = null;
+    cutting.indexes = null;
     Object.keys(cutting_objects).forEach((marker_id) => {
         //Remove all cutting related markers.
         cutting_objects[marker_id].gmaps_obj.setMap(null);
         delete cutting_objects[marker_id];
     });
-    const opts = {
-        clickable: true,
-        editable: true,
-    };
-    polyline.gmaps_obj.setOptions(opts);
     if (!indexes || indexes.length === 0) {
         //We made no selections, just return.
-        if (cutting_completed_listener) {
-            cutting_completed_listener(null);
+        if (cutting_completed_listener.listener) {
+            cutting_completed_listener.listener(null);
         }
         return [];
     }
-    const path = polyline.options.path;
+    const path = cutting.arr;
     indexes.sort();
     //Add last index so that the remaining points form a segment as well.
     indexes.push(path.length - 1);
@@ -346,18 +338,16 @@ export const completeCuttingMode = (map_objects, cutting, cutting_objects, cutti
         resulting_segments.push(segment);
         prev_index = index;
     });
-    if (cutting_completed_listener) {
-        cutting_completed_listener(resulting_segments);
+    if (cutting_completed_listener.listener) {
+        cutting_completed_listener.listener(resulting_segments);
     }
     return resulting_segments;
 };
 export const cancelCuttingMode = (map_objects, cutting, cutting_objects) => {
     //TODO no reassign of prameter
-    cutting = {
-        enabled: false,
-        id: null,
-        indexes: null,
-    };
+    cutting.enabled = false;
+    cutting.id = null;
+    cutting.indexes = null;
     Object.keys(cutting_objects).forEach((marker_id) => {
         //Remove all cutting related markers.
         cutting_objects[marker_id].gmaps_obj.setMap(null);

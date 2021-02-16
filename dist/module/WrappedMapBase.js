@@ -67,8 +67,11 @@ export const WrappedMapBase = (props) => {
         enabled: false,
         id: null,
         indexes: null,
+        arr: [],
     });
-    const [cutting_completed_listener] = useState();
+    const [cutting_completed_listener] = useState({
+        cancel: false,
+    });
     const [services, setServices] = useState();
     const html_element_ref = useRef(null);
     const [funcs, setFuncs] = useState();
@@ -187,9 +190,12 @@ export const WrappedMapBase = (props) => {
                 }
                 map_funcs.endDrawingMode(services, drawing_completed_listener, true, debug_src);
             },
-            setCuttingMode: (polyline_id, cb) => drawing_completed_listener &&
-                cutting_completed_listener &&
-                map_funcs.setCuttingMode(services, map, map_objects, cutting, cutting_objects, default_center, drawing_completed_listener, polyline_id, cutting_completed_listener, cb),
+            setCuttingMode: (polyline_id, cb) => {
+                console.log("polyline_id:", polyline_id);
+                drawing_completed_listener &&
+                    cutting_completed_listener &&
+                    map_funcs.setCuttingMode(services, map, map_objects, cutting, cutting_objects, default_center, drawing_completed_listener, polyline_id, cutting_completed_listener, cb);
+            },
             cuttingPositionUpdate: (mouse_event) => map_funcs.cuttingPositionUpdate(mouse_event, map_objects, cutting, cutting_objects),
             cuttingClick: (mouse_event) => map_funcs.cuttingClick(mouse_event, map, map_objects, cutting, cutting_objects),
             completeCuttingMode: () => (cutting_completed_listener &&

@@ -24,7 +24,7 @@ export interface CuttingState {
     enabled: boolean;
     id: string | number | null;
     indexes: number[] | null;
-    arr?: [number, number][];
+    arr: [number, number][];
 }
 export interface CuttingObjects {
     [key: string]: any;
@@ -56,7 +56,7 @@ export declare type ExportedFunctions = {
     panToObject: (item: GMW_WrappedMarker | GMW_WrappedPolygon | GMW_WrappedPolyline | GMW_WrappedFeature) => void;
     setDrawingMode: (type: "polyline" | "polygon", opts: GMW_PolylineOptions | GMW_PolygonOptions, cb: GMW_DrawingCB) => void;
     cancelDrawingMode: (debug_src?: string) => void;
-    setCuttingMode: (polyline_id: string | number, cb?: () => any) => void;
+    setCuttingMode: (polyline_id: string | number, cb?: (segments: [number, number][][] | null) => void) => void;
     cuttingPositionUpdate: (mouse_event: google.maps.MouseEvent) => void;
     cuttingClick: (mouse_event: google.maps.MouseEvent) => void;
     completeCuttingMode: () => [number, number][][];
