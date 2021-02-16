@@ -1,5 +1,10 @@
 # Google Maps Wrapper
 
+## Changelog 2.6.3
+
+Fixed bugs which prevented entering cutting mode.  
+Fixed applying styles when starting drawing mode.
+
 ## Changelog 2.6.2
 
 Fixed `cancelCuttingMode` so it cancels the drawing and also removes the drawn shape.
@@ -22,7 +27,7 @@ Exporting `GMW_GeoJSONFeature` and `GMW_GeoJSONFeatureCollection` types.
 
 ## Changelog 2.5.0
 
-???
+Exporting interfaces.
 
 ## Changelog 2.4.0
 
