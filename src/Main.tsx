@@ -191,7 +191,7 @@ const Map: FunctionComponent = () => {
     }
 
     setTimeout(() => animateClusterMarkers((step + 1) % 14), 1000);
-    funcs!.getClusterers().then((clusterers) => {
+    funcs?.getClusterers().then((clusterers) => {
       clusterers[0].repaint();
     });
   };

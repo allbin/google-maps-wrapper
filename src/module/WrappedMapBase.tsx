@@ -526,8 +526,14 @@ export const WrappedMapBase: React.FunctionComponent<MapBaseProps> = (
             cutting_completed_listener
           )) ||
         [],
-      cancelCuttingMode: () =>
-        map_funcs.cancelCuttingMode(map_objects, cutting, cutting_objects),
+      cancelCuttingMode: () => {
+        map_funcs.cancelCuttingMode(
+          map_objects,
+          cutting,
+          cutting_objects,
+          cutting_completed_listener
+        );
+      },
       registerDragStartCB: (cb) => do_on_drag_end.push(cb),
       unregisterDragStartCB: (cb) => {
         const index = do_on_drag_start.indexOf(cb);

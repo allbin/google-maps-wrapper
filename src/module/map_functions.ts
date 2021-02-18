@@ -356,6 +356,12 @@ export const cuttingPositionUpdate = (
     return;
   }
   const polyline = map_objects.polyline[cutting.id];
+  if (!polyline) {
+    console.log(
+      "GMW: Could not find cutting object, this should not happen! Probably a bug."
+    );
+    return;
+  }
   const mouse_coord = {
     lat: mouse_event.latLng.lat(),
     lng: mouse_event.latLng.lng(),
@@ -399,6 +405,9 @@ export const cuttingClick = (
   cutting: CuttingState,
   cutting_objects: CuttingObjects
 ): void => {
+  if (!cutting.enabled) {
+    return;
+  }
   if (!cutting.id) {
     console.error("No cutting.id set when clicking for cut.");
     return;
@@ -480,15 +489,19 @@ export const completeCuttingMode = (
   cutting_objects: CuttingObjects,
   cutting_completed_listener: CuttingListenerObject
 ): [number, number][][] => {
-  if (!cutting || cutting.id === null) {
-    return [];
-  }
-  const indexes = cutting.indexes;
-  const polyline = map_objects.polyline[cutting.id];
-  if (!polyline) {
+  if (!cutting || cutting.id === null || !cutting.enabled) {
     return [];
   }
   cutting.enabled = false;
+  const indexes = cutting.indexes;
+  const polyline = map_objects.polyline[cutting.id];
+  if (!polyline) {
+    if (cutting_completed_listener.listener) {
+      cutting_completed_listener.listener(null);
+      delete cutting_completed_listener.listener;
+    }
+    return [];
+  }
   cutting.id = null;
   cutting.indexes = null;
   Object.keys(cutting_objects).forEach((marker_id) => {
@@ -501,6 +514,7 @@ export const completeCuttingMode = (
     //We made no selections, just return.
     if (cutting_completed_listener.listener) {
       cutting_completed_listener.listener(null);
+      delete cutting_completed_listener.listener;
     }
     return [];
   }
@@ -520,33 +534,37 @@ export const completeCuttingMode = (
   });
   if (cutting_completed_listener.listener) {
     cutting_completed_listener.listener(resulting_segments);
+    delete cutting_completed_listener.listener;
   }
   return resulting_segments;
 };
 export const cancelCuttingMode = (
   map_objects: MapObjects,
   cutting: CuttingState,
-  cutting_objects: CuttingObjects
+  cutting_objects: CuttingObjects,
+  cutting_completed_listener: CuttingListenerObject
 ): void => {
-  //TODO no reassign of prameter
   cutting.enabled = false;
-  cutting.id = null;
-  cutting.indexes = null;
   Object.keys(cutting_objects).forEach((marker_id) => {
     //Remove all cutting related markers.
     cutting_objects[marker_id].gmaps_obj.setMap(null);
     delete cutting_objects[marker_id];
   });
-  if (!cutting.id) {
-    console.error("No cutting.id set when cancelling cutting mode.");
-    return;
-  }
-  const polyline = map_objects.polyline[cutting.id];
-  if (polyline) {
-    const opts = {
-      clickable: true,
-      editable: true,
-    };
-    polyline.gmaps_obj.setOptions(opts);
+  // if (!cutting.id) {
+  //   console.error("No cutting.id set when cancelling cutting mode.");
+  //   return;
+  // }
+  // const polyline = map_objects.polyline[cutting.id];
+  // if (polyline) {
+  //   const opts = {
+  //     clickable: true,
+  //     editable: true,
+  //   };
+  //   polyline.gmaps_obj.setOptions(opts);
+  // }
+  cutting.id = null;
+  cutting.indexes = null;
+  if (cutting_completed_listener.listener) {
+    delete cutting_completed_listener.listener;
   }
 };
