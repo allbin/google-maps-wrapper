@@ -32,5 +32,5 @@ export declare const setCuttingMode: (services: GMW_Services, map: google.maps.M
 export declare const cuttingPositionUpdate: (mouse_event: google.maps.MouseEvent, map_objects: MapObjects, cutting: CuttingState, cutting_objects: CuttingObjects) => void;
 export declare const cuttingClick: (mouse_event: google.maps.MouseEvent, map: google.maps.Map, map_objects: MapObjects, cutting: CuttingState, cutting_objects: CuttingObjects) => void;
 export declare const completeCuttingMode: (map_objects: MapObjects, cutting: CuttingState, cutting_objects: CuttingObjects, cutting_completed_listener: CuttingListenerObject) => [number, number][][];
-export declare const cancelCuttingMode: (map_objects: MapObjects, cutting: CuttingState, cutting_objects: CuttingObjects) => void;
+export declare const cancelCuttingMode: (map_objects: MapObjects, cutting: CuttingState, cutting_objects: CuttingObjects, cutting_completed_listener: CuttingListenerObject) => void;
 export {};
