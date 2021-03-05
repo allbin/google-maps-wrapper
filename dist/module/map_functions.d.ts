@@ -6,7 +6,7 @@ interface DrawingListenerObject {
     cancel: boolean;
 }
 interface CuttingListenerObject {
-    listener?: (segments: [number, number][][] | null) => void;
+    listener?: (segments: GMW_LatLngLiteral[][] | null) => void;
     cancel: boolean;
 }
 export declare const getBoundsLiteral: (map: google.maps.Map | undefined) => undefined | {
@@ -28,9 +28,9 @@ export declare const clearMarkers: (verbose: boolean, map_objects: MapObjects, c
 export declare const clearFeatureCollections: (map_objects: MapObjects, features_layer: google.maps.Data, feature_layers: google.maps.Data[]) => void;
 export declare const setDrawingMode: (services: GMW_Services, type: "polyline" | "polygon", opts: GMW_PolylineOptions | GMW_PolygonOptions, cb: GMW_DrawingCB, drawing_completed_listener: DrawingListenerObject) => void;
 export declare const endDrawingMode: (services: GMW_Services, drawing_completed_listener: DrawingListenerObject, cancel: boolean, debug_src?: string | undefined) => void;
-export declare const setCuttingMode: (services: GMW_Services, map: google.maps.Map, map_objects: MapObjects, cutting: CuttingState, cutting_objects: CuttingObjects, default_center: GMW_LatLngLiteral, drawing_completed_listener: DrawingListenerObject, polyline_id: string | number, cutting_completed_listener: CuttingListenerObject, cb?: ((segments: [number, number][][] | null) => void) | undefined) => void;
+export declare const setCuttingMode: (services: GMW_Services, map: google.maps.Map, map_objects: MapObjects, cutting: CuttingState, cutting_objects: CuttingObjects, default_center: GMW_LatLngLiteral, drawing_completed_listener: DrawingListenerObject, polyline_id: string | number, cutting_completed_listener: CuttingListenerObject, cb?: ((segments: GMW_LatLngLiteral[][] | null) => void) | undefined) => void;
 export declare const cuttingPositionUpdate: (mouse_event: google.maps.MouseEvent, map_objects: MapObjects, cutting: CuttingState, cutting_objects: CuttingObjects) => void;
 export declare const cuttingClick: (mouse_event: google.maps.MouseEvent, map: google.maps.Map, map_objects: MapObjects, cutting: CuttingState, cutting_objects: CuttingObjects) => void;
-export declare const completeCuttingMode: (map_objects: MapObjects, cutting: CuttingState, cutting_objects: CuttingObjects, cutting_completed_listener: CuttingListenerObject) => [number, number][][];
+export declare const completeCuttingMode: (map_objects: MapObjects, cutting: CuttingState, cutting_objects: CuttingObjects, cutting_completed_listener: CuttingListenerObject) => GMW_LatLngLiteral[][];
 export declare const cancelCuttingMode: (map_objects: MapObjects, cutting: CuttingState, cutting_objects: CuttingObjects, cutting_completed_listener: CuttingListenerObject) => void;
 export {};

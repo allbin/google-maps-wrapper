@@ -1,6 +1,6 @@
 {
   "name": "google-maps-wrapper",
-  "version": "2.6.4",
+  "version": "2.6.5",
   "description": "",
   "main": "dist/module/index.js",
   "scripts": {
