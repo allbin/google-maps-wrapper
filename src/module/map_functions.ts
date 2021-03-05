@@ -29,7 +29,7 @@ interface DrawingListenerObject {
   cancel: boolean;
 }
 interface CuttingListenerObject {
-  listener?: (segments: [number, number][][] | null) => void;
+  listener?: (segments: GMW_LatLngLiteral[][] | null) => void;
   cancel: boolean;
 }
 
@@ -289,7 +289,7 @@ export const setCuttingMode = (
   drawing_completed_listener: DrawingListenerObject,
   polyline_id: string | number,
   cutting_completed_listener: CuttingListenerObject,
-  cb?: (segments: [number, number][][] | null) => void
+  cb?: (segments: GMW_LatLngLiteral[][] | null) => void
 ): void => {
   if (
     !Object.prototype.hasOwnProperty.call(map_objects.polyline, polyline_id)
@@ -488,7 +488,7 @@ export const completeCuttingMode = (
   cutting: CuttingState,
   cutting_objects: CuttingObjects,
   cutting_completed_listener: CuttingListenerObject
-): [number, number][][] => {
+): GMW_LatLngLiteral[][] => {
   if (!cutting || cutting.id === null || !cutting.enabled) {
     return [];
   }
@@ -523,7 +523,7 @@ export const completeCuttingMode = (
   indexes.sort();
   //Add last index so that the remaining points form a segment as well.
   indexes.push(path.length - 1);
-  const resulting_segments: [number, number][][] = [];
+  const resulting_segments: GMW_LatLngLiteral[][] = [];
   let prev_index = 0;
   indexes.forEach((index) => {
     const segment = path.slice(prev_index, index);

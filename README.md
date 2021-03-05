@@ -1,5 +1,9 @@
 # Google Maps Wrapper
 
+## Changelog 2.6.5
+
+Fixed invalid cutting mode return type.
+
 ## Changelog 2.6.3
 
 Fixed bugs which prevented entering cutting mode.  

@@ -61,7 +61,7 @@ export interface CuttingState {
   enabled: boolean;
   id: string | number | null;
   indexes: number[] | null;
-  arr: [number, number][];
+  arr: GMW_LatLngLiteral[];
 }
 export interface CuttingObjects {
   [key: string]: any;
@@ -133,11 +133,11 @@ export type ExportedFunctions = {
   cancelDrawingMode: (debug_src?: string) => void;
   setCuttingMode: (
     polyline_id: string | number,
-    cb?: (segments: [number, number][][] | null) => void
+    cb?: (segments: GMW_LatLngLiteral[][] | null) => void
   ) => void;
   cuttingPositionUpdate: (mouse_event: google.maps.MouseEvent) => void;
   cuttingClick: (mouse_event: google.maps.MouseEvent) => void;
-  completeCuttingMode: () => [number, number][][];
+  completeCuttingMode: () => GMW_LatLngLiteral[][];
   cancelCuttingMode: () => void;
   registerDragStartCB: (cb: () => void) => number;
   unregisterDragStartCB: (cb: () => void) => void;
@@ -158,7 +158,7 @@ interface DrawingListenerObject {
   cancel: boolean;
 }
 interface CuttingListenerObject {
-  listener?: (segments: [number, number][][] | null) => void;
+  listener?: (segments: GMW_LatLngLiteral[][] | null) => void;
   cancel: boolean;
 }
 interface EventCallbacks {
