@@ -1,5 +1,9 @@
 # Google Maps Wrapper
 
+## Changelog 2.6.6
+
+Fixed react peer dependency version.
+
 ## Changelog 2.6.5
 
 Fixed invalid cutting mode return type.
