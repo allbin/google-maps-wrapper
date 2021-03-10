@@ -228,6 +228,7 @@ export const setDrawingMode = (
   services.drawingManager.setOptions(drawing_opts);
   console.log("MAP: Drawing mode started for:", type + ".");
 
+  drawing_completed_listener.cancel = false;
   if (drawing_completed_listener.listener) {
     drawing_completed_listener.listener.remove();
   }
@@ -235,7 +236,6 @@ export const setDrawingMode = (
     services.drawingManager,
     "overlaycomplete",
     (e: google.maps.drawing.OverlayCompleteEvent) => {
-      // console.log("overlay complete", cb, cancel_drawing);
       e.overlay.setMap(null);
       drawing_opts.drawingMode = null;
       services.drawingManager.setOptions(drawing_opts);
