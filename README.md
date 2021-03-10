@@ -1,6 +1,6 @@
 # Google Maps Wrapper
 
-## Changelog 2.6.7
+## Changelog 2.6.8
 
 Fixed issue where drawing cancellation flag was not reset when starting a new drawing.
 
