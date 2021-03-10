@@ -1,5 +1,9 @@
 # Google Maps Wrapper
 
+## Changelog 2.6.7
+
+Fixed issue where drawing cancellation flag was not reset when starting a new drawing.
+
 ## Changelog 2.6.6
 
 Fixed react peer dependency version.
