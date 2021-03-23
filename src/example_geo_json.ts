@@ -1,4 +1,4 @@
-import { MultiPolygon } from "geojson";
+import { MultiPolygon, Polygon } from "geojson";
 import { GMW_GeoJSONFeature, GMW_GeoJSONFeatureCollection } from "./module";
 
 const test_rt_90: GMW_GeoJSONFeature<MultiPolygon> = {
@@ -2497,9 +2497,36 @@ const test_rt_90: GMW_GeoJSONFeature<MultiPolygon> = {
   },
 };
 
-const x: GMW_GeoJSONFeatureCollection<MultiPolygon> = {
+const thing: GMW_GeoJSONFeature<Polygon> = {
+  id: "my_id",
+  properties: null,
+  type: "Feature",
+  geometry: {
+    type: "Polygon",
+    coordinates: [
+      [
+        [14.60567, 56.65918],
+        [14.70567, 56.65918],
+        [14.70567, 56.55918],
+        [14.60567, 56.55918],
+        [14.60567, 56.65918],
+      ],
+    ],
+  },
+};
+
+const things: GMW_GeoJSONFeature<Polygon>[] = Array(20000)
+  .fill(null)
+  .map((x, i) => ({
+    ...thing,
+    id: "thing" + i,
+  }));
+
+export const single_feature: GMW_GeoJSONFeatureCollection<MultiPolygon> = {
   type: "FeatureCollection",
   features: [test_rt_90],
 };
-
-export default x;
+export const multiple_features: GMW_GeoJSONFeatureCollection<Polygon> = {
+  type: "FeatureCollection",
+  features: [...things],
+};

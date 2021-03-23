@@ -7,8 +7,10 @@ import MapBase, {
   GMW_WrappedMarker,
   GMW_ExportedFunctions,
 } from "./module";
-import example_geo_json from "./example_geo_json";
+import { single_feature, multiple_features } from "./example_geo_json";
 import { MarkerClustererOptions } from "@google/markerclustererplus";
+
+let features_layer: google.maps.Data | undefined = undefined;
 
 const Map: FunctionComponent = () => {
   const [funcs, setFuncs] = useState<GMW_ExportedFunctions>();
@@ -95,7 +97,7 @@ const Map: FunctionComponent = () => {
         }, 2000);
       });
 
-    example_geo_json.features[0].geometry.coordinates = example_geo_json.features[0].geometry.coordinates.map(
+    single_feature.features[0].geometry.coordinates = single_feature.features[0].geometry.coordinates.map(
       (x: number[][][]) => {
         return x.map((y) => {
           return arrayRT90ToWGS84(y as [number, number][]);
@@ -103,13 +105,14 @@ const Map: FunctionComponent = () => {
       }
     );
     initial_funcs
-      .setGeoJSONCollection(example_geo_json, {
+      .setGeoJSONCollection(single_feature, {
         default: { visible: true, fillColor: "#ff0000", fillOpacity: 0.3 },
         hover: { fillOpacity: 0.6 },
       })
       .then((x) => {
+        features_layer = x.layer;
         x.features.forEach((y) => {
-          console.log(y);
+          // console.log(y);
           y.registerEventCB("mouseover", () => {
             y.applyOptions("hover");
           });
@@ -196,6 +199,29 @@ const Map: FunctionComponent = () => {
     });
   };
 
+  const addManyGeoJsonFeatures = (): void => {
+    features_layer?.unbindAll();
+    features_layer?.setMap(null);
+    funcs &&
+      funcs
+        .setGeoJSONCollection(multiple_features, {
+          default: { visible: true, fillColor: "#ff00ff", fillOpacity: 0.3 },
+          hover: { fillOpacity: 0.6 },
+        })
+        .then((x) => {
+          features_layer = x.layer;
+          x.features.forEach((y) => {
+            // console.log(y);
+            y.registerEventCB("mouseover", () => {
+              y.applyOptions("hover");
+            });
+            y.registerEventCB("mouseout", () => {
+              y.applyOptions("default");
+            });
+          });
+        });
+  };
+
   return (
     <div>
       <button
@@ -203,7 +229,18 @@ const Map: FunctionComponent = () => {
           if (!funcs) {
             return;
           }
-          console.log("Starting Editing");
+          console.log("Adding geo-json features.");
+          addManyGeoJsonFeatures();
+        }}
+      >
+        Add 20k geo json features
+      </button>
+      <button
+        onClick={() => {
+          if (!funcs) {
+            return;
+          }
+          console.log("Starting Editing.");
           funcs.setPolygon(2, {
             default: {
               paths: [
@@ -228,7 +265,7 @@ const Map: FunctionComponent = () => {
           if (!funcs) {
             return;
           }
-          console.log("Starting DrawingMode");
+          console.log("Starting DrawingMode.");
           funcs.setDrawingMode(
             "polyline",
             {
