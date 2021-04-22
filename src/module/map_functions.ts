@@ -1,12 +1,16 @@
-import * as internal_helpers from "./internal_helpers";
-import { haversineDistance, MVCArrayToCoordArray } from "./external_helpers";
+/* eslint-disable @typescript-eslint/explicit-module-boundary-types */
+/* eslint-disable @typescript-eslint/no-unsafe-call */
+/* eslint-disable @typescript-eslint/no-unsafe-assignment */
+/* eslint-disable @typescript-eslint/no-unsafe-member-access */
+import * as internal_helpers from './internal_helpers';
+import { haversineDistance, MVCArrayToCoordArray } from './external_helpers';
 import {
   CUTTING_SNAP_DISTANCE,
   Z_INDEX_SCISSORS,
   Z_INDEX_SCISSORS_HOVER,
-} from "./constants";
-import ScissorIcon from "./img/marker_scissors.svg";
-import ScissorHoverIcon from "./img/marker_scissors_hover.svg";
+} from './constants';
+import ScissorIcon from './img/marker_scissors.svg';
+import ScissorHoverIcon from './img/marker_scissors_hover.svg';
 import {
   GMW_LatLngLiteral,
   GMW_LatLng,
@@ -21,8 +25,8 @@ import {
   GMW_Services,
   GMW_LatLngBoundsLiteral,
   GMW_LatLngBounds,
-} from ".";
-import { MapObjects, CuttingState, CuttingObjects } from "./WrappedMapBase";
+} from '.';
+import { MapObjects, CuttingState, CuttingObjects } from './WrappedMapBase';
 
 interface DrawingListenerObject {
   listener?: google.maps.MapsEventListener;
@@ -34,7 +38,7 @@ interface CuttingListenerObject {
 }
 
 export const getBoundsLiteral = (
-  map: google.maps.Map | undefined
+  map: google.maps.Map | undefined,
 ): undefined | { north: number; east: number; south: number; west: number } => {
   if (!map) {
     return undefined;
@@ -53,7 +57,7 @@ export const getBoundsLiteral = (
   };
 };
 export const getBounds = (
-  map: google.maps.Map | undefined
+  map: google.maps.Map | undefined,
 ): undefined | GMW_LatLngBounds => {
   if (!map) {
     return undefined;
@@ -68,7 +72,7 @@ export const getBounds = (
 /** Takes a coordinate and center it on the map  */
 export const setCenter = (
   map: google.maps.Map | undefined,
-  lat_lng: GMW_LatLngLiteral | GMW_LatLng
+  lat_lng: GMW_LatLngLiteral | GMW_LatLng,
 ): Promise<void> => {
   return new Promise((resolve) => {
     if (map) {
@@ -81,7 +85,7 @@ export const setCenter = (
 
 export const setBounds = (
   map: google.maps.Map | undefined,
-  bounds: GMW_LatLngBoundsLiteral | GMW_LatLngBounds
+  bounds: GMW_LatLngBoundsLiteral | GMW_LatLngBounds,
 ): Promise<void> => {
   return new Promise((resolve) => {
     if (map) {
@@ -94,10 +98,10 @@ export const setBounds = (
 export const toPixel = (
   lat_lng_input: GMW_LatLng | GMW_LatLngLiteral,
   html_element: any,
-  overlay: google.maps.OverlayView | undefined
+  overlay: google.maps.OverlayView | undefined,
 ): [number, number] => {
   if (!overlay) {
-    throw new Error("Overlay not loaded when calling toPixel.");
+    throw new Error('Overlay not loaded when calling toPixel.');
   }
   const node_rect = html_element.getBoundingClientRect();
   let lat_lng: GMW_LatLng;
@@ -107,12 +111,13 @@ export const toPixel = (
     lat_lng = new window.google.maps.LatLng(lat_lng_input);
   }
   const pixel_obj = overlay.getProjection().fromLatLngToContainerPixel(lat_lng);
+  // eslint-disable-next-line
   return [pixel_obj.x + node_rect.left, pixel_obj.y + node_rect.top];
 };
 
 export const setZoom = (
   zoom_level: number,
-  map: google.maps.Map | undefined
+  map: google.maps.Map | undefined,
 ): Promise<void> =>
   new Promise((resolve) => {
     map && map.setZoom(zoom_level);
@@ -123,7 +128,7 @@ export const setZoom = (
 export const clearPolylines = (
   verbose: boolean,
   map_objects: MapObjects,
-  cutting: CuttingState
+  cutting: CuttingState,
 ): Promise<boolean[]> => {
   const promise_arr: Promise<boolean>[] = [];
   Object.keys(map_objects.polyline).forEach((id) => {
@@ -132,9 +137,9 @@ export const clearPolylines = (
         verbose,
         map_objects,
         cutting,
-        "polyline",
-        id
-      )
+        'polyline',
+        id,
+      ),
     );
   });
   return Promise.all(promise_arr);
@@ -143,7 +148,7 @@ export const clearPolylines = (
 export const clearPolygons = (
   verbose: boolean,
   map_objects: MapObjects,
-  cutting: CuttingState
+  cutting: CuttingState,
 ): Promise<boolean[]> =>
   Promise.all(
     Object.keys(map_objects.polygon).map((id) =>
@@ -151,10 +156,10 @@ export const clearPolygons = (
         verbose,
         map_objects,
         cutting,
-        "polygon",
-        id
-      )
-    )
+        'polygon',
+        id,
+      ),
+    ),
   );
 
 export const setMarker = (
@@ -163,14 +168,14 @@ export const setMarker = (
   map_objects: MapObjects,
   cutting: CuttingState,
   id: string | number,
-  options: GMW_MarkerOptionsSet
+  options: GMW_MarkerOptionsSet,
 ): Promise<GMW_WrappedMarker> =>
   internal_helpers.setMarker(verbose, map, map_objects, cutting, id, options);
 
 export const clearMarkers = (
   verbose: boolean,
   map_objects: MapObjects,
-  cutting: CuttingState
+  cutting: CuttingState,
 ): Promise<boolean[]> =>
   Promise.all(
     Object.keys(map_objects.marker).map((id) =>
@@ -178,15 +183,15 @@ export const clearMarkers = (
         verbose,
         map_objects,
         cutting,
-        "marker",
-        id
-      )
-    )
+        'marker',
+        id,
+      ),
+    ),
   );
 export const clearFeatureCollections = (
   map_objects: MapObjects,
   features_layer: google.maps.Data,
-  feature_layers: google.maps.Data[]
+  feature_layers: google.maps.Data[],
 ): void => {
   feature_layers.forEach((x) => x.setMap(null));
   // feature_layers = [];
@@ -199,34 +204,34 @@ export const clearFeatureCollections = (
 
 export const setDrawingMode = (
   services: GMW_Services,
-  type: "polyline" | "polygon",
+  type: 'polyline' | 'polygon',
   opts: GMW_PolylineOptions | GMW_PolygonOptions,
   cb: GMW_DrawingCB,
-  drawing_completed_listener: DrawingListenerObject
+  drawing_completed_listener: DrawingListenerObject,
 ): void => {
   let mode = null;
   if (!services.drawing) {
     console.error(
-      "MAP: Drawing library not available! Add it to google maps api request url."
+      'MAP: Drawing library not available! Add it to google maps api request url.',
     );
     return;
   }
   if (
     Object.prototype.hasOwnProperty.call(
       services.drawing.OverlayType,
-      type.toUpperCase()
+      type.toUpperCase(),
     )
   ) {
     mode = services.drawing.OverlayType[type.toUpperCase()];
   } else {
-    throw new Error("MAP: Invalid drawing mode type:" + type);
+    throw new Error('MAP: Invalid drawing mode type:' + type);
   }
   const drawing_opts = Object.assign(
     {},
-    { drawingMode: mode, polylineOptions: opts, polygonOptions: opts }
+    { drawingMode: mode, polylineOptions: opts, polygonOptions: opts },
   );
   services.drawingManager.setOptions(drawing_opts);
-  console.log("MAP: Drawing mode started for:", type + ".");
+  console.log('MAP: Drawing mode started for:', type + '.');
 
   drawing_completed_listener.cancel = false;
   if (drawing_completed_listener.listener) {
@@ -234,7 +239,7 @@ export const setDrawingMode = (
   }
   drawing_completed_listener.listener = google.maps.event.addListenerOnce(
     services.drawingManager,
-    "overlaycomplete",
+    'overlaycomplete',
     (e: google.maps.drawing.OverlayCompleteEvent) => {
       e.overlay.setMap(null);
       drawing_opts.drawingMode = null;
@@ -243,20 +248,20 @@ export const setDrawingMode = (
         drawing_completed_listener.cancel = false;
         return;
       }
-      if (type === "polyline" || type === "polygon") {
+      if (type === 'polyline' || type === 'polygon') {
         const overlay = e.overlay as GMW_Polygon | GMW_Polyline;
         const path = MVCArrayToCoordArray(overlay.getPath());
         if (cb) {
           cb(path as [number, number][], overlay);
         }
-      } else if (type === "marker") {
+      } else if (type === 'marker') {
         const overlay = e.overlay as GMW_Marker;
         const pos = overlay.getPosition();
         cb([pos.lat(), pos.lng()], overlay);
       } else {
         cb(null, e.overlay as any);
       }
-    }
+    },
   );
 };
 
@@ -264,10 +269,10 @@ export const endDrawingMode = (
   services: GMW_Services,
   drawing_completed_listener: DrawingListenerObject,
   cancel: boolean,
-  debug_src?: string
+  debug_src?: string,
 ): void => {
   if (debug_src) {
-    console.log("endDrawingMode debug src:", debug_src);
+    console.log('endDrawingMode debug src:', debug_src);
   }
   drawing_completed_listener.cancel = cancel;
   if (services.drawing) {
@@ -289,14 +294,14 @@ export const setCuttingMode = (
   drawing_completed_listener: DrawingListenerObject,
   polyline_id: string | number,
   cutting_completed_listener: CuttingListenerObject,
-  cb?: (segments: GMW_LatLngLiteral[][] | null) => void
+  cb?: (segments: GMW_LatLngLiteral[][] | null) => void,
 ): void => {
   if (
     !Object.prototype.hasOwnProperty.call(map_objects.polyline, polyline_id)
   ) {
     console.error(
-      "MAP: Cannot set cutting mode, provided object id not on map: ",
-      polyline_id
+      'MAP: Cannot set cutting mode, provided object id not on map: ',
+      polyline_id,
     );
     return;
   }
@@ -306,7 +311,7 @@ export const setCuttingMode = (
   //   );
   //   return;
   // }
-  endDrawingMode(services, drawing_completed_listener, true, "setCuttingMode");
+  endDrawingMode(services, drawing_completed_listener, true, 'setCuttingMode');
   const polyline = map_objects.polyline[polyline_id];
   const opts = {
     clickable: false,
@@ -319,7 +324,7 @@ export const setCuttingMode = (
   cutting.id = polyline_id;
   cutting.indexes = [];
   cutting.arr = path as any;
-  if (!Object.hasOwnProperty.call(cutting_objects, "hover_scissors")) {
+  if (!Object.hasOwnProperty.call(cutting_objects, 'hover_scissors')) {
     const opts = {
       position: default_center,
       icon: {
@@ -338,7 +343,7 @@ export const setCuttingMode = (
     hover_scissors.gmaps_obj.setMap(map);
     cutting_objects.hover_scissors = hover_scissors;
   }
-  console.log("MAP: Cutting mode started for id: " + polyline_id);
+  console.log('MAP: Cutting mode started for id: ' + polyline_id.toString());
   cutting_completed_listener.listener = (value) => {
     if (cb) {
       (cb as any)(value);
@@ -349,7 +354,7 @@ export const cuttingPositionUpdate = (
   mouse_event: google.maps.MouseEvent,
   map_objects: MapObjects,
   cutting: CuttingState,
-  cutting_objects: CuttingObjects
+  cutting_objects: CuttingObjects,
 ): void => {
   if (!cutting.enabled || !cutting.id) {
     //If we are not in cutting mode ignore function call.
@@ -358,7 +363,7 @@ export const cuttingPositionUpdate = (
   const polyline = map_objects.polyline[cutting.id];
   if (!polyline) {
     console.log(
-      "GMW: Could not find cutting object, this should not happen! Probably a bug."
+      'GMW: Could not find cutting object, this should not happen! Probably a bug.',
     );
     return;
   }
@@ -403,23 +408,23 @@ export const cuttingClick = (
   map: google.maps.Map,
   map_objects: MapObjects,
   cutting: CuttingState,
-  cutting_objects: CuttingObjects
+  cutting_objects: CuttingObjects,
 ): void => {
   if (!cutting.enabled) {
     return;
   }
   if (!cutting.id) {
-    console.error("No cutting.id set when clicking for cut.");
+    console.error('No cutting.id set when clicking for cut.');
     return;
   }
   if (!cutting.indexes) {
-    console.error("cutting.indexes not defined when clicking for cut.");
+    console.error('cutting.indexes not defined when clicking for cut.');
     return;
   }
   if (!cutting.arr || cutting.arr.length < 2) {
     console.error(
-      "cutting.path not defined when clicking for cut. Cutting:",
-      cutting
+      'cutting.path not defined when clicking for cut. Cutting:',
+      cutting,
     );
     return;
   }
@@ -447,7 +452,7 @@ export const cuttingClick = (
     return;
   }
   const already_selected_position = cutting.indexes.findIndex(
-    (value) => closest_index === value
+    (value) => closest_index === value,
   );
   if (already_selected_position > -1) {
     //This index has already been selected for cutting, remove it.
@@ -455,12 +460,14 @@ export const cuttingClick = (
     if (
       Object.prototype.hasOwnProperty.call(
         cutting_objects,
-        "index_" + closest_index
+        'index_' + closest_index.toString(),
       )
     ) {
       //We have drawn a marker for cut, remove it.
-      cutting_objects["index_" + closest_index].gmaps_obj.setMap(null);
-      delete cutting_objects["index_" + closest_index];
+      cutting_objects['index_' + closest_index.toString()].gmaps_obj.setMap(
+        null,
+      );
+      delete cutting_objects['index_' + closest_index.toString()];
     }
   } else {
     cutting.indexes.push(closest_index);
@@ -480,14 +487,14 @@ export const cuttingClick = (
       options: opts,
     };
     cut_marker.gmaps_obj.setMap(map);
-    cutting_objects["index_" + closest_index] = cut_marker;
+    cutting_objects['index_' + closest_index.toString()] = cut_marker;
   }
 };
 export const completeCuttingMode = (
   map_objects: MapObjects,
   cutting: CuttingState,
   cutting_objects: CuttingObjects,
-  cutting_completed_listener: CuttingListenerObject
+  cutting_completed_listener: CuttingListenerObject,
 ): GMW_LatLngLiteral[][] => {
   if (!cutting || cutting.id === null || !cutting.enabled) {
     return [];
@@ -542,7 +549,7 @@ export const cancelCuttingMode = (
   map_objects: MapObjects,
   cutting: CuttingState,
   cutting_objects: CuttingObjects,
-  cutting_completed_listener: CuttingListenerObject
+  cutting_completed_listener: CuttingListenerObject,
 ): void => {
   cutting.enabled = false;
   Object.keys(cutting_objects).forEach((marker_id) => {

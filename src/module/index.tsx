@@ -1,10 +1,9 @@
-/* eslint-disable @typescript-eslint/class-name-casing */
 import WrappedMapBase, {
   ExportedFunctions,
   MapBaseProps,
-} from "./WrappedMapBase";
-import proj4 from "proj4";
-import simplify from "./simplify";
+} from './WrappedMapBase';
+import proj4 from 'proj4';
+import simplify from './simplify';
 
 export default WrappedMapBase;
 export type GMW_ExportedFunctions = ExportedFunctions;
@@ -19,7 +18,7 @@ export {
   MVCArrayToObjArray,
   arrayRT90ToWGS84,
   arrayRT90ToWGS84LatLngObj,
-} from "./external_helpers";
+} from './external_helpers';
 export { simplify };
 
 export type GMW_LatLng = google.maps.LatLng;
@@ -109,7 +108,7 @@ export interface GMW_GeoJSONFeatureCollection<
   G extends GeoJSON.Geometry | null = GeoJSON.Geometry,
   P = GeoJSON.GeoJsonProperties
 > extends GeoJSON.GeoJsonObject {
-  type: "FeatureCollection";
+  type: 'FeatureCollection';
   features: Array<GMW_GeoJSONFeature<G, P>>;
 }
 
@@ -121,56 +120,56 @@ export type GMW_AllMapObjEvents =
   | GMW_PolygonEvents;
 
 export type GMW_MarkerEvents =
-  | "click"
-  | "mouseover"
-  | "mouseout"
-  | "mousedown"
-  | "mouseup"
-  | "dragstart"
-  | "drag"
-  | "dragend"
-  | "dblclick"
-  | "rightclick";
+  | 'click'
+  | 'mouseover'
+  | 'mouseout'
+  | 'mousedown'
+  | 'mouseup'
+  | 'dragstart'
+  | 'drag'
+  | 'dragend'
+  | 'dblclick'
+  | 'rightclick';
 export type GMW_PolylineEvents =
-  | "click"
-  | "dblclick"
-  | "dragstart"
-  | "drag"
-  | "dragend"
-  | "mouseover"
-  | "mouseout"
-  | "mousedown"
-  | "mouseup"
-  | "mousemove"
-  | "rightclick"
-  | "set_at"
-  | "remove_at"
-  | "insert_at";
+  | 'click'
+  | 'dblclick'
+  | 'dragstart'
+  | 'drag'
+  | 'dragend'
+  | 'mouseover'
+  | 'mouseout'
+  | 'mousedown'
+  | 'mouseup'
+  | 'mousemove'
+  | 'rightclick'
+  | 'set_at'
+  | 'remove_at'
+  | 'insert_at';
 export type GMW_PolygonEvents =
-  | "click"
-  | "dblclick"
-  | "dragstart"
-  | "drag"
-  | "dragend"
-  | "mouseover"
-  | "mouseout"
-  | "mousedown"
-  | "mouseup"
-  | "mousemove"
-  | "rightclick"
-  | "set_at"
-  | "remove_at"
-  | "insert_at";
+  | 'click'
+  | 'dblclick'
+  | 'dragstart'
+  | 'drag'
+  | 'dragend'
+  | 'mouseover'
+  | 'mouseout'
+  | 'mousedown'
+  | 'mouseup'
+  | 'mousemove'
+  | 'rightclick'
+  | 'set_at'
+  | 'remove_at'
+  | 'insert_at';
 export type GMW_FeatureEvents =
-  | "click"
-  | "mouseover"
-  | "mouseout"
-  | "mousedown"
-  | "mouseup"
-  | "rightclick";
+  | 'click'
+  | 'mouseover'
+  | 'mouseout'
+  | 'mousedown'
+  | 'mouseup'
+  | 'rightclick';
 export type GMW_DrawingCB = (
   path: [number, number][] | [number, number] | null,
-  overlay: GMW_Polygon | GMW_Polyline | GMW_Marker
+  overlay: GMW_Polygon | GMW_Polyline | GMW_Marker,
 ) => void;
 
 export interface GMW_WrappedGmapObj {
@@ -187,10 +186,10 @@ export interface GMW_WrappedGmapObj {
   };
   registerEventCB: (
     event_type: GMW_MarkerEvents & GMW_PolygonEvents & GMW_PolylineEvents,
-    cb: (e?: any) => void
+    cb: (e?: any) => void,
   ) => void;
   unregisterEventCB: (
-    event_type: GMW_MarkerEvents & GMW_PolygonEvents & GMW_PolylineEvents
+    event_type: GMW_MarkerEvents & GMW_PolygonEvents & GMW_PolylineEvents,
   ) => void;
   options: any;
   selected_options_id: string;
@@ -202,37 +201,37 @@ export interface GMW_WrappedGmapObj {
 
 export interface GMW_WrappedPolygon extends GMW_WrappedGmapObj {
   gmaps_obj: GMW_Polygon;
-  type: "polygon";
+  type: 'polygon';
   options: GMW_PolygonOptionsSet;
   setOptions: (options: GMW_PolygonOptionsSet) => Promise<GMW_WrappedPolygon>;
   applyOptions: (options_id: string) => void;
   registerEventCB: (
     event_type: GMW_PolygonEvents,
-    cb: (e?: any) => void
+    cb: (e?: any) => void,
   ) => void;
   unregisterEventCB: (event_type: GMW_PolygonEvents) => void;
 }
 
 export interface GMW_WrappedPolyline extends GMW_WrappedGmapObj {
   gmaps_obj: GMW_Polyline;
-  type: "polyline";
+  type: 'polyline';
   options: GMW_PolylineOptionsSet;
   setOptions: (options: GMW_PolylineOptionsSet) => Promise<GMW_WrappedPolyline>;
   registerEventCB: (
     event_type: GMW_PolylineEvents,
-    cb: (e?: any) => void
+    cb: (e?: any) => void,
   ) => void;
   unregisterEventCB: (event_type: GMW_PolylineEvents) => void;
 }
 
 export interface GMW_WrappedMarker extends GMW_WrappedGmapObj {
   gmaps_obj: GMW_Marker;
-  type: "marker";
+  type: 'marker';
   options: GMW_MarkerOptionsSet;
   setOptions: (options: GMW_MarkerOptionsSet) => Promise<GMW_WrappedMarker>;
   registerEventCB: (
     event_type: GMW_MarkerEvents,
-    cb: (e?: any) => void
+    cb: (e?: any) => void,
   ) => void;
   unregisterEventCB: (event_type: GMW_MarkerEvents) => void;
 }
@@ -260,14 +259,14 @@ export interface GMW_WrappedFeature {
   applyOptions: (options_id: string) => void;
   registerEventCB: (
     event_type: GMW_FeatureEvents,
-    cb: (e: google.maps.Data.MouseEvent) => void
+    cb: (e: google.maps.Data.MouseEvent) => void,
   ) => void;
   unregisterEventCB: (event_type: GMW_FeatureEvents) => void;
   zoomTo: () => void;
   panTo: () => void;
 }
 
-export type GMW_MapObjectType = "polyline" | "polygon" | "marker";
+export type GMW_MapObjectType = 'polyline' | 'polygon' | 'marker';
 
 export type GMW_Services = {
   geocoderService: google.maps.Geocoder;
@@ -285,12 +284,15 @@ declare global {
 
 const PROJECTIONS = {
   gmaps:
-    "+proj=merc +a=6378137 +b=6378137 +lat_ts=0.0 +lon_0=0.0 +x_0=0.0 +y_0=0.0 +k=1.0 +units=m +nadgrids=@null +wktext +no_defs +over",
+    '+proj=merc +a=6378137 +b=6378137 +lat_ts=0.0 +lon_0=0.0 +x_0=0.0 +y_0=0.0 +k=1.0 +units=m +nadgrids=@null +wktext +no_defs +over',
   rt90:
-    "+proj=tmerc +lat_0=0 +lon_0=15.80827777777778 +k=1 +x_0=1500000 +y_0=0 +ellps=bessel +towgs84=414.1,41.3,603.1,-0.855,2.141,-7.023,0 +units=m +no_defs",
+    '+proj=tmerc +lat_0=0 +lon_0=15.80827777777778 +k=1 +x_0=1500000 +y_0=0 +ellps=bessel +towgs84=414.1,41.3,603.1,-0.855,2.141,-7.023,0 +units=m +no_defs',
   sweref99:
-    "+proj=tmerc +lat_0=0 +lon_0=15.80628452944445 +k=1.00000561024 +x_0=1500064.274 +y_0=-667.711 +ellps=GRS80 +towgs84=0,0,0,0,0,0,0 +units=m +no_defs",
+    '+proj=tmerc +lat_0=0 +lon_0=15.80628452944445 +k=1.00000561024 +x_0=1500064.274 +y_0=-667.711 +ellps=GRS80 +towgs84=0,0,0,0,0,0,0 +units=m +no_defs',
 };
-proj4.defs("GMAPS", PROJECTIONS.gmaps);
-proj4.defs("RT90", PROJECTIONS.rt90);
-proj4.defs("SWEREF99", PROJECTIONS.sweref99);
+// eslint-disable-next-line
+proj4.defs('GMAPS', PROJECTIONS.gmaps);
+// eslint-disable-next-line
+proj4.defs('RT90', PROJECTIONS.rt90);
+// eslint-disable-next-line
+proj4.defs('SWEREF99', PROJECTIONS.sweref99);

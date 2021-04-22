@@ -19,7 +19,7 @@ const getSqDist = (p1: [number, number], p2: [number, number]): number => {
 const getSqSegDist = (
   p: [number, number],
   p1: [number, number],
-  p2: [number, number]
+  p2: [number, number],
 ): number => {
   let x = p1[0];
   let y = p1[1];
@@ -49,7 +49,7 @@ const getSqSegDist = (
 /** basic distance-based simplification. */
 const simplifyRadialDist = (
   points: [number, number][],
-  sqTolerance: number
+  sqTolerance: number,
 ): [number, number][] => {
   let prevPoint = points[0];
   const newPoints = [prevPoint];
@@ -76,7 +76,7 @@ const simplifyDPStep = (
   first: number,
   last: number,
   sqTolerance: number,
-  simplified: [number, number][]
+  simplified: [number, number][],
 ): void => {
   let maxSqDist = sqTolerance;
   let index = 0;
@@ -104,7 +104,7 @@ const simplifyDPStep = (
 /** simplification using Ramer-Douglas-Peucker algorithm. */
 const simplifyDouglasPeucker = (
   points: [number, number][],
-  sqTolerance: number
+  sqTolerance: number,
 ): [number, number][] => {
   const last = points.length - 1;
 
@@ -119,7 +119,7 @@ const simplifyDouglasPeucker = (
 const simplify = (
   points: [number, number][],
   tolerance: number,
-  highestQuality: boolean
+  highestQuality: boolean,
 ): [number, number][] => {
   if (points.length <= 2) {
     return points;

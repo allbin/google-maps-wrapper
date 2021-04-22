@@ -1,25 +1,28 @@
-import { panZoomToObjectOrFeature } from "./internal_helpers";
+/* eslint-disable @typescript-eslint/no-unsafe-assignment */
+/* eslint-disable @typescript-eslint/no-unsafe-member-access */
+/* eslint-disable @typescript-eslint/no-unsafe-call */
+import { panZoomToObjectOrFeature } from './internal_helpers';
 import {
   GMW_FeatureEvents,
   GMW_FeatureOptionsSet,
   GMW_WrappedFeature,
   GMW_GeoJSONFeatureCollection,
   GMW_GeoJSONFeature,
-} from ".";
-import { MapObjects } from "./WrappedMapBase";
+} from '.';
+import { MapObjects } from './WrappedMapBase';
 
 const feature_events: GMW_FeatureEvents[] = [
-  "click",
-  "mouseover",
-  "mouseout",
-  "mousedown",
-  "mouseup",
-  "rightclick",
+  'click',
+  'mouseover',
+  'mouseout',
+  'mousedown',
+  'mouseup',
+  'rightclick',
 ];
 
 export const setupLayerEvents = (
   map_objects: MapObjects,
-  layer: google.maps.Data
+  layer: google.maps.Data,
 ): void => {
   feature_events.forEach((event_type) => {
     layer.addListener(
@@ -30,7 +33,7 @@ export const setupLayerEvents = (
         if (wrapped_feature && wrapped_feature._cbs[event_type]) {
           wrapped_feature._cbs[event_type](data_mouse_event);
         }
-      }
+      },
     );
   });
 };
@@ -40,7 +43,7 @@ const wrapGmapsFeature = (
   map_objects: MapObjects,
   layer: google.maps.Data,
   gmaps_feature: google.maps.Data.Feature,
-  options: GMW_FeatureOptionsSet
+  options: GMW_FeatureOptionsSet,
 ): GMW_WrappedFeature => {
   interface WrappedFeatureShell extends Partial<GMW_WrappedFeature> {
     gmaps_feature: google.maps.Data.Feature;
@@ -54,7 +57,7 @@ const wrapGmapsFeature = (
   const wrapped_feature: WrappedFeatureShell = {
     gmaps_feature: gmaps_feature,
     options: options,
-    selected_options_id: "default",
+    selected_options_id: 'default',
     _visible:
       options.default.visible !== undefined ? options.default.visible : true,
     _cbs: {},
@@ -70,9 +73,7 @@ const wrapGmapsFeature = (
   wrapped_feature.applyOptions = (options_id: string) => {
     if (!Object.prototype.hasOwnProperty.call(options, options_id)) {
       throw new Error(
-        "Tried to applyOptions(options_id) with '" +
-          options_id +
-          "', but options for given id are not defined."
+        `Tried to applyOptions(options_id) with '${options_id}', but options for given id are not defined.`,
       );
     }
     wrapped_feature.selected_options_id = options_id;
@@ -80,7 +81,7 @@ const wrapGmapsFeature = (
       {},
       options.default,
       options[wrapped_feature.selected_options_id],
-      { visible: wrapped_feature._visible }
+      { visible: wrapped_feature._visible },
     );
     layer.overrideStyle(gmaps_feature, new_options);
   };
@@ -112,7 +113,7 @@ const wrapGmapsFeature = (
     panZoomToObjectOrFeature(map, wrapped_feature as GMW_WrappedFeature, false);
   };
 
-  wrapped_feature.applyOptions("default");
+  wrapped_feature.applyOptions('default');
 
   return (wrapped_feature as unknown) as GMW_WrappedFeature;
 };
@@ -123,7 +124,7 @@ export const setGeoJSONFeature = (
   features_layer: google.maps.Data,
   feature: GMW_GeoJSONFeature,
   options: GMW_FeatureOptionsSet,
-  layer?: google.maps.Data
+  layer?: google.maps.Data,
 ): Promise<GMW_WrappedFeature> =>
   new Promise((resolve, reject) => {
     if (
@@ -136,7 +137,7 @@ export const setGeoJSONFeature = (
     if (!layer) {
       if (!features_layer) {
         return reject(
-          "Internal error in map wrapper: Features layer not created."
+          'Internal error in map wrapper: Features layer not created.',
         );
       }
     }
@@ -147,7 +148,7 @@ export const setGeoJSONFeature = (
       map_objects,
       feature_layer,
       gmaps_feature,
-      options
+      options,
     );
     map_objects.features[feature.id] = wrapped_feature;
     resolve(wrapped_feature);
@@ -157,7 +158,7 @@ export const setGeoJSONCollection = (
   map: google.maps.Map,
   map_objects: MapObjects,
   collection: GMW_GeoJSONFeatureCollection,
-  options: GMW_FeatureOptionsSet
+  options: GMW_FeatureOptionsSet,
 ): Promise<{
   layer: google.maps.Data;
   features: GMW_WrappedFeature[];
@@ -175,7 +176,7 @@ export const setGeoJSONCollection = (
           map_objects,
           layer,
           gmaps_feature,
-          options
+          options,
         );
         map_objects.features[gmaps_feature.getId()] = wrapped_feature;
         return wrapped_feature;
