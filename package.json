@@ -5,12 +5,9 @@
   "main": "dist/module/index.js",
   "scripts": {
     "start": "react-scripts start",
-    "build": "gulp build",
+    "build": "tsc --build tsconfig.prod.json && copyfiles -u 3 ./src/module/img/**/* ./dist/module/img/",
     "test": "react-scripts test --env=jsdom",
     "eject": "react-scripts eject",
-    "release:patch": "gulp buildAndReleasePatch",
-    "release:minor": "gulp buildAndReleaseMinor",
-    "release:major": "gulp buildAndReleaseMajor",
     "lint": "eslint --ext .ts --ext tsx src/**",
     "lint:fix": "eslint --ext .ts --ext tsx --fix src/**"
   },
@@ -21,6 +18,7 @@
     "@google/markerclustererplus": "5.0.4"
   },
   "devDependencies": {
+    "copyfiles": "2.4.1",
     "react": "16.8.6",
     "react-dom": "16.8.6",
     "@allbin/eslint-config-react": "0.0.4",
@@ -55,5 +53,8 @@
       "last 1 firefox version",
       "last 1 safari version"
     ]
-  }
+  },
+  "files": [
+    "./dist/module/**/*"
+  ]
 }
