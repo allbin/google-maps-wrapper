@@ -1,3 +1,7 @@
+/* eslint-disable @typescript-eslint/no-unsafe-return */
+/* eslint-disable @typescript-eslint/no-unsafe-call */
+/* eslint-disable @typescript-eslint/no-unsafe-member-access */
+/* eslint-disable @typescript-eslint/no-unsafe-assignment */
 let counter = 0;
 const scriptMap = new Map();
 
@@ -19,17 +23,17 @@ export const ScriptCache = (function (global) {
 
       _scriptTag: (key: string, src: any) => {
         if (!scriptMap.has(key)) {
-          const tag: any = document.createElement("script");
+          const tag: any = document.createElement('script');
           const promise = new Promise((resolve, reject) => {
-            const body = document.getElementsByTagName("body")[0];
+            const body = document.getElementsByTagName('body')[0];
 
-            tag.type = "text/javascript";
+            tag.type = 'text/javascript';
             tag.async = false; // Load in order
 
             const cbName = `loaderCB${counter++}${Date.now()}`;
             const cleanup = (): void => {
               const gl = global as any;
-              if (gl[cbName] && typeof gl[cbName] === "function") {
+              if (gl[cbName] && typeof gl[cbName] === 'function') {
                 gl[cbName] = null;
               }
             };
@@ -37,12 +41,12 @@ export const ScriptCache = (function (global) {
             const handleResult = (state: any) => {
               return (evt: any) => {
                 const stored = scriptMap.get(key);
-                if (state === "loaded") {
+                if (state === 'loaded') {
                   stored.resolved = true;
                   resolve(src);
                   // stored.handlers.forEach(h => h.call(null, stored))
                   // stored.handlers = []
-                } else if (state === "error") {
+                } else if (state === 'error') {
                   stored.errored = true;
                   // stored.handlers.forEach(h => h.call(null, stored))
                   // stored.handlers = [];
@@ -53,8 +57,8 @@ export const ScriptCache = (function (global) {
               };
             };
 
-            tag.onload = handleResult("loaded");
-            tag.onerror = handleResult("error");
+            tag.onload = handleResult('loaded');
+            tag.onerror = handleResult('error');
             tag.onreadystatechange = () => {
               handleResult(tag.readyState);
             };
@@ -65,9 +69,9 @@ export const ScriptCache = (function (global) {
               const w = window as any;
               w[cbName] = tag.onload;
             } else {
-              tag.addEventListener("load", tag.onload);
+              tag.addEventListener('load', tag.onload);
             }
-            tag.addEventListener("error", tag.onerror);
+            tag.addEventListener('error', tag.onerror);
 
             tag.src = src;
             body.appendChild(tag);
