@@ -2,7 +2,6 @@
   "name": "google-maps-wrapper",
   "version": "2.6.10",
   "description": "",
-  "private": "true",
   "license": "UNLICENSED",
   "repository": {
     "type": "git",
