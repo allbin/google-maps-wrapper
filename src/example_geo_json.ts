@@ -2519,7 +2519,7 @@ const things: GMW_GeoJSONFeature<Polygon>[] = Array(20000)
   .fill(null)
   .map((x, i) => ({
     ...thing,
-    id: 'thing' + i,
+    id: 'thing' + i.toString(),
   }));
 
 export const single_feature: GMW_GeoJSONFeatureCollection<MultiPolygon> = {
