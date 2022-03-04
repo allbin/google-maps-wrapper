@@ -1,6 +1,6 @@
 {
   "name": "@allbin/google-maps-wrapper",
-  "version": "2.6.15",
+  "version": "2.6.16",
   "description": "",
   "license": "UNLICENSED",
   "repository": {
@@ -58,6 +58,6 @@
     ]
   },
   "files": [
-    "./dist/module/**/*"
+    "dist/module/*"
   ]
 }
