@@ -1,6 +1,6 @@
 {
   "name": "@allbin/google-maps-wrapper",
-  "version": "2.6.13",
+  "version": "2.6.14",
   "description": "",
   "license": "UNLICENSED",
   "repository": {
@@ -8,6 +8,7 @@
     "url": "git://github.com/allbin/google-maps-wrapper.git"
   },
   "main": "dist/module/index.js",
+  "types": "dist/module/index.d.ts",
   "scripts": {
     "start": "react-scripts start",
     "build": "tsc --build tsconfig.prod.json && copyfiles -u 3 ./src/module/img/**/* ./dist/module/img/",
