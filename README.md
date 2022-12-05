@@ -1,6 +1,6 @@
 # Google Maps Wrapper
 
-## Changelog 2.6.17
+## Changelog 2.6.18
 
 Fixed issue where `onBoundsChanged` was not triggered when map bounds changed.
 ## Changelog 2.6.8
