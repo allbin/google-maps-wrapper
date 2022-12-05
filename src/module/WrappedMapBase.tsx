@@ -211,12 +211,14 @@ const basic_event_names = [
   'zoom_changed',
   'mouseout',
   'mouseover',
+  'bounds_changed',
 ];
 
 const event_name_to_callback_name: {
   [key: string]: CallbackName;
 } = {
   center_changed: 'onCenterChanged',
+  bounds_changed: 'onBoundsChanged',
   heading_changed: 'onHeadingChanged',
   maptypeid_changed: 'onMapTypeIdChanged',
   projection_changed: 'onProjectionChanged',
@@ -477,7 +479,7 @@ export const WrappedMapBase: React.FunctionComponent<MapBaseProps> = (
           if (debug_src) {
             console.log(
               'Cancel drawing before listener was attached, call from: ' +
-                debug_src,
+              debug_src,
             );
           }
           return;
@@ -588,7 +590,7 @@ export const WrappedMapBase: React.FunctionComponent<MapBaseProps> = (
     initial_features_layer.setMap(map);
     feature_helpers.setupLayerEvents(map_objects, initial_features_layer);
     //eslint-disable-next-line
-    function CanvasProjectionOverlay() {}
+    function CanvasProjectionOverlay() { }
     CanvasProjectionOverlay.prototype = new window.google.maps.OverlayView();
     CanvasProjectionOverlay.prototype.constructor = CanvasProjectionOverlay;
     CanvasProjectionOverlay.prototype.onAdd = () => {
