@@ -1,5 +1,8 @@
 # Google Maps Wrapper
 
+## Changelog 2.6.17
+
+Fixed issue where `onBoundsChanged` was not triggered when map bounds changed.
 ## Changelog 2.6.8
 
 Fixed issue where drawing cancellation flag was not reset when starting a new drawing.
